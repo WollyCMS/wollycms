@@ -3,6 +3,16 @@
   import { api } from '$lib/api.js';
   import { toast } from '$lib/toast.svelte.js';
 
+  const typeColors: Record<string, string> = {
+    home_page: '#d69e2e',
+    landing_page: '#3182ce',
+    secondary_page: '#38a169',
+  };
+
+  function getTypeColor(slug: string): string {
+    return typeColors[slug] || '#94a3b8';
+  }
+
   let pages = $state<any[]>([]);
   let total = $state(0);
   let error = $state('');
@@ -168,9 +178,9 @@
     </thead>
     <tbody>
       {#each pages as page}
-        <tr>
+        <tr style="--type-color: {getTypeColor(page.type || '')};">
           <td><input type="checkbox" checked={selected.has(page.id)} onchange={() => toggleSelect(page.id)} /></td>
-          <td><a href="/pages/{page.id}"><strong>{page.title}</strong></a></td>
+          <td class="td-title"><span class="type-bar"></span><a href="/pages/{page.id}"><strong>{page.title}</strong></a></td>
           <td class="mono" style="color: var(--c-text-light);">/{page.slug}</td>
           <td>{page.typeName}</td>
           <td><span class="badge badge-{page.status}">{page.status}</span></td>
@@ -235,3 +245,20 @@
     </div>
   </div>
 {/if}
+
+<style>
+  .td-title {
+    position: relative;
+    padding-left: 1.25rem !important;
+  }
+
+  .type-bar {
+    position: absolute;
+    left: 0;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--type-color);
+  }
+</style>

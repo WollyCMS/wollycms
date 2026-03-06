@@ -4,6 +4,7 @@
   import { beforeNavigate } from '$app/navigation';
   import { api } from '$lib/api.js';
   import { toast } from '$lib/toast.svelte.js';
+  import { Circle, CheckCircle, Archive } from 'lucide-svelte';
   import Breadcrumb from '$lib/components/Breadcrumb.svelte';
   import MediaPicker from '$lib/components/MediaPicker.svelte';
   import PageEditorSidebar from '$lib/components/PageEditorSidebar.svelte';
@@ -20,6 +21,8 @@
   let saving = $state(false);
   let showPreview = $state(false);
   let dirty = $state(false);
+  let slugManuallyEdited = $state(false);
+  let editingSlug = $state(false);
 
   let allMenus = $state<any[]>([]);
   let menuDetails = $state<Record<number, any>>({});
@@ -27,7 +30,6 @@
   let previewPanel = $state<PreviewPanel | null>(null);
   let blockEditor = $state<BlockEditorRegion | null>(null);
 
-  // Snapshot of clean state for dirty tracking
   let cleanSnapshot = $state('');
 
   const id = $derived($routePage.params.id ?? '');
@@ -37,6 +39,14 @@
     { label: 'Pages', href: '/pages' },
     { label: pageData?.title || 'Loading...' },
   ]);
+
+  const statusConfig = $derived.by(() => {
+    switch (pageData?.status) {
+      case 'published': return { label: 'Published', color: '#38a169', icon: CheckCircle };
+      case 'archived': return { label: 'Archived', color: '#718096', icon: Archive };
+      default: return { label: 'Draft', color: '#d69e2e', icon: Circle };
+    }
+  });
 
   function takeSnapshot() {
     if (!pageData) return;
@@ -55,10 +65,8 @@
     dirty = current !== cleanSnapshot;
   }
 
-  // Watch for changes to mark dirty
   $effect(() => {
     if (pageData) {
-      // Access reactive properties to trigger tracking
       void pageData.title;
       void pageData.slug;
       void pageData.status;
@@ -67,18 +75,33 @@
     }
   });
 
-  // Warn before navigating away with unsaved changes
   beforeNavigate(({ cancel }) => {
     if (dirty && !confirm('You have unsaved changes. Leave anyway?')) {
       cancel();
     }
   });
 
-  // Warn before closing tab with unsaved changes
   function handleBeforeUnload(e: BeforeUnloadEvent) {
     if (dirty) {
       e.preventDefault();
     }
+  }
+
+  function slugify(text: string): string {
+    return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  }
+
+  function handleTitleInput() {
+    if (!slugManuallyEdited) {
+      pageData.slug = slugify(pageData.title);
+    }
+    checkDirty();
+  }
+
+  function handleSlugInput(e: Event) {
+    pageData.slug = (e.target as HTMLInputElement).value;
+    slugManuallyEdited = true;
+    checkDirty();
   }
 
   async function load() {
@@ -91,6 +114,7 @@
       pageData = pageRes.data;
       blockTypes = btRes.data;
       allMenus = menusRes.data;
+      slugManuallyEdited = true; // existing pages have intentional slugs
       if (pageData.typeId) {
         const ctRes = await api.get<{ data: any }>(`/content-types/${pageData.typeId}`);
         contentType = ctRes.data;
@@ -170,12 +194,40 @@
 {#if !pageData}
   <div class="loading">Loading page...</div>
 {:else}
-  <div class="page-header">
-    <div>
+  <div class="editor-header">
+    <div class="editor-header-left">
       <Breadcrumb crumbs={breadcrumbs} />
-      <h1 style="margin-top: 0.25rem;">Edit: {pageData.title}</h1>
+      <div class="title-row">
+        <input
+          class="page-title"
+          type="text"
+          bind:value={pageData.title}
+          oninput={handleTitleInput}
+          placeholder="Page title..."
+        />
+        <span class="status-pill" style="--pill-color: {statusConfig.color}">
+          <statusConfig.icon size={12} />
+          {statusConfig.label}
+        </span>
+      </div>
+      <div class="slug-row">
+        {#if editingSlug}
+          <span class="slug-prefix">/</span>
+          <input
+            class="slug-input mono"
+            value={pageData.slug}
+            oninput={handleSlugInput}
+            onblur={() => editingSlug = false}
+            onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); editingSlug = false; } }}
+          />
+        {:else}
+          <button class="slug-display mono" onclick={() => editingSlug = true} title="Click to edit slug">
+            /{pageData.slug}
+          </button>
+        {/if}
+      </div>
     </div>
-    <div style="display: flex; gap: 0.5rem; align-items: center;">
+    <div class="editor-header-actions">
       <button class="btn" class:btn-primary={!showPreview} class:btn-outline={showPreview}
         onclick={() => showPreview = !showPreview}>
         {showPreview ? 'Hide Preview' : 'Preview'}
@@ -200,27 +252,8 @@
     <div class="editor-main">
       <div style="display: grid; grid-template-columns: 1fr 320px; gap: 1.5rem;">
         <div>
-          <div class="card" style="margin-bottom: 1.5rem;">
-            <div class="form-group">
-              <label for="pe-title">Title</label>
-              <input id="pe-title" class="form-control" bind:value={pageData.title} oninput={() => checkDirty()} />
-            </div>
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="pe-slug">Slug</label>
-                <input id="pe-slug" class="form-control mono" bind:value={pageData.slug} oninput={() => checkDirty()} />
-              </div>
-              <div class="form-group">
-                <label for="pe-status">Status</label>
-                <select id="pe-status" class="form-control" bind:value={pageData.status}>
-                  <option value="draft">Draft</option>
-                  <option value="published">Published</option>
-                  <option value="archived">Archived</option>
-                </select>
-              </div>
-            </div>
-            {#if contentType?.fieldsSchema?.length > 0}
-              <hr style="margin: 1rem 0; border: none; border-top: 1px solid var(--c-border);" />
+          {#if contentType?.fieldsSchema?.length > 0}
+            <div class="card" style="margin-bottom: 1.5rem;">
               <h3 style="font-size: 0.95rem; margin-bottom: 0.75rem;">Page Fields</h3>
               {#each contentType.fieldsSchema as field}
                 <div class="form-group">
@@ -237,8 +270,8 @@
                   {/if}
                 </div>
               {/each}
-            {/if}
-          </div>
+            </div>
+          {/if}
 
           <BlockEditorRegion bind:this={blockEditor} {pageData} pageId={id} {contentType} {blockTypes}
             bind:activeRegion bind:error onReload={load}
@@ -261,6 +294,120 @@
 {/if}
 
 <style>
+  .editor-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+  }
+
+  .editor-header-left {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .editor-header-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-shrink: 0;
+    padding-top: 1.5rem;
+  }
+
+  .title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.25rem;
+  }
+
+  .page-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+    outline: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: none;
+    color: var(--c-text);
+    font-family: var(--font);
+    padding: 0.2rem 0.4rem;
+    margin: -0.2rem -0.4rem;
+    flex: 1;
+    min-width: 100px;
+    border-radius: var(--radius);
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .page-title::placeholder {
+    color: var(--c-text-light);
+    opacity: 0.5;
+  }
+
+  .page-title:hover {
+    background: rgba(0, 0, 0, 0.03);
+  }
+
+  .page-title:focus {
+    background: rgba(0, 0, 0, 0.03);
+    border-bottom-color: var(--c-accent);
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--pill-color) 15%, transparent);
+    color: var(--pill-color);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .slug-row {
+    margin-top: 0.35rem;
+    display: flex;
+    align-items: center;
+  }
+
+  .slug-display {
+    background: none;
+    border: none;
+    color: var(--c-text-light);
+    font-size: 0.8rem;
+    cursor: pointer;
+    padding: 0.15rem 0.35rem;
+    margin: -0.15rem -0.35rem;
+    text-align: left;
+    border-radius: 4px;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .slug-display:hover {
+    color: var(--c-accent);
+    background: rgba(49, 130, 206, 0.06);
+  }
+
+  .slug-prefix {
+    color: var(--c-text-light);
+    font-size: 0.8rem;
+  }
+
+  .slug-input {
+    border: none;
+    border-bottom: 1px solid var(--c-accent);
+    outline: none;
+    background: none;
+    color: var(--c-text);
+    font-size: 0.8rem;
+    padding: 0.1rem 0;
+    width: 300px;
+  }
+
   .editor-layout {
     display: flex;
     gap: 0;
@@ -270,7 +417,7 @@
     min-width: 0;
   }
   .editor-layout.with-preview {
-    height: calc(100vh - 140px);
+    height: calc(100vh - 160px);
   }
   .editor-layout.with-preview .editor-main {
     flex: 1;

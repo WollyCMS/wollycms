@@ -1,9 +1,19 @@
 <script lang="ts">
   import { api } from '$lib/api.js';
   import { toast } from '$lib/toast.svelte.js';
+  import {
+    Type, List, MousePointer, Users, MapPin, Link, ImageIcon, Grid3X3,
+    Video, Rows3, Pencil, Copy, ArrowRightLeft, Trash2,
+  } from 'lucide-svelte';
   import RichTextEditor from './RichTextEditor.svelte';
   import MediaPicker from './MediaPicker.svelte';
   import RepeaterEditor from './RepeaterEditor.svelte';
+
+  const lucideMap: Record<string, any> = {
+    'type': Type, 'list': List, 'mouse-pointer': MousePointer,
+    'users': Users, 'map-pin': MapPin, 'link': Link,
+    'image': ImageIcon, 'grid': Grid3X3, 'video': Video, 'rows-3': Rows3,
+  };
 
   let {
     pageData,
@@ -302,6 +312,57 @@
     }
   }
 
+  const blockCategories: Record<string, string[]> = {
+    'Text': ['rich_text', 'accordion'],
+    'Media': ['image', 'video'],
+    'Navigation': ['link_list', 'cta_button'],
+    'Data': ['contact_list', 'location', 'content_listing'],
+    'Layout': ['hero'],
+  };
+
+  function getBlockCategory(slug: string): string {
+    for (const [cat, slugs] of Object.entries(blockCategories)) {
+      if (slugs.includes(slug)) return cat;
+    }
+    return 'Other';
+  }
+
+  const groupedBlockTypes = $derived.by(() => {
+    const groups: Record<string, any[]> = {};
+    for (const bt of blockTypes) {
+      const cat = getBlockCategory(bt.slug);
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(bt);
+    }
+    return groups;
+  });
+
+  let moveRegionBlock = $state<{ pbId: number; currentRegion: string } | null>(null);
+
+  async function duplicateBlock(pbId: number, region: string) {
+    const blocks = getRegionBlocks(region);
+    const block = blocks.find((b: any) => b.pb_id === pbId);
+    if (!block) return;
+    try {
+      await api.post(`/pages/${pageId}/blocks`, {
+        blockTypeId: blockTypes.find((t: any) => t.slug === block.block_type)?.id,
+        region,
+        fields: { ...block.fields },
+      });
+      toast.success('Block duplicated.');
+      onReload();
+    } catch (err: any) { toast.error(err.message); }
+  }
+
+  async function moveBlockToRegion(pbId: number, targetRegion: string) {
+    try {
+      await api.put(`/pages/${pageId}/blocks/${pbId}`, { region: targetRegion });
+      toast.success(`Block moved to ${targetRegion}.`);
+      moveRegionBlock = null;
+      onReload();
+    } catch (err: any) { toast.error(err.message); }
+  }
+
   async function openAddBlock(regionName: string) {
     activeRegion = regionName;
     showAddBlock = true;
@@ -375,6 +436,11 @@
                     aria-label="Drag to reorder"
                   >&#x2807;</span>
                   <button class="block-card-toggle" onclick={() => toggleExpanded(block.pb_id)}>
+                    <span class="picker-icon-inline">
+                      {#if lucideMap[blockTypes.find((t) => t.slug === block.block_type)?.icon]}
+                        <svelte:component this={lucideMap[blockTypes.find((t) => t.slug === block.block_type)?.icon]} size={14} />
+                      {/if}
+                    </span>
                     <span class="block-type-badge" style="background: {color}20; color: {color}; border-color: {color}40;">
                       {getBlockTypeName(block.block_type)}
                     </span>
@@ -388,9 +454,22 @@
                     {/if}
                     <span class="expand-chevron" class:rotated={expandedBlocks.has(block.pb_id)}>&#9662;</span>
                   </button>
-                  <button class="block-remove-btn" onclick={() => removeBlock(block.pb_id)} title="Remove block">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                  </button>
+                  <div class="block-actions">
+                    <button class="block-action-btn" onclick={() => toggleExpanded(block.pb_id)} title="Edit">
+                      <Pencil size={13} />
+                    </button>
+                    <button class="block-action-btn" onclick={() => duplicateBlock(block.pb_id, region.name)} title="Duplicate">
+                      <Copy size={13} />
+                    </button>
+                    {#if regions.length > 1}
+                      <button class="block-action-btn" onclick={() => moveRegionBlock = { pbId: block.pb_id, currentRegion: region.name }} title="Move to region">
+                        <ArrowRightLeft size={13} />
+                      </button>
+                    {/if}
+                    <button class="block-action-btn block-action-danger" onclick={() => removeBlock(block.pb_id)} title="Remove">
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
                 </div>
 
                 {#if expandedBlocks.has(block.pb_id)}
@@ -464,12 +543,25 @@
         </div>
 
         {#if addBlockTab === 'new'}
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-            {#each blockTypes as bt}
-              <button class="card" style="cursor: pointer; text-align: left;" onclick={() => addBlock(bt.id)}>
-                <strong style="font-size: 0.9rem;">{bt.name}</strong>
-                {#if bt.description}<p style="font-size: 0.8rem; color: var(--c-text-light); margin-top: 0.25rem;">{bt.description}</p>{/if}
-              </button>
+          <div class="block-picker">
+            {#each Object.entries(groupedBlockTypes) as [category, types]}
+              <div class="picker-category">
+                <span class="picker-category-label">{category}</span>
+                <div class="picker-grid">
+                  {#each types as bt}
+                    <button class="picker-item" onclick={() => addBlock(bt.id)} title={bt.description || bt.name}>
+                      <span class="picker-icon">
+                        {#if lucideMap[bt.icon]}
+                          <svelte:component this={lucideMap[bt.icon]} size={20} />
+                        {:else}
+                          <Grid3X3 size={20} />
+                        {/if}
+                      </span>
+                      <span class="picker-label">{bt.name}</span>
+                    </button>
+                  {/each}
+                </div>
+              </div>
             {/each}
           </div>
         {:else}
@@ -501,6 +593,27 @@
             </div>
           {/if}
         {/if}
+      </div>
+    </div>
+  </div>
+{/if}
+
+{#if moveRegionBlock}
+  <div class="modal-overlay" onclick={() => moveRegionBlock = null} role="dialog">
+    <div class="modal" onclick={(e) => e.stopPropagation()} style="max-width: 360px;">
+      <div class="modal-header">
+        <h2>Move to Region</h2>
+        <button class="btn-icon" onclick={() => moveRegionBlock = null}>&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div class="move-region-list">
+          {#each regions.filter(r => r.name !== moveRegionBlock?.currentRegion) as region}
+            <button class="move-region-option" onclick={() => moveBlockToRegion(moveRegionBlock!.pbId, region.name)}>
+              <span class="region-indicator" style="background: {getRegionColor(region.name)}"></span>
+              {region.label}
+            </button>
+          {/each}
+        </div>
       </div>
     </div>
   </div>
@@ -786,24 +899,153 @@
     transform: rotate(180deg);
   }
 
-  .block-remove-btn {
+  /* Block quick-action bar */
+  .block-actions {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border-left: 1px solid var(--c-border, #e2e8f0);
+    align-self: stretch;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .block-card:hover .block-actions,
+  .block-card.is-expanded .block-actions {
+    opacity: 1;
+  }
+
+  .block-action-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
+    width: 30px;
     align-self: stretch;
     background: none;
     border: none;
-    border-left: 1px solid var(--c-border, #e2e8f0);
-    color: #cbd5e1;
+    color: var(--c-text-light, #94a3b8);
     cursor: pointer;
     transition: color 0.15s, background 0.15s;
+  }
+
+  .block-action-btn:hover {
+    color: var(--c-accent, #3182ce);
+    background: rgba(49, 130, 206, 0.06);
+  }
+
+  .block-action-btn.block-action-danger:hover {
+    color: #ef4444;
+    background: #fef2f2;
+  }
+
+  /* Inline icon next to block type badge */
+  .picker-icon-inline {
+    display: flex;
+    align-items: center;
+    color: var(--c-text-light, #94a3b8);
     flex-shrink: 0;
   }
 
-  .block-remove-btn:hover {
-    color: #ef4444;
-    background: #fef2f2;
+  /* Block picker styles */
+  .block-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .picker-category {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .picker-category-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--c-text-light, #94a3b8);
+    padding-left: 0.25rem;
+  }
+
+  .picker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .picker-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.75rem 0.5rem;
+    border: 1px solid var(--c-border, #e2e8f0);
+    border-radius: var(--radius, 6px);
+    background: var(--c-surface, #fff);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .picker-item:hover {
+    border-color: var(--c-accent, #3182ce);
+    background: rgba(49, 130, 206, 0.04);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .picker-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--c-bg, #f7f8fa);
+    color: var(--c-text, #2d3748);
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .picker-item:hover .picker-icon {
+    background: rgba(49, 130, 206, 0.1);
+    color: var(--c-accent, #3182ce);
+  }
+
+  .picker-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--c-text, #2d3748);
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  /* Move to region modal */
+  .move-region-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .move-region-option {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--c-border, #e2e8f0);
+    border-radius: var(--radius, 6px);
+    background: var(--c-surface, #fff);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--c-text, #2d3748);
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+
+  .move-region-option:hover {
+    border-color: var(--c-accent, #3182ce);
+    background: rgba(49, 130, 206, 0.04);
   }
 
   .block-card-body {

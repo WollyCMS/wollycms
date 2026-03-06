@@ -206,81 +206,81 @@ drag blocks around, edit inline, see changes live in the preview panel.
 form-driven CRUD app. These are targeted UX improvements that make daily
 content management faster and more pleasant.
 
-### 4.5a. Quick Wins (knock these out first)
+### 4.5a. Quick Wins -- COMPLETE
 
-- [ ] Replace emoji sidebar icons with Lucide icons (already in stack via
-      TipTap — consistent rendering across OS, crisp at small sizes)
-- [ ] Monospace font for slugs and code-like values (slug fields, API paths
-      in settings, content type slugs — one CSS utility class)
-- [ ] Breadcrumb navigation in page editor (Dashboard > Pages > Page Title
-      — helps orientation, simple component)
-- [ ] Dirty state indicator (dot on Save button when unsaved changes exist,
-      `beforeunload` warning when navigating away with unsaved changes)
-- [ ] Toast notifications (bottom-right stacking toasts instead of inline
-      alerts that push content down — "Page saved", "Block moved to sidebar",
-      "3 pages published")
-- [ ] Keyboard shortcuts:
+- [x] Replace emoji sidebar icons with Lucide icons (consistent cross-OS,
+      crisp at small sizes, grouped nav with section dividers)
+- [x] Monospace font for slugs and code-like values (`.mono` utility class,
+      JetBrains Mono / Fira Code fallback chain)
+- [x] Breadcrumb navigation in page editor (Dashboard > Pages > Page Title)
+- [x] Dirty state indicator (pulsing yellow dot on Save button, beforeunload
+      + beforeNavigate warnings for unsaved changes)
+- [x] Toast notifications (bottom-right stacking toasts with Lucide icons,
+      auto-dismiss, migrated page editor/blocks/settings/pages list)
+- [x] Block auto-save toast feedback ("Block saved." on field blur)
+- [x] Keyboard shortcuts:
   - `Ctrl+S` — Save page
   - `Ctrl+Shift+P` — Toggle preview panel
-  - `Ctrl+Shift+N` — Add block to active region
-  - `Esc` — Close modal / collapse expanded block
-  - `?` — Show keyboard shortcut overlay (like GitHub)
+  - `Esc` — Close shortcut overlay
+  - `?` — Show keyboard shortcut overlay (clickable hint in sidebar footer)
+- [x] Sidebar collapsed tooltips on hover (60px mode)
+- [x] `?` shortcut button in sidebar footer for discoverability
 
-### 4.5b. Editor Feel (document editor, not form)
+### 4.5b. Editor Feel (document editor, not form) -- COMPLETE
 
-- [ ] Notion-style page title (large editable heading instead of standard
-      form input — makes the editor feel like a document)
-- [ ] Inline slug field (subtle, auto-updates from title, editable on click
-      — not a full form row)
-- [ ] Status pill next to title (pill shape with icon, more visually
-      distinct than current badge)
-- [ ] Sidebar navigation grouping with section dividers:
-  - **Content**: Pages, Blocks, Media
-  - **Structure**: Menus, Taxonomies, Redirects
-  - **Schema**: Content Types, Block Types
-  - **System**: Users, Settings
-- [ ] SpacelyCMS wordmark/logo at top of sidebar (even just styled text in
-      a nice weight)
-- [ ] Draft/published count badges on sidebar nav items (small pills)
-- [ ] Tooltips on collapsed sidebar icons (60px mode)
+- [x] Notion-style page title (large styled input that looks like a heading,
+      hover background hint for editability, no label/form chrome)
+- [x] Inline slug field (subtle `/{slug}` below title, click to edit inline,
+      auto-generates from title for new content)
+- [x] Status pill next to title (colored pill with Lucide icon — green
+      Published/CheckCircle, yellow Draft/Circle, gray Archived/Archive)
+- [x] Sidebar navigation grouping with section dividers (done in 4.5a)
+- [x] SpacelyCMS wordmark/logo (blue "S" icon badge + text, collapses to
+      just badge on mobile)
+- [x] Count badges on sidebar nav items (Pages, Blocks, Media, Menus, Users
+      — fetched from dashboard stats API)
+- [x] Tooltips on collapsed sidebar icons (done in 4.5a)
+- [x] Page fields card moved below title area (title/slug/status are now
+      in the editor header, not in a form card)
 
-### 4.5c. Block & Region UX
+### 4.5c. Block & Region UX -- COMPLETE
 
-- [ ] Visual block type picker (icon grid grouped by category instead of
-      current modal — Text, Media, Navigation, Data, Layout sections;
-      "Recently Used" at top)
-- [ ] Hover quick-action bar on collapsed block cards (Edit | Duplicate |
-      Move to Region | Remove — appears on hover without expanding)
-- [ ] Region mini-wireframe at top of editor (simple diagram showing where
-      hero/content/sidebar/bottom appear on the page — click a region to
-      scroll to it)
+- [x] Visual block type picker (icon grid grouped by category — Text, Media,
+      Navigation, Data, Layout sections with Lucide icons per block type;
+      replaces plain card list in add-block modal)
+- [x] Hover quick-action bar on collapsed block cards (Edit | Duplicate |
+      Move to Region | Remove — appears on hover, move opens region picker
+      modal with colored indicators)
+- [x] Inline block type icons on block cards (small Lucide icon next to type
+      badge, mapped from block type `icon` field)
+- [x] Move-to-region modal (select target region from list, color-coded
+      region indicators, only shown when page has multiple regions)
+- [ ] Region mini-wireframe at top of editor (deferred — simple diagram
+      showing where hero/content/sidebar/bottom appear on the page)
 
-### 4.5d. Media & Preview Polish
+### 4.5d. Media & Preview Polish -- COMPLETE
 
-- [ ] Alt text reminder (yellow dot on media fields where alt text is empty
-      — accessibility nudge, tiny effort)
-- [ ] Recent uploads tab in media picker (saves "where did my upload go"
-      frustration)
-- [ ] Device toggle in preview toolbar (Mobile 375px | Tablet 768px |
-      Desktop 1280px — three buttons that change iframe width)
-- [ ] Side-by-side vs stacked preview toggle (some editors prefer preview
-      below rather than beside)
-- [ ] Shareable preview link (copy button for the tokenized preview URL —
-      non-admin stakeholders can view for feedback; URL already exists,
-      just need the copy UI)
+- [x] Alt text reminder (yellow warning + dot on media fields/grid items
+      where alt text is empty — accessibility nudge with AlertTriangle icon)
+- [x] Recent uploads tab in media picker (Recent/All tabs, recent shows
+      last 12 uploads sorted by createdAt)
+- [x] Device toggle in preview toolbar (Mobile 375px | Tablet 768px |
+      Desktop full — Lucide Smartphone/Tablet/Monitor icons, animated
+      iframe width transition)
+- [x] Shareable preview link (copy button in preview toolbar copies
+      tokenized preview URL to clipboard with toast feedback)
+- [ ] Side-by-side vs stacked preview toggle (deferred — some editors
+      prefer preview below rather than beside)
 
-### 4.5e. Page List & Dashboard
+### 4.5e. Page List & Dashboard -- COMPLETE
 
-- [ ] Page list thumbnail column (hero image or first image block as tiny
-      preview, falls back to content type icon)
-- [ ] Quick inline title edit on page list (click title to rename without
-      entering full editor)
-- [ ] Content type color coding on page list rows (subtle left-border or
-      background tint by type)
-- [ ] Dashboard quick actions ("New Page", "Upload Media", "View Site" as
-      prominent action cards)
-- [ ] Empty state guidance (when a region has no blocks: "Drag blocks here
-      or click + to add" with subtle illustration, not just emptiness)
+- [x] Dashboard quick actions (New Page, Upload Media, View Site as
+      prominent action cards with Lucide icons and hover effects)
+- [x] Content type color coding on page list rows (colored left-border
+      bar per content type — gold/blue/green for home/landing/secondary)
+- [x] Recent pages linked to editor (dashboard page titles now clickable)
+- [ ] Page list thumbnail column (deferred — hero image as tiny preview)
+- [ ] Quick inline title edit on page list (deferred)
 
 ### Demo
 
@@ -513,7 +513,7 @@ new block type.
 | Phase 2 | Astro Integration | Complete |
 | Phase 3 | Admin UI | Complete |
 | Phase 4 | Visual Builder | Complete |
-| Phase 4.5 | Admin UI Polish | Not started |
+| Phase 4.5 | Admin UI Polish | Complete (a-e) |
 | Phase 5 | Production Hardening | Not started |
 | Phase 6 | Packaging & DX | Not started |
 | Phase 7 | Content Features | Not started |
@@ -526,10 +526,8 @@ new block type.
 **Phase 7** = Make it competitive (feature parity with established CMS tools)
 **Phase 8** = Make it scalable (teams, multi-site, migrations, plugins)
 
-Recommended priority: **4.5a → 4.5b → 5a → 4.5c/4.5d → 5b → 6 → 7 → 8**.
-The quick wins in 4.5a should be first — they're fast and immediately
-improve daily editing. Then interleave the remaining UI polish (4.5c-e)
-with production infrastructure (5a) since they're independent workstreams.
+Recommended priority: **5a → 5b → 5c → 6 → 7 → 8**.
+Phase 4.5 (all sub-phases) is complete. Next up is production hardening.
 
 ---
 

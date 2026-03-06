@@ -3,6 +3,7 @@
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import { getAuth } from '$lib/auth.svelte.js';
+  import { api } from '$lib/api.js';
   import ToastContainer from '$lib/components/ToastContainer.svelte';
   import KeyboardShortcuts from '$lib/components/KeyboardShortcuts.svelte';
   import {
@@ -15,11 +16,15 @@
   const auth = getAuth();
   const isLogin = $derived($page.url.pathname === '/login');
   let showShortcuts = $state(false);
+  let navCounts = $state<Record<string, number>>({});
 
   onMount(async () => {
     await auth.load();
     if (!auth.user && !isLogin) {
       goto('/login');
+    }
+    if (auth.user) {
+      loadNavCounts();
     }
   });
 
@@ -28,6 +33,20 @@
       goto('/login');
     }
   });
+
+  async function loadNavCounts() {
+    try {
+      const res = await api.get<{ data: any }>('/dashboard');
+      const s = res.data.stats;
+      navCounts = {
+        '/pages': s.pages,
+        '/blocks': s.blocks,
+        '/media': s.media,
+        '/menus': s.menus,
+        '/users': s.users,
+      };
+    } catch { /* non-critical */ }
+  }
 
   const navSections = [
     {
@@ -94,7 +113,10 @@
   <div class="admin-layout">
     <aside class="sidebar">
       <div class="sidebar-header">
-        <a href="/" class="logo">SpacelyCMS</a>
+        <a href="/" class="logo">
+          <span class="logo-icon">S</span>
+          <span class="logo-text">SpacelyCMS</span>
+        </a>
       </div>
       <nav class="sidebar-nav">
         {#each navSections as section}
@@ -110,6 +132,9 @@
             >
               <span class="nav-icon"><item.icon size={18} /></span>
               <span class="nav-label">{item.label}</span>
+              {#if navCounts[item.href] != null}
+                <span class="nav-badge">{navCounts[item.href]}</span>
+              {/if}
             </a>
           {/each}
         {/each}
