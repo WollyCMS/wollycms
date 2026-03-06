@@ -157,17 +157,19 @@ frontend. The Storyblok-like experience.
 
 ### Deliverables
 
-- [ ] Visual page editor:
-  - Drag-drop blocks between regions
-  - Inline block editing (click to edit)
-  - Block palette (browsable block types)
-  - Shared block picker (search/browse library)
+- [x] Live preview bridge:
+  - Preview iframe showing Astro site in split-pane editor
+  - Preview API endpoint (authenticated, returns draft content)
+  - SSR preview route on Astro site
+  - PostMessage refresh on save
+- [x] Block management improvements:
+  - Move blocks between regions (dropdown)
+  - Shared block picker (search/filter from library)
+  - Usage count on blocks list
+- [ ] Visual page editor (remaining):
+  - Drag-drop blocks between regions (visual)
+  - Inline block editing (click to edit in preview)
   - Visual region indicators
-- [ ] Live preview bridge:
-  - Preview iframe showing Astro site
-  - CMS sends draft content to preview endpoint
-  - Bi-directional: click in preview to select block in editor
-  - Real-time updates as content changes
 - [ ] Advanced rich text:
   - Slash commands (/ to insert block)
   - Drag images into rich text
@@ -175,7 +177,7 @@ frontend. The Storyblok-like experience.
   - Paste cleanup (Word, Google Docs)
 - [x] Content scheduling (completed in Phase 3)
 - [x] Revision history with rollback (completed in Phase 3)
-- [ ] Revision diff view (side-by-side comparison)
+- [x] Revision diff view (side-by-side comparison with highlights)
 - [ ] Multi-user: real-time presence (who's editing what)
 
 ### Demo

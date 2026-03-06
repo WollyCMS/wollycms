@@ -9,11 +9,13 @@
   import TableRow from '@tiptap/extension-table-row';
   import TableCell from '@tiptap/extension-table-cell';
   import TableHeader from '@tiptap/extension-table-header';
+  import MediaPicker from './MediaPicker.svelte';
 
   let { content, onUpdate }: { content: any; onUpdate: (json: any) => void } = $props();
 
   let editorEl: HTMLDivElement | undefined = $state();
   let editor: Editor | undefined = $state();
+  let showImagePicker = $state(false);
 
   onMount(() => {
     editor = new Editor({
@@ -58,11 +60,14 @@
   }
 
   function insertImage() {
-    if (!editor) return;
-    const url = prompt('Enter image URL:');
-    if (url) {
-      editor.chain().focus().setImage({ src: url }).run();
-    }
+    showImagePicker = true;
+  }
+
+  function onImageSelect(mediaId: number | null) {
+    showImagePicker = false;
+    if (!editor || !mediaId) return;
+    const src = `/api/content/media/${mediaId}/large`;
+    editor.chain().focus().setImage({ src }).run();
   }
 
   function insertTable() {
@@ -126,6 +131,20 @@
   </div>
   <div class="rte-editor" bind:this={editorEl}></div>
 </div>
+
+{#if showImagePicker}
+  <div class="modal-overlay" onclick={() => showImagePicker = false} role="dialog">
+    <div class="modal" onclick={(e) => e.stopPropagation()} style="max-width: 700px;">
+      <div class="modal-header">
+        <h2>Insert Image</h2>
+        <button class="btn-icon" onclick={() => showImagePicker = false}>&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <MediaPicker value={null} onSelect={onImageSelect} />
+      </div>
+    </div>
+  </div>
+{/if}
 
 <style>
   .rte-wrap {
@@ -200,46 +219,15 @@
     margin: 0 0 0.5em;
   }
 
-  .rte-editor :global(.ProseMirror h2) {
-    font-size: 1.4rem;
-    font-weight: 700;
-    margin: 1em 0 0.4em;
-  }
-
-  .rte-editor :global(.ProseMirror h3) {
-    font-size: 1.15rem;
-    font-weight: 600;
-    margin: 0.8em 0 0.3em;
-  }
-
-  .rte-editor :global(.ProseMirror h4) {
-    font-size: 1rem;
-    font-weight: 600;
-    margin: 0.6em 0 0.25em;
-  }
+  .rte-editor :global(.ProseMirror h2) { font-size: 1.4rem; font-weight: 700; margin: 1em 0 0.4em; }
+  .rte-editor :global(.ProseMirror h3) { font-size: 1.15rem; font-weight: 600; margin: 0.8em 0 0.3em; }
+  .rte-editor :global(.ProseMirror h4) { font-size: 1rem; font-weight: 600; margin: 0.6em 0 0.25em; }
 
   .rte-editor :global(.ProseMirror ul),
-  .rte-editor :global(.ProseMirror ol) {
-    padding-left: 1.5em;
-    margin: 0.5em 0;
-  }
-
-  .rte-editor :global(.ProseMirror li) {
-    margin: 0.15em 0;
-  }
-
-  .rte-editor :global(.ProseMirror blockquote) {
-    border-left: 3px solid var(--c-border, #e2e8f0);
-    padding-left: 1em;
-    margin: 0.5em 0;
-    color: var(--c-text-light, #718096);
-  }
-
-  .rte-editor :global(.ProseMirror hr) {
-    border: none;
-    border-top: 1px solid var(--c-border, #e2e8f0);
-    margin: 1em 0;
-  }
+  .rte-editor :global(.ProseMirror ol) { padding-left: 1.5em; margin: 0.5em 0; }
+  .rte-editor :global(.ProseMirror li) { margin: 0.15em 0; }
+  .rte-editor :global(.ProseMirror blockquote) { border-left: 3px solid var(--c-border, #e2e8f0); padding-left: 1em; margin: 0.5em 0; color: var(--c-text-light, #718096); }
+  .rte-editor :global(.ProseMirror hr) { border: none; border-top: 1px solid var(--c-border, #e2e8f0); margin: 1em 0; }
 
   .rte-editor :global(.ProseMirror code) {
     background: var(--c-bg, #f7f8fa);
