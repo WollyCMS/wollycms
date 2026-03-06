@@ -15,11 +15,9 @@ export function seedContentTypes(db: AppDatabase) {
       name: 'Secondary Page',
       slug: 'secondary_page',
       description: 'Standard interior page with content area and sidebar.',
-      fieldsSchema: [
-        { name: 'subtitle', label: 'Subtitle', type: 'text' },
-        { name: 'hero_image', label: 'Hero Image', type: 'media' },
-      ],
+      fieldsSchema: [],
       regions: [
+        { name: 'hero', label: 'Hero' },
         { name: 'content', label: 'Content' },
         { name: 'sidebar', label: 'Sidebar' },
         { name: 'bottom', label: 'Bottom' },
@@ -30,13 +28,9 @@ export function seedContentTypes(db: AppDatabase) {
       name: 'Landing Page',
       slug: 'landing_page',
       description: 'Full-width landing page with hero, features, and CTA areas.',
-      fieldsSchema: [
-        { name: 'subtitle', label: 'Subtitle', type: 'text' },
-        { name: 'hero_image', label: 'Hero Image', type: 'media' },
-        { name: 'hero_cta_text', label: 'Hero CTA Text', type: 'text' },
-        { name: 'hero_cta_url', label: 'Hero CTA URL', type: 'url' },
-      ],
+      fieldsSchema: [],
       regions: [
+        { name: 'hero', label: 'Hero' },
         { name: 'content', label: 'Content' },
         { name: 'features', label: 'Features' },
         { name: 'bottom', label: 'Bottom' },
@@ -47,15 +41,9 @@ export function seedContentTypes(db: AppDatabase) {
       name: 'Home Page',
       slug: 'home_page',
       description: 'Site homepage with hero, featured content, and highlights.',
-      fieldsSchema: [
-        { name: 'tagline', label: 'Tagline', type: 'text' },
-        { name: 'hero_eyebrow', label: 'Hero Eyebrow', type: 'text' },
-        { name: 'hero_description', label: 'Hero Description', type: 'text' },
-        { name: 'hero_image', label: 'Hero Image', type: 'media' },
-        { name: 'hero_cta_text', label: 'Hero CTA Text', type: 'text' },
-        { name: 'hero_cta_url', label: 'Hero CTA URL', type: 'url' },
-      ],
+      fieldsSchema: [],
       regions: [
+        { name: 'hero', label: 'Hero' },
         { name: 'content', label: 'Content' },
         { name: 'features', label: 'Features' },
         { name: 'bottom', label: 'Bottom' },

@@ -1,0 +1,58 @@
+---
+import type { BlockProps } from '@spacelycms/astro';
+import { spacely } from '../lib/spacely';
+
+interface Props extends BlockProps {
+  fields: {
+    heading?: string;
+    subtitle?: string;
+    eyebrow?: string;
+    description?: string;
+    image?: number | string;
+    cta_text?: string;
+    cta_url?: string;
+    style?: 'home' | 'interior';
+  };
+}
+
+const { fields } = Astro.props;
+const style = fields.style ?? 'interior';
+
+const imgSrc = fields.image
+  ? (typeof fields.image === 'number'
+    ? spacely.media.url(fields.image, 'large')
+    : String(fields.image))
+  : null;
+---
+
+{style === 'home' ? (
+  <section class:list={['hero-region', 'hero-home', { 'hero-has-bg': !!imgSrc }]}
+    style={imgSrc ? `background-image: linear-gradient(135deg, rgba(74,14,28,0.85) 0%, rgba(107,29,42,0.75) 40%, rgba(139,58,74,0.7) 100%), url(${imgSrc})` : undefined}>
+    <div class="container hero-split">
+      <div class="hero-text">
+        {fields.eyebrow && <span class="hero-eyebrow">{fields.eyebrow}</span>}
+        {fields.heading && <h1 class="hero-title">{fields.heading}</h1>}
+        {fields.description && <p class="hero-description">{fields.description}</p>}
+        {fields.cta_text && fields.cta_url && (
+          <a href={fields.cta_url} class="cta-button cta-secondary">{fields.cta_text}</a>
+        )}
+      </div>
+      {imgSrc && !fields.description && (
+        <div class="hero-image-wrap">
+          <img src={imgSrc} alt="" class="hero-image" loading="eager" />
+        </div>
+      )}
+    </div>
+  </section>
+) : (
+  <section class:list={['hero-region', 'hero-interior', { 'hero-has-bg': !!imgSrc }]}
+    style={imgSrc ? `background-image: linear-gradient(135deg, rgba(74,14,28,0.85) 0%, rgba(107,29,42,0.75) 40%, rgba(139,58,74,0.7) 100%), url(${imgSrc})` : undefined}>
+    <div class="container">
+      {fields.heading && <h1 class="hero-title">{fields.heading}</h1>}
+      {fields.subtitle && <p class="hero-tagline">{fields.subtitle}</p>}
+      {fields.cta_text && fields.cta_url && (
+        <a href={fields.cta_url} class="cta-button cta-secondary">{fields.cta_text}</a>
+      )}
+    </div>
+  </section>
+)}

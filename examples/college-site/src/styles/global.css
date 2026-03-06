@@ -339,6 +339,9 @@ a:hover {
 .hero-region {
   background:
     linear-gradient(135deg, var(--maroon-deep) 0%, var(--maroon) 40%, var(--maroon-soft) 100%);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   color: white;
   padding: var(--space-3xl) 0;
   position: relative;
@@ -386,6 +389,12 @@ a:hover {
 }
 .hero-interior {
   padding: var(--space-2xl) 0 var(--space-xl);
+}
+.hero-interior.hero-has-bg {
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  padding: var(--space-3xl) 0;
 }
 .hero-interior .hero-title {
   font-size: 2.2rem;
@@ -1083,8 +1092,21 @@ details[open] > .accordion-title::after {
 .card-subtitle {
   font-size: 0.9rem;
   color: var(--gray-500);
-  padding-bottom: var(--space-lg);
+  padding-bottom: var(--space-sm);
   line-height: 1.5;
+  flex: 1;
+}
+.card-readmore {
+  display: block;
+  padding: 0 var(--space-lg) var(--space-lg);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.02em;
+  transition: color var(--duration) var(--ease), gap var(--duration) var(--ease);
+}
+.card:hover .card-readmore {
+  color: var(--gold-light);
 }
 
 /* Unknown block fallback */
@@ -1170,39 +1192,102 @@ details[open] > .accordion-title::after {
   color: var(--maroon-deep);
 }
 
-.footer-main {
-  padding: var(--space-xl) 0 var(--space-lg);
+/* Footer columns */
+.footer-columns {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: var(--space-2xl);
+  padding: var(--space-xl) 0 var(--space-2xl);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.footer-col-heading {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: var(--space-md);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.8rem;
+}
+.footer-address {
+  font-style: normal;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.6;
+  margin-bottom: var(--space-sm);
+  font-size: 0.9rem;
+}
+.footer-contact-line {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xs);
+  font-size: 0.9rem;
+}
+.footer-contact-line a {
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  transition: color var(--duration) var(--ease);
+}
+.footer-contact-line a:hover {
+  color: var(--gold-light);
+  text-decoration: none;
+}
+.footer-icon {
+  color: var(--gold);
+  font-size: 0.85rem;
+}
+.footer-hours {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin-top: var(--space-sm);
+}
+.footer-col-links {
+  list-style: none;
+}
+.footer-col-links li {
+  margin-bottom: var(--space-xs);
+}
+.footer-col-links a {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color var(--duration) var(--ease);
+}
+.footer-col-links a:hover {
+  color: var(--gold-light);
+  text-decoration: none;
+}
+
+/* Footer bottom bar */
+.footer-bottom {
+  padding: var(--space-lg) 0;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-2xl);
+  align-items: center;
+  gap: var(--space-xl);
+  flex-wrap: wrap;
 }
 .footer-links {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-md) var(--space-2xl);
+  gap: var(--space-md) var(--space-xl);
   list-style: none;
-  justify-content: center;
-  width: 100%;
 }
 .footer-links a {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.5);
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   transition: color var(--duration) var(--ease);
 }
 .footer-links a:hover {
   color: var(--gold-light);
   text-decoration: none;
 }
-
 .footer-copy {
   font-size: 0.8rem;
   opacity: 0.4;
-  text-align: right;
-  padding-top: var(--space-lg);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-bottom: var(--space-lg);
+  white-space: nowrap;
 }
 
 /* ============================================================
@@ -1344,12 +1429,18 @@ details[open] > .accordion-title::after {
     flex-direction: column;
     gap: var(--space-lg);
   }
-  .footer-main {
+  .footer-columns {
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+  }
+  .footer-bottom {
     flex-direction: column;
-    gap: var(--space-lg);
+    text-align: center;
+  }
+  .footer-links {
+    justify-content: center;
   }
   .footer-copy {
-    text-align: center;
     white-space: normal;
   }
 }

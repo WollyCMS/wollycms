@@ -63,16 +63,16 @@ export function seedPagesAndBlocks(
     createdBy: adminId,
   }).returning().get();
 
-  // --- Pages ---
+  // --- Pages (no hero fields — hero content lives in hero region blocks) ---
   const insertedPages = db.insert(pages).values([
-    { typeId: contentTypeMap.home_page, title: 'Home', slug: 'home', status: 'published' as const, fields: { tagline: 'Your Future Starts Here', hero_eyebrow: 'FEATURED PROGRAM', hero_description: 'Explore workforce-ready degrees and certificates in welding, HVAC, nursing, IT, and more — with tuition assistance through Virginia\'s G3 program.', hero_cta_text: 'G3 Program — Apply Today', hero_cta_url: '/apply-now' }, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
-    { typeId: contentTypeMap.secondary_page, title: 'About Us', slug: 'about-us', status: 'published' as const, fields: { subtitle: 'Our Mission & History' }, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
-    { typeId: contentTypeMap.landing_page, title: 'Admissions', slug: 'admissions', status: 'published' as const, fields: { subtitle: 'Begin Your Journey', hero_cta_text: 'Apply Now', hero_cta_url: '/apply-now' }, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
-    { typeId: contentTypeMap.secondary_page, title: 'Academic Programs', slug: 'academic-programs', status: 'published' as const, fields: { subtitle: 'Explore Our Degrees' }, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
-    { typeId: contentTypeMap.secondary_page, title: 'Student Life', slug: 'student-life', status: 'published' as const, fields: { subtitle: 'Campus Experience' }, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
-    { typeId: contentTypeMap.secondary_page, title: 'Contact', slug: 'contact', status: 'published' as const, fields: { subtitle: 'Get in Touch' }, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
-    { typeId: contentTypeMap.landing_page, title: 'Apply Now', slug: 'apply-now', status: 'published' as const, fields: { subtitle: 'Start Your Application', hero_cta_text: 'Begin Application', hero_cta_url: '#application-form' }, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
-    { typeId: contentTypeMap.secondary_page, title: 'CITE Program', slug: 'cite-program', status: 'published' as const, fields: { subtitle: 'Center for Innovation, Technology & Entrepreneurship' }, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
+    { typeId: contentTypeMap.home_page, title: 'Home', slug: 'home', status: 'published' as const, fields: {}, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
+    { typeId: contentTypeMap.secondary_page, title: 'About Us', slug: 'about-us', status: 'published' as const, fields: {}, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
+    { typeId: contentTypeMap.landing_page, title: 'Admissions', slug: 'admissions', status: 'published' as const, fields: {}, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
+    { typeId: contentTypeMap.secondary_page, title: 'Academic Programs', slug: 'academic-programs', status: 'published' as const, fields: {}, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
+    { typeId: contentTypeMap.secondary_page, title: 'Student Life', slug: 'student-life', status: 'published' as const, fields: {}, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
+    { typeId: contentTypeMap.secondary_page, title: 'Contact', slug: 'contact', status: 'published' as const, fields: {}, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
+    { typeId: contentTypeMap.landing_page, title: 'Apply Now', slug: 'apply-now', status: 'published' as const, fields: {}, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
+    { typeId: contentTypeMap.secondary_page, title: 'CITE Program', slug: 'cite-program', status: 'published' as const, fields: {}, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
   ]).returning().all();
 
   const pageMap: Record<string, number> = {};
@@ -95,6 +95,16 @@ function createInlineBlocks(
   now: string,
 ) {
   const vals: (typeof blocks.$inferInsert)[] = [
+    // Hero blocks
+    { typeId: bt.hero, title: 'Home Hero', fields: { heading: 'Your Future Starts Here', eyebrow: 'FEATURED PROGRAM', description: 'Explore workforce-ready degrees and certificates in welding, HVAC, nursing, IT, and more — with tuition assistance through Virginia\'s G3 program.', cta_text: 'G3 Program — Apply Today', cta_url: '/apply-now', style: 'home' }, isReusable: false, createdAt: now, updatedAt: now, createdBy: adminId },
+    { typeId: bt.hero, title: 'About Hero', fields: { heading: 'About Us', subtitle: 'Our Mission & History', style: 'interior' }, isReusable: false, createdAt: now, updatedAt: now, createdBy: adminId },
+    { typeId: bt.hero, title: 'Admissions Hero', fields: { heading: 'Admissions', subtitle: 'Begin Your Journey', cta_text: 'Apply Now', cta_url: '/apply-now', style: 'interior' }, isReusable: false, createdAt: now, updatedAt: now, createdBy: adminId },
+    { typeId: bt.hero, title: 'Programs Hero', fields: { heading: 'Academic Programs', subtitle: 'Explore Our Degrees', style: 'interior' }, isReusable: false, createdAt: now, updatedAt: now, createdBy: adminId },
+    { typeId: bt.hero, title: 'Student Life Hero', fields: { heading: 'Student Life', subtitle: 'Campus Experience', style: 'interior' }, isReusable: false, createdAt: now, updatedAt: now, createdBy: adminId },
+    { typeId: bt.hero, title: 'Contact Hero', fields: { heading: 'Contact', subtitle: 'Get in Touch', style: 'interior' }, isReusable: false, createdAt: now, updatedAt: now, createdBy: adminId },
+    { typeId: bt.hero, title: 'Apply Hero', fields: { heading: 'Apply Now', subtitle: 'Start Your Application', cta_text: 'Begin Application', cta_url: '#application-form', style: 'interior' }, isReusable: false, createdAt: now, updatedAt: now, createdBy: adminId },
+    { typeId: bt.hero, title: 'CITE Hero', fields: { heading: 'CITE Program', subtitle: 'Center for Innovation, Technology & Entrepreneurship', style: 'interior' }, isReusable: false, createdAt: now, updatedAt: now, createdBy: adminId },
+    // Content blocks
     { typeId: bt.rich_text, title: 'Home Welcome', fields: { body: { type: 'doc', content: [{ type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: 'Welcome to Spacely College' }] }, { type: 'paragraph', content: [{ type: 'text', text: 'Founded in 1965, Spacely College has been a cornerstone of higher education in the Springfield community for over sixty years. We offer more than 50 degree and certificate programs designed to prepare you for the careers of tomorrow.' }] }] } }, isReusable: false, createdAt: now, updatedAt: now, createdBy: adminId },
     { typeId: bt.content_listing, title: 'Featured Programs', fields: { heading: 'Featured Programs', content_type: 'secondary_page', sort: 'newest', limit: 4, display: 'card_grid' }, isReusable: false, createdAt: now, updatedAt: now, createdBy: adminId },
     { typeId: bt.cta_button, title: 'Home CTA', fields: { text: 'Schedule a Campus Visit', url: '/visit', style: 'primary' }, isReusable: false, createdAt: now, updatedAt: now, createdBy: adminId },
@@ -127,33 +137,41 @@ function assignBlocksToPages(
 
   const assignments = [
     // Home
+    { pageId: pm.home, blockId: byTitle('Home Hero'), region: 'hero', position: 0, isShared: false },
     { pageId: pm.home, blockId: byTitle('Home Welcome'), region: 'content', position: 0, isShared: false },
     { pageId: pm.home, blockId: byTitle('Featured Programs'), region: 'features', position: 0, isShared: false },
     { pageId: pm.home, blockId: byTitle('Home CTA'), region: 'bottom', position: 0, isShared: false },
     // About Us
+    { pageId: pm['about-us'], blockId: byTitle('About Hero'), region: 'hero', position: 0, isShared: false },
     { pageId: pm['about-us'], blockId: byTitle('About Body'), region: 'content', position: 0, isShared: false },
     { pageId: pm['about-us'], blockId: campusId, region: 'sidebar', position: 0, isShared: true },
     // Admissions
+    { pageId: pm.admissions, blockId: byTitle('Admissions Hero'), region: 'hero', position: 0, isShared: false },
     { pageId: pm.admissions, blockId: byTitle('Admissions Intro'), region: 'content', position: 0, isShared: false },
     { pageId: pm.admissions, blockId: byTitle('Admissions FAQ'), region: 'content', position: 1, isShared: false },
     { pageId: pm.admissions, blockId: admContactsId, region: 'sidebar', position: 0, isShared: true },
     // Academic Programs
+    { pageId: pm['academic-programs'], blockId: byTitle('Programs Hero'), region: 'hero', position: 0, isShared: false },
     { pageId: pm['academic-programs'], blockId: byTitle('Programs Body'), region: 'content', position: 0, isShared: false },
     { pageId: pm['academic-programs'], blockId: byTitle('Program Areas'), region: 'content', position: 1, isShared: false },
     { pageId: pm['academic-programs'], blockId: quickLinksId, region: 'sidebar', position: 0, isShared: true },
     // Student Life
+    { pageId: pm['student-life'], blockId: byTitle('Student Life Hero'), region: 'hero', position: 0, isShared: false },
     { pageId: pm['student-life'], blockId: byTitle('Student Life Body'), region: 'content', position: 0, isShared: false },
     { pageId: pm['student-life'], blockId: byTitle('Student Life Photo'), region: 'content', position: 1, isShared: false },
     { pageId: pm['student-life'], blockId: quickLinksId, region: 'sidebar', position: 0, isShared: true },
     // Contact
+    { pageId: pm.contact, blockId: byTitle('Contact Hero'), region: 'hero', position: 0, isShared: false },
     { pageId: pm.contact, blockId: byTitle('Contact Body'), region: 'content', position: 0, isShared: false },
     { pageId: pm.contact, blockId: admContactsId, region: 'content', position: 1, isShared: true },
     { pageId: pm.contact, blockId: campusId, region: 'sidebar', position: 0, isShared: true },
     // Apply Now
+    { pageId: pm['apply-now'], blockId: byTitle('Apply Hero'), region: 'hero', position: 0, isShared: false },
     { pageId: pm['apply-now'], blockId: byTitle('Apply Intro'), region: 'content', position: 0, isShared: false },
     { pageId: pm['apply-now'], blockId: byTitle('Apply CTA'), region: 'content', position: 1, isShared: false },
     { pageId: pm['apply-now'], blockId: admContactsId, region: 'sidebar', position: 0, isShared: true },
     // CITE Program
+    { pageId: pm['cite-program'], blockId: byTitle('CITE Hero'), region: 'hero', position: 0, isShared: false },
     { pageId: pm['cite-program'], blockId: byTitle('CITE Intro'), region: 'content', position: 0, isShared: false },
     { pageId: pm['cite-program'], blockId: byTitle('CITE Resources'), region: 'content', position: 1, isShared: false },
     { pageId: pm['cite-program'], blockId: campusId, region: 'sidebar', position: 0, isShared: true },

@@ -12,46 +12,15 @@ const [mainMenu, footerMenu, config] = await Promise.all([
 ]);
 
 const regions = page.regions ?? {};
+const heroBlocks = regions.hero ?? [];
 const contentBlocks = regions.content ?? [];
 const featureBlocks = regions.features ?? [];
 const bottomBlocks = regions.bottom ?? [];
-
-// Hero data from page fields
-const heroImgSrc = page.fields.hero_image
-  ? (typeof page.fields.hero_image === 'number'
-    ? spacely.media.url(page.fields.hero_image as number, 'large')
-    : String(page.fields.hero_image))
-  : null;
-const hasHero = !!(page.fields.tagline || heroImgSrc);
 ---
 
 <Layout title={config?.siteName ?? page.title} menu={mainMenu} footerMenu={footerMenu} config={config}>
-  {hasHero && (
-    <section class="hero-region hero-home">
-      <div class="container hero-split">
-        <div class="hero-text">
-          {page.fields.hero_eyebrow && (
-            <span class="hero-eyebrow">{page.fields.hero_eyebrow}</span>
-          )}
-          {page.fields.tagline && (
-            <h1 class="hero-title">{page.fields.tagline}</h1>
-          )}
-          {page.fields.hero_description && (
-            <p class="hero-description">{page.fields.hero_description}</p>
-          )}
-          {page.fields.hero_cta_text && page.fields.hero_cta_url && (
-            <a href={page.fields.hero_cta_url as string} class="cta-button cta-secondary">
-              {page.fields.hero_cta_text}
-            </a>
-          )}
-        </div>
-        {heroImgSrc && (
-          <div class="hero-image-wrap">
-            <img src={heroImgSrc} alt="" class="hero-image" loading="eager" />
-          </div>
-        )}
-      </div>
-    </section>
+  {heroBlocks.length > 0 && (
+    <BlockRenderer blocks={heroBlocks} region="hero" components={blockComponents} />
   )}
 
   {contentBlocks.length > 0 && (

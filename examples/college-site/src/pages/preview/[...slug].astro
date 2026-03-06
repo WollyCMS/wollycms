@@ -29,17 +29,12 @@ const [mainMenu, footerMenu, config] = await Promise.all([
 ]);
 
 const regions = page.regions ?? {};
+const heroBlocks = regions.hero ?? [];
 const contentBlocks = regions.content ?? [];
 const sidebarBlocks = regions.sidebar ?? [];
 const bottomBlocks = regions.bottom ?? [];
 const featureBlocks = regions.features ?? [];
 const hasSidebar = sidebarBlocks.length > 0;
-
-const heroImgSrc = page.fields?.hero_image
-  ? (typeof page.fields.hero_image === 'number'
-    ? spacely.media.url(page.fields.hero_image, 'large')
-    : String(page.fields.hero_image))
-  : null;
 ---
 
 <Layout title={`[Preview] ${page.title}`} menu={mainMenu} footerMenu={footerMenu} config={config}>
@@ -47,12 +42,9 @@ const heroImgSrc = page.fields?.hero_image
     Preview Mode — {page.status === 'draft' ? 'Draft' : page.status}
   </div>
 
-  <section class="hero-region hero-interior" style={heroImgSrc ? `background-image: url(${heroImgSrc})` : undefined}>
-    <div class="container">
-      <h1 class="hero-title">{page.title}</h1>
-      {page.fields?.subtitle && <p class="hero-tagline">{page.fields.subtitle as string}</p>}
-    </div>
-  </section>
+  {heroBlocks.length > 0 && (
+    <BlockRenderer blocks={heroBlocks} region="hero" components={blockComponents} />
+  )}
 
   <div class:list={['container', 'page-layout', { 'has-sidebar': hasSidebar }]}>
     <article class="main-content">

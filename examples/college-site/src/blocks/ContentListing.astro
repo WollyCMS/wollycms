@@ -39,6 +39,7 @@ const display = fields.display ?? 'list';
         <a href={`/${page.slug}`} class="card">
           <h4 class="card-title">{page.title}</h4>
           {page.fields.subtitle && <p class="card-subtitle">{page.fields.subtitle as string}</p>}
+          <span class="card-readmore">Explore &rarr;</span>
         </a>
       ))}
     </div>

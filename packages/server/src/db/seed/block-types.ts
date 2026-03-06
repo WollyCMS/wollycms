@@ -191,6 +191,34 @@ export function seedBlockTypes(db: AppDatabase) {
       settings: {},
     },
     {
+      name: 'Hero',
+      slug: 'hero',
+      description: 'Hero banner with heading, image, and call-to-action.',
+      fieldsSchema: [
+        { name: 'heading', label: 'Heading', type: 'text' },
+        { name: 'subtitle', label: 'Subtitle', type: 'text' },
+        { name: 'eyebrow', label: 'Eyebrow Text', type: 'text' },
+        { name: 'description', label: 'Description', type: 'text' },
+        { name: 'image', label: 'Background Image', type: 'media' },
+        { name: 'cta_text', label: 'CTA Button Text', type: 'text' },
+        { name: 'cta_url', label: 'CTA Button URL', type: 'url' },
+        {
+          name: 'style',
+          label: 'Style',
+          type: 'select',
+          default: 'interior',
+          settings: {
+            options: [
+              { label: 'Home (Split)', value: 'home' },
+              { label: 'Interior', value: 'interior' },
+            ],
+          },
+        },
+      ],
+      icon: 'image',
+      settings: {},
+    },
+    {
       name: 'Video',
       slug: 'video',
       description: 'Video from upload or YouTube/Vimeo embed.',

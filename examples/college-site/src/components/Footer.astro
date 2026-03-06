@@ -25,7 +25,45 @@ const siteName = config?.siteName ?? 'Southside Virginia Community College';
         <li><a href="#" aria-label="YouTube">YouTube</a></li>
       </ul>
     </div>
-    <div class="footer-main">
+    <div class="footer-columns">
+      <div class="footer-col">
+        <h4 class="footer-col-heading">Contact Us</h4>
+        <address class="footer-address">
+          1200 University Boulevard<br />
+          Springfield, IL 62704
+        </address>
+        <p class="footer-contact-line">
+          <span class="footer-icon" aria-hidden="true">&#9742;</span>
+          <a href="tel:2175551000">(217) 555-1000</a>
+        </p>
+        <p class="footer-contact-line">
+          <span class="footer-icon" aria-hidden="true">&#9993;</span>
+          <a href="mailto:info@spacely.edu">info@spacely.edu</a>
+        </p>
+        <p class="footer-hours">Mon–Fri 8 AM – 5 PM</p>
+      </div>
+      <div class="footer-col">
+        <h4 class="footer-col-heading">Quick Links</h4>
+        <ul class="footer-col-links">
+          <li><a href="/admissions">Admissions</a></li>
+          <li><a href="/academic-programs">Academic Programs</a></li>
+          <li><a href="/student-life">Student Life</a></li>
+          <li><a href="/about-us">About Us</a></li>
+          <li><a href="/contact">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4 class="footer-col-heading">Resources</h4>
+        <ul class="footer-col-links">
+          <li><a href="/apply-now">Apply Now</a></li>
+          <li><a href="/cite-program">CITE Program</a></li>
+          <li><a href="#">Academic Calendar</a></li>
+          <li><a href="#">Student Portal</a></li>
+          <li><a href="#">Library</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
       {menu && (
         <nav class="footer-nav" aria-label="Footer navigation">
           <ul class="footer-links">
@@ -38,9 +76,9 @@ const siteName = config?.siteName ?? 'Southside Virginia Community College';
           </ul>
         </nav>
       )}
+      <p class="footer-copy">
+        &copy; {year} {config?.footer?.text ?? 'Southside Virginia Community College. All rights reserved.'}
+      </p>
     </div>
-    <p class="footer-copy">
-      &copy; {year} {config?.footer?.text ?? 'Southside Virginia Community College. All rights reserved.'}
-    </p>
   </div>
 </footer>

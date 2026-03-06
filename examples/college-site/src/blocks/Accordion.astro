@@ -11,6 +11,10 @@ interface Props extends BlockProps {
 }
 
 const { fields } = Astro.props;
+
+function isRichText(body: any): boolean {
+  return body && typeof body === 'object' && body.type === 'doc';
+}
 ---
 
 <div class="block block-accordion">
@@ -19,7 +23,11 @@ const { fields } = Astro.props;
     <details class="accordion-item" open={fields.default_open && i === 0}>
       <summary class="accordion-title">{item.title}</summary>
       <div class="accordion-body">
-        <RichTextRenderer content={item.body} />
+        {isRichText(item.body) ? (
+          <RichTextRenderer content={item.body} />
+        ) : (
+          <p>{String(item.body)}</p>
+        )}
       </div>
     </details>
   ))}
