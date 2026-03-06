@@ -64,6 +64,7 @@ docker compose up -d
 | `GET /api/content/config` | Site configuration |
 | `GET /api/content/schemas` | Content type and block type schemas |
 | `POST /api/content/batch` | Fetch multiple pages + menus in one request |
+| `GET /api/content/search?q=` | Full-text search of published pages |
 | `GET /api/content/sitemap` | XML sitemap of published pages |
 | `GET /sitemap.xml` | Redirect to sitemap endpoint |
 | `GET /api/admin/search?q=` | Global search (pages, blocks, media, menus) |
@@ -78,7 +79,7 @@ docker compose up -d
 | Admin UI | SvelteKit 5 (SPA mode) |
 | Rich Text | TipTap (JSON storage) |
 | Media Processing | Sharp |
-| Testing | Vitest (105 tests, all passing) |
+| Testing | Vitest (108 tests, all passing) |
 | Runtime | Node.js 22 LTS |
 
 ## Project Structure

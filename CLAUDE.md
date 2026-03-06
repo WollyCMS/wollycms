@@ -57,7 +57,7 @@ npm run test --workspace=packages/server       # Server tests only
 - Monorepo: npm workspaces (packages/server, packages/admin, packages/astro, examples/college-site)
 - Database: 13 tables with full Drizzle schema + indexes + migrations
 - Seed data: 8 pages, 10 block types (incl. hero), 3 content types, 3 menus, 2 taxonomies
-- Content API: 9 endpoints including preview (105 tests passing: 31 content + 74 admin)
+- Content API: 11 endpoints including preview, search, sitemap (108 tests passing: 34 content + 74 admin)
 - Schema files use `.ts` imports (drizzle-kit requires this); `rewriteRelativeImportExtensions` in tsconfig converts to `.js` on build
 - App factory: `src/app.ts` (testable), `src/index.ts` (server entry)
 

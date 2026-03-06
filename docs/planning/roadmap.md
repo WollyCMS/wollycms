@@ -448,8 +448,8 @@ that make teams choose SpacelyCMS over Strapi, Directus, or Storyblok.
 
 - [ ] Pagefind integration for SSG sites (auto-indexes Astro build output,
       client-side search UI component)
-- [ ] Meilisearch integration for SSR sites (server-side indexing, API
-      endpoint for search queries)
+- [x] Content API search (`GET /api/content/search?q=` — search published
+      pages by title/slug, type filter, cached, Astro client method)
 - [x] Admin search (global search across pages, blocks, media, menus;
       Ctrl+K shortcut, debounced dropdown with grouped results)
 
