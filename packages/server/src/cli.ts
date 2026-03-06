@@ -65,6 +65,64 @@ async function main() {
       break;
     }
 
+    case 'import': {
+      const filePath = process.argv[3];
+      if (!filePath) {
+        console.error('Usage: spacely import <file.json>');
+        process.exit(1);
+      }
+      const { readFileSync } = await import('fs');
+      const { getDb } = await import('./db/index.js');
+      const { eq } = await import('drizzle-orm');
+      const schema = await import('./db/schema/index.js');
+
+      let data: Record<string, unknown>;
+      try {
+        data = JSON.parse(readFileSync(filePath, 'utf-8'));
+      } catch {
+        console.error(`Failed to read or parse ${filePath}`);
+        process.exit(1);
+      }
+
+      if ((data as { version?: number }).version !== 1) {
+        console.error('Invalid export format (expected version: 1)');
+        process.exit(1);
+      }
+
+      const db = getDb();
+      const importTable = async (
+        name: string,
+        table: Parameters<typeof db.insert>[0],
+        rows: unknown[],
+        dedup: (row: Record<string, unknown>) => ReturnType<typeof eq>,
+      ) => {
+        let imported = 0;
+        for (const row of rows as Record<string, unknown>[]) {
+          const [existing] = await db.select().from(table).where(dedup(row)).limit(1);
+          if (!existing) {
+            await db.insert(table).values(row as typeof table.$inferInsert);
+            imported++;
+          }
+        }
+        console.log(`  ${name}: ${imported} new / ${rows.length} total`);
+      };
+
+      console.log('Importing...');
+      const d = data as Record<string, unknown[]>;
+      if (d.contentTypes?.length) await importTable('contentTypes', schema.contentTypes, d.contentTypes, (r) => eq(schema.contentTypes.slug, r.slug as string));
+      if (d.blockTypes?.length) await importTable('blockTypes', schema.blockTypes, d.blockTypes, (r) => eq(schema.blockTypes.slug, r.slug as string));
+      if (d.taxonomies?.length) await importTable('taxonomies', schema.taxonomies, d.taxonomies, (r) => eq(schema.taxonomies.slug, r.slug as string));
+      if (d.terms?.length) await importTable('terms', schema.terms, d.terms, (r) => eq(schema.terms.slug, r.slug as string));
+      if (d.pages?.length) await importTable('pages', schema.pages, d.pages, (r) => eq(schema.pages.slug, r.slug as string));
+      if (d.blocks?.length) await importTable('blocks', schema.blocks, d.blocks, (r) => eq(schema.blocks.id, r.id as number));
+      if (d.pageBlocks?.length) await importTable('pageBlocks', schema.pageBlocks, d.pageBlocks, (r) => eq(schema.pageBlocks.id, r.id as number));
+      if (d.menus?.length) await importTable('menus', schema.menus, d.menus, (r) => eq(schema.menus.slug, r.slug as string));
+      if (d.menuItems?.length) await importTable('menuItems', schema.menuItems, d.menuItems, (r) => eq(schema.menuItems.id, r.id as number));
+      if (d.redirects?.length) await importTable('redirects', schema.redirects, d.redirects, (r) => eq(schema.redirects.fromPath, r.fromPath as string));
+      console.log('Import complete.');
+      break;
+    }
+
     case 'health': {
       const { env } = await import('./env.js');
       const url = `http://${env.HOST === '0.0.0.0' ? 'localhost' : env.HOST}:${env.PORT}/api/health`;
@@ -85,16 +143,18 @@ async function main() {
 Usage: spacely <command>
 
 Commands:
-  migrate    Run pending database migrations
-  seed       Populate database with sample data
-  start      Start the production server
-  export     Export all data as JSON to stdout
-  health     Check server health status
+  migrate        Run pending database migrations
+  seed           Populate database with sample data
+  start          Start the production server
+  export         Export all data as JSON to stdout
+  import <file>  Import data from a JSON backup file
+  health         Check server health status
 
 Examples:
   spacely migrate
   spacely seed
-  spacely export > backup.json`);
+  spacely export > backup.json
+  spacely import backup.json`);
       if (command) {
         console.error(`\nUnknown command: ${command}`);
         process.exit(1);

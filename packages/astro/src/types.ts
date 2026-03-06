@@ -41,9 +41,19 @@ export interface ResolvedBlock {
   fields: Record<string, unknown>;
 }
 
+/** SEO metadata for a page (matches content API snake_case keys) */
+export interface PageSeo {
+  meta_title: string | null;
+  meta_description: string | null;
+  og_image: string | null;
+  canonical_url: string | null;
+  robots: string | null;
+}
+
 /** Full page with resolved regions */
 export interface Page extends PageSummary {
   regions: Record<string, ResolvedBlock[]>;
+  seo?: PageSeo;
 }
 
 /** Menu item (recursive tree) */
