@@ -11,6 +11,7 @@ import {
   terms,
   taxonomies,
 } from '../../db/schema/index.js';
+import { cacheGet, cacheSet } from '../../cache.js';
 
 const app = new Hono();
 
@@ -135,6 +136,10 @@ app.get('/:slug', async (c) => {
   const db = getDb();
   const slug = c.req.param('slug');
 
+  const cacheKey = `pages:${slug}`;
+  const cached = cacheGet<object>(cacheKey);
+  if (cached) return c.json(cached);
+
   // Fetch the page
   const pageRows = await db
     .select({
@@ -227,7 +232,9 @@ app.get('/:slug', async (c) => {
     },
   };
 
-  return c.json({ data });
+  const response = { data };
+  cacheSet(cacheKey, response);
+  return c.json(response);
 });
 
 function getSortColumn(field: string) {

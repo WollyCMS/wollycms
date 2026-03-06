@@ -3,8 +3,17 @@ import { eq, and, asc, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { getDb } from '../../db/index.js';
 import { pages, blocks, blockTypes, pageBlocks } from '../../db/schema/index.js';
+import { cacheInvalidate } from '../../cache.js';
 
 const app = new Hono();
+
+// Invalidate pages cache when page-block relationships change
+app.use('*', async (c, next) => {
+  await next();
+  if (c.req.method !== 'GET' && c.res.status < 400) {
+    cacheInvalidate('pages:');
+  }
+});
 
 /** POST /:id/blocks - Add block to a page region */
 app.post('/:id/blocks', async (c) => {

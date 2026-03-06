@@ -114,18 +114,19 @@
 {:else if isLogin || !auth.user}
   {@render children()}
 {:else}
+  <a href="#main-content" class="skip-link">Skip to main content</a>
   <div class="admin-layout">
-    <aside class="sidebar">
+    <aside class="sidebar" aria-label="Admin navigation">
       <div class="sidebar-header">
-        <a href="/" class="logo">
-          <span class="logo-icon">S</span>
+        <a href="/" class="logo" aria-label="SpacelyCMS Dashboard">
+          <span class="logo-icon" aria-hidden="true">S</span>
           <span class="logo-text">SpacelyCMS</span>
         </a>
       </div>
-      <nav class="sidebar-nav">
+      <nav class="sidebar-nav" aria-label="Main navigation">
         {#each navSections as section}
           {#if section.label}
-            <div class="nav-section-label">{section.label}</div>
+            <div class="nav-section-label" aria-hidden="true">{section.label}</div>
           {/if}
           {#each section.items as item}
             <a
@@ -133,11 +134,12 @@
               class="nav-item"
               class:active={$page.url.pathname === item.href || ($page.url.pathname.startsWith(item.href + '/') && item.href !== '/')}
               title={item.label}
+              aria-current={$page.url.pathname === item.href ? 'page' : undefined}
             >
-              <span class="nav-icon"><item.icon size={18} /></span>
+              <span class="nav-icon" aria-hidden="true"><item.icon size={18} /></span>
               <span class="nav-label">{item.label}</span>
               {#if navCounts[item.href] != null}
-                <span class="nav-badge">{navCounts[item.href]}</span>
+                <span class="nav-badge" aria-label="{navCounts[item.href]} items">{navCounts[item.href]}</span>
               {/if}
             </a>
           {/each}
@@ -156,7 +158,7 @@
         </div>
       </div>
     </aside>
-    <main class="main-content">
+    <main class="main-content" id="main-content">
       {@render children()}
     </main>
   </div>

@@ -113,11 +113,11 @@
 {/if}
 
 {#if showCreate}
-  <div class="modal-overlay" onclick={() => { showCreate = false; resetForm(); }} role="dialog">
+  <div class="modal-overlay" onclick={() => { showCreate = false; resetForm(); }} role="dialog" aria-labelledby="webhook-modal-title" aria-modal="true">
     <div class="modal" onclick={(e) => e.stopPropagation()}>
       <div class="modal-header">
-        <h2>{editId ? 'Edit' : 'New'} Webhook</h2>
-        <button class="btn-icon" onclick={() => { showCreate = false; resetForm(); }}>&#10005;</button>
+        <h2 id="webhook-modal-title">{editId ? 'Edit' : 'New'} Webhook</h2>
+        <button class="btn-icon" onclick={() => { showCreate = false; resetForm(); }} aria-label="Close">&#10005;</button>
       </div>
       <form class="modal-body" onsubmit={(e) => { e.preventDefault(); save(); }}>
         <div class="form-group">

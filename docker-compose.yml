@@ -10,6 +10,10 @@ services:
       - DATABASE_URL=sqlite:./data/spacely.db
       - MEDIA_DIR=./uploads
       - JWT_SECRET=${JWT_SECRET:?Set JWT_SECRET in .env}
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      - RATE_LIMIT_AUTH=${RATE_LIMIT_AUTH:-10}
+      - RATE_LIMIT_WINDOW_MS=${RATE_LIMIT_WINDOW_MS:-900000}
+      - SITE_URL=${SITE_URL:-http://localhost:4322}
     volumes:
       - spacely-data:/app/data
       - spacely-uploads:/app/uploads

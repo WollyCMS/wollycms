@@ -7,6 +7,7 @@ import { join, extname } from 'node:path';
 import contentRouter from './api/content/index.js';
 import adminRouter from './api/admin/index.js';
 import { env } from './env.js';
+import { cacheSize } from './cache.js';
 
 /** Map common file extensions to MIME types for static serving. */
 const MIME_TYPES: Record<string, string> = {
@@ -43,6 +44,7 @@ app.get('/api/health', (c) => c.json({
   version: '0.1.0',
   uptime: Math.floor(process.uptime()),
   timestamp: new Date().toISOString(),
+  cache: { entries: cacheSize() },
 }));
 
 /**

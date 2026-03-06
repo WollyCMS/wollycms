@@ -5,11 +5,11 @@
 </script>
 
 {#if visible}
-  <div class="modal-overlay" onclick={onClose} role="presentation">
+  <div class="modal-overlay" onclick={onClose} role="dialog" aria-labelledby="shortcuts-title" aria-modal="true">
     <div class="modal" onclick={(e) => e.stopPropagation()}>
       <div class="modal-header">
-        <h2>Keyboard Shortcuts</h2>
-        <button class="btn-icon" onclick={onClose}><X size={18} /></button>
+        <h2 id="shortcuts-title">Keyboard Shortcuts</h2>
+        <button class="btn-icon" onclick={onClose} aria-label="Close shortcuts"><X size={18} /></button>
       </div>
       <div class="modal-body">
         <div class="shortcut-group">

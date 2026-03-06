@@ -3,8 +3,17 @@ import { eq, asc } from 'drizzle-orm';
 import { z } from 'zod';
 import { getDb } from '../../db/index.js';
 import { menus, menuItems, pages } from '../../db/schema/index.js';
+import { cacheInvalidate } from '../../cache.js';
 
 const app = new Hono();
+
+// Invalidate menu cache on any write operation
+app.use('*', async (c, next) => {
+  await next();
+  if (c.req.method !== 'GET' && c.res.status < 400) {
+    cacheInvalidate('menus:');
+  }
+});
 
 /** GET / - List all menus */
 app.get('/', async (c) => {

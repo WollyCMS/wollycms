@@ -79,11 +79,11 @@
 {/if}
 
 {#if showCreate}
-  <div class="modal-overlay" onclick={() => showCreate = false} role="dialog">
+  <div class="modal-overlay" onclick={() => showCreate = false} role="dialog" aria-labelledby="new-key-title" aria-modal="true">
     <div class="modal" onclick={(e) => e.stopPropagation()}>
       <div class="modal-header">
-        <h2>New API Key</h2>
-        <button class="btn-icon" onclick={() => showCreate = false}>&#10005;</button>
+        <h2 id="new-key-title">New API Key</h2>
+        <button class="btn-icon" onclick={() => showCreate = false} aria-label="Close">&#10005;</button>
       </div>
       {#if newKeyResult}
         <div class="modal-body">

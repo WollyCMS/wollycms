@@ -210,11 +210,11 @@
 {/if}
 
 {#if showCreate}
-  <div class="modal-overlay" onclick={() => showCreate = false} role="dialog">
+  <div class="modal-overlay" onclick={() => showCreate = false} role="dialog" aria-labelledby="new-page-title" aria-modal="true">
     <div class="modal" onclick={(e) => e.stopPropagation()}>
       <div class="modal-header">
-        <h2>New Page</h2>
-        <button class="btn-icon" onclick={() => showCreate = false}>&#10005;</button>
+        <h2 id="new-page-title">New Page</h2>
+        <button class="btn-icon" onclick={() => showCreate = false} aria-label="Close">&#10005;</button>
       </div>
       <form class="modal-body" onsubmit={(e) => { e.preventDefault(); createPage(); }}>
         {#if createError}<div class="alert alert-error" style="margin-bottom: 0.75rem;">{createError}</div>{/if}

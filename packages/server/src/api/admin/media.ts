@@ -13,6 +13,11 @@ import { logAudit } from '../../audit.js';
 
 const app = new Hono();
 
+/** Escape SQL LIKE wildcards in user input */
+function escapeLike(s: string): string {
+  return s.replace(/%/g, '\\%').replace(/_/g, '\\_');
+}
+
 /** GET / - List media with filtering and pagination */
 app.get('/', async (c) => {
   const db = getDb();
@@ -23,8 +28,8 @@ app.get('/', async (c) => {
   const offset = parseInt(c.req.query('offset') || '0', 10);
 
   const conditions = [];
-  if (mimeFilter) conditions.push(like(media.mimeType, `%${mimeFilter}%`));
-  if (search) conditions.push(or(like(media.title, `%${search}%`), like(media.originalName, `%${search}%`)));
+  if (mimeFilter) conditions.push(like(media.mimeType, `%${escapeLike(mimeFilter)}%`));
+  if (search) conditions.push(or(like(media.title, `%${escapeLike(search)}%`), like(media.originalName, `%${escapeLike(search)}%`)));
   if (folder === '') {
     conditions.push(or(isNull(media.folder), eq(media.folder, '')));
   } else if (folder) {

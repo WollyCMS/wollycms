@@ -241,9 +241,9 @@
 </div>
 
 {#if editItem}
-  <div class="modal-overlay" onclick={() => editItem = null} role="dialog">
+  <div class="modal-overlay" onclick={() => editItem = null} role="dialog" aria-labelledby="edit-media-title" aria-modal="true">
     <div class="modal" onclick={(e) => e.stopPropagation()}>
-      <div class="modal-header"><h2>Edit Media</h2><button class="btn-icon" onclick={() => editItem = null}>&#10005;</button></div>
+      <div class="modal-header"><h2 id="edit-media-title">Edit Media</h2><button class="btn-icon" onclick={() => editItem = null} aria-label="Close">&#10005;</button></div>
       <form class="modal-body" onsubmit={(e) => { e.preventDefault(); saveEdit(); }}>
         <div class="form-group">
           <label>Title</label>

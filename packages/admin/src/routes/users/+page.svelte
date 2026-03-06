@@ -59,9 +59,9 @@
 </div>
 
 {#if showCreate}
-  <div class="modal-overlay" onclick={() => showCreate = false} role="dialog">
+  <div class="modal-overlay" onclick={() => showCreate = false} role="dialog" aria-labelledby="new-user-title" aria-modal="true">
     <div class="modal" onclick={(e) => e.stopPropagation()}>
-      <div class="modal-header"><h2>New User</h2><button class="btn-icon" onclick={() => showCreate = false}>✕</button></div>
+      <div class="modal-header"><h2 id="new-user-title">New User</h2><button class="btn-icon" onclick={() => showCreate = false} aria-label="Close">✕</button></div>
       <form class="modal-body" onsubmit={(e) => { e.preventDefault(); createUser(); }}>
         <div class="form-group"><label>Name</label><input class="form-control" bind:value={newUser.name} required /></div>
         <div class="form-group"><label>Email</label><input class="form-control" type="email" bind:value={newUser.email} required /></div>

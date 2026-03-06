@@ -16,7 +16,7 @@
   --c-bg: #f7f8fa;
   --c-surface: #ffffff;
   --c-text: #2d3748;
-  --c-text-light: #718096;
+  --c-text-light: #5a6878;
   --c-border: #e2e8f0;
   --c-sidebar: #1a202c;
   --font: 'Inter', system-ui, -apple-system, sans-serif;
@@ -32,6 +32,43 @@ body {
   background: var(--c-bg);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Skip link for keyboard navigation */
+.skip-link {
+  position: fixed;
+  top: -100%;
+  left: 1rem;
+  z-index: 9999;
+  padding: 0.5rem 1rem;
+  background: var(--c-accent);
+  color: white;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: top 0.2s;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* Focus visible styles */
+:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+.btn:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+.nav-item:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: -2px;
 }
 
 .loading {

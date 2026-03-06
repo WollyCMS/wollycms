@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { eq, asc } from 'drizzle-orm';
 import { getDb } from '../../db/index.js';
 import { menus, menuItems, pages } from '../../db/schema/index.js';
+import { cacheGet, cacheSet } from '../../cache.js';
 
 interface MenuTreeItem {
   id: number;
@@ -25,6 +26,10 @@ app.get('/:slug', async (c) => {
   const maxDepth = c.req.query('depth')
     ? parseInt(c.req.query('depth')!, 10)
     : null;
+
+  const cacheKey = `menus:${slug}:${maxDepth ?? 'all'}`;
+  const cached = cacheGet<object>(cacheKey);
+  if (cached) return c.json(cached);
 
   // Fetch the menu
   const menuRows = await db
@@ -63,14 +68,16 @@ app.get('/:slug', async (c) => {
   // Build tree from flat list
   const tree = buildMenuTree(itemRows, maxDepth);
 
-  return c.json({
+  const response = {
     data: {
       id: menu.id,
       name: menu.name,
       slug: menu.slug,
       items: tree,
     },
-  });
+  };
+  cacheSet(cacheKey, response);
+  return c.json(response);
 });
 
 interface FlatMenuItem {

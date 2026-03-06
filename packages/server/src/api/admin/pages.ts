@@ -7,6 +7,7 @@ import {
 } from '../../db/schema/index.js';
 import { fireWebhooks } from '../../webhooks.js';
 import { logAudit } from '../../audit.js';
+import { cacheInvalidate } from '../../cache.js';
 import pageBlocksRouter from './page-blocks.js';
 
 const app = new Hono();
@@ -113,6 +114,7 @@ app.post('/bulk', async (c) => {
     await db.update(pages).set(updates).where(inArray(pages.id, ids));
   }
 
+  cacheInvalidate('pages:');
   return c.json({ data: { affected: ids.length, action } });
 });
 
@@ -204,6 +206,7 @@ app.post('/', async (c) => {
   if (row.status === 'published') {
     fireWebhooks('page.published', { id: row.id, title: row.title, slug });
   }
+  cacheInvalidate('pages:');
 
   return c.json({ data: row }, 201);
 });
@@ -274,6 +277,7 @@ app.put('/:id', async (c) => {
     fireWebhooks('page.unpublished', { id, title: updated.title, slug: updated.slug });
   }
 
+  cacheInvalidate('pages:');
   return c.json({ data: updated });
 });
 
@@ -287,6 +291,7 @@ app.delete('/:id', async (c) => {
   await db.delete(pages).where(eq(pages.id, id));
   logAudit(c, { action: 'delete', entity: 'page', entityId: id, details: { title: existing.title } });
   fireWebhooks('page.deleted', { id, title: existing.title, slug: existing.slug });
+  cacheInvalidate('pages:');
   return c.json({ data: { deleted: true } });
 });
 
