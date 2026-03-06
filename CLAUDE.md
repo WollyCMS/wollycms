@@ -31,34 +31,30 @@ scripts/            — Build, deploy, migration scripts
 ## Build Commands
 
 ```bash
-# Install all workspace dependencies
-npm install
-
-# Development (all packages)
-npm run dev
-
-# Build all packages
-npm run build
-
-# Run tests
-npm run test
-
-# Lint
-npm run lint
+npm install               # Install all workspace dependencies
+npm run dev               # Start server with hot reload (tsx watch)
+npm run build             # Build all packages
+npm run test              # Run Vitest tests
+npm run db:generate       # Generate Drizzle migration from schema changes
+npm run db:migrate        # Run pending migrations
+npm run db:seed           # Populate database with sample data
 ```
 
 ## Test Commands
 
 ```bash
-# Run all tests
-npm run test
-
-# Run server tests only
-npm run test --workspace=packages/server
-
-# Run with coverage
-npm run test:coverage
+npm run test                                   # Run all tests
+npm run test --workspace=packages/server       # Server tests only
 ```
+
+## Phase 1 Status (Complete)
+
+- Monorepo: npm workspaces (packages/server, packages/admin, packages/astro)
+- Database: 13 tables with full Drizzle schema + indexes + migrations
+- Seed data: 8 pages, 8 block types, 3 content types, 3 menus, 2 taxonomies, 6 media records
+- Content API: 8 endpoints, all tested (22 tests passing)
+- Schema files use `.ts` imports (not `.js`) for drizzle-kit compatibility
+- App factory: `src/app.ts` (testable), `src/index.ts` (server entry)
 
 ## Architecture Key Points
 

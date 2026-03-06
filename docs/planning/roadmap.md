@@ -7,30 +7,30 @@ partial foundation. Every phase ends with a working demo.
 
 ---
 
-## Phase 1: Data Foundation + Content API
+## Phase 1: Data Foundation + Content API -- COMPLETE
 
 **Goal**: A working headless CMS API that Astro can fetch from. Content
 managed via API (no admin UI yet — use seed scripts or API client).
 
 ### Deliverables
 
-- [ ] Project setup: Node.js + TypeScript + Hono + Drizzle + SQLite
-- [ ] Database schema: all tables from data model doc
-- [ ] Migration system (Drizzle Kit)
-- [ ] Seed data: SVCC-inspired sample content (content types, block types,
-      pages with blocks, menus, taxonomies, media records)
-- [ ] Content API endpoints:
-  - `GET /api/content/pages` (list, filter by type/taxonomy/status)
+- [x] Project setup: Node.js + TypeScript + Hono + Drizzle + SQLite
+- [x] Database schema: all 13 tables from data model doc
+- [x] Migration system (Drizzle Kit)
+- [x] Seed data: college-inspired sample content (3 content types, 8 block
+      types, 8 pages with blocks in regions, 3 menus, 2 taxonomies, 6 media)
+- [x] Content API endpoints:
+  - `GET /api/content/pages` (list, filter by type/taxonomy/status, pagination)
   - `GET /api/content/pages/:slug` (full page with resolved blocks per region)
-  - `GET /api/content/menus/:slug` (full menu tree)
+  - `GET /api/content/menus/:slug` (full menu tree with depth limiting)
   - `GET /api/content/taxonomies/:slug/terms`
   - `GET /api/content/media/:id/:variant`
   - `GET /api/content/redirects`
   - `GET /api/content/config`
   - `GET /api/content/schemas`
+- [x] Tests: 22 Vitest tests for all API endpoints
 - [ ] Media storage: local filesystem with Sharp image processing
 - [ ] Basic auth middleware (placeholder for admin API)
-- [ ] Tests: API endpoint tests with seed data
 - [ ] Docker setup: Dockerfile + docker-compose.yml
 
 ### Demo
@@ -38,7 +38,7 @@ managed via API (no admin UI yet — use seed scripts or API client).
 Start the server, hit the API with curl/browser, get back structured JSON
 for pages with blocks, menus, and media URLs.
 
-### Estimated Effort: 2-3 weeks
+### Completed: 2026-03-06
 
 ---
 

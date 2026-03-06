@@ -1,0 +1,19 @@
+{
+  "name": "spacelycms",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/server",
+    "packages/admin",
+    "packages/astro"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=packages/server",
+    "build": "npm run build --workspace=packages/server",
+    "test": "npm run test --workspace=packages/server",
+    "db:migrate": "npm run db:migrate --workspace=packages/server",
+    "db:seed": "npm run db:seed --workspace=packages/server",
+    "db:generate": "npm run db:generate --workspace=packages/server"
+  }
+}

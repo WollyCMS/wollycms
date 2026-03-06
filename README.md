@@ -18,7 +18,30 @@ SpacelyCMS fills the gap between simple headless CMS tools (Strapi, Directus) th
 
 ## Status
 
-🚧 **Pre-development** — Architecture and planning phase. See `/docs` for detailed specifications.
+**Phase 1 complete** — Data foundation and Content API are working. See [Roadmap](docs/planning/roadmap.md) for details.
+
+## Quick Start
+
+```bash
+npm install
+npm run db:migrate
+npm run db:seed
+npm run dev
+# Server running at http://localhost:4321
+```
+
+### Content API Endpoints
+
+| Endpoint | Description |
+|---|---|
+| `GET /api/content/pages` | List pages (filter by type, taxonomy, pagination) |
+| `GET /api/content/pages/:slug` | Full page with resolved blocks per region |
+| `GET /api/content/menus/:slug` | Menu tree (supports `?depth=N`) |
+| `GET /api/content/taxonomies/:slug/terms` | Taxonomy terms |
+| `GET /api/content/media/:id/:variant` | Media file info |
+| `GET /api/content/redirects` | Active redirects |
+| `GET /api/content/config` | Site configuration |
+| `GET /api/content/schemas` | Content type and block type schemas |
 
 ## Documentation
 
