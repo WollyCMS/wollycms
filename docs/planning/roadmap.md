@@ -118,12 +118,19 @@ all content without touching code or APIs.
 - [x] Rich text editor (TipTap WYSIWYG with toolbar)
 - [x] Drag-drop reorder for blocks and menu items
 - [x] Media: Sharp image processing for variant generation (thumbnail, medium, large WebP)
+- [x] Media: folder organization, search by name, type filtering
+- [x] Media: video/document preview in picker (not just images)
+- [x] Block library: full edit modal with all field type renderers
+- [x] Video block type: source selector (upload/YouTube/Vimeo), conditional fields
+- [x] Seed data: no longer creates fake media records (preserves real uploads across reseeds)
 - [x] Tests: 71 tests (23 content API + 48 admin API)
 
 ### Known Limitations
 
-- Media images from seed data are broken (DB records exist but no files
-  on disk — upload real files through the admin to test)
+- Role-based access control: roles exist in DB/JWT but are not enforced
+  at endpoint level (all authenticated users have full access)
+- 6 tests failing due to seed data count changes (block type and block
+  counts updated since tests were written)
 
 ### Demo
 

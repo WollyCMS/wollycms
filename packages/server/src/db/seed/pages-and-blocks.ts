@@ -65,7 +65,7 @@ export function seedPagesAndBlocks(
 
   // --- Pages ---
   const insertedPages = db.insert(pages).values([
-    { typeId: contentTypeMap.home_page, title: 'Home', slug: 'home', status: 'published' as const, fields: { tagline: 'Shaping futures through innovation and excellence.', hero_image: 'uploads/campus-aerial.jpg' }, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
+    { typeId: contentTypeMap.home_page, title: 'Home', slug: 'home', status: 'published' as const, fields: { tagline: 'Your Future Starts Here', hero_eyebrow: 'FEATURED PROGRAM', hero_description: 'Explore workforce-ready degrees and certificates in welding, HVAC, nursing, IT, and more — with tuition assistance through Virginia\'s G3 program.' }, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
     { typeId: contentTypeMap.secondary_page, title: 'About Us', slug: 'about-us', status: 'published' as const, fields: { subtitle: 'Our Mission & History' }, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
     { typeId: contentTypeMap.landing_page, title: 'Admissions', slug: 'admissions', status: 'published' as const, fields: { subtitle: 'Begin Your Journey', hero_cta_text: 'Apply Now', hero_cta_url: '/apply-now' }, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
     { typeId: contentTypeMap.secondary_page, title: 'Academic Programs', slug: 'academic-programs', status: 'published' as const, fields: { subtitle: 'Explore Our Degrees' }, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
@@ -95,6 +95,8 @@ function createInlineBlocks(
   now: string,
 ) {
   const vals: (typeof blocks.$inferInsert)[] = [
+    { typeId: bt.image, title: 'Home Hero Image', fields: { image: 'https://images.unsplash.com/photo-1523050854058-8df90110c8f1?w=1400&q=80', alt: 'Students working in a welding lab', caption: '' }, isReusable: false, createdAt: now, updatedAt: now, createdBy: adminId },
+    { typeId: bt.cta_button, title: 'Home Hero CTA', fields: { text: 'G3 Program — Apply Today', url: '/apply-now', style: 'secondary' }, isReusable: false, createdAt: now, updatedAt: now, createdBy: adminId },
     { typeId: bt.rich_text, title: 'Home Welcome', fields: { body: { type: 'doc', content: [{ type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: 'Welcome to Spacely College' }] }, { type: 'paragraph', content: [{ type: 'text', text: 'Founded in 1965, Spacely College has been a cornerstone of higher education in the Springfield community for over sixty years. We offer more than 50 degree and certificate programs designed to prepare you for the careers of tomorrow.' }] }] } }, isReusable: false, createdAt: now, updatedAt: now, createdBy: adminId },
     { typeId: bt.content_listing, title: 'Featured Programs', fields: { heading: 'Featured Programs', content_type: 'secondary_page', sort: 'newest', limit: 4, display: 'card_grid' }, isReusable: false, createdAt: now, updatedAt: now, createdBy: adminId },
     { typeId: bt.cta_button, title: 'Home CTA', fields: { text: 'Schedule a Campus Visit', url: '/visit', style: 'primary' }, isReusable: false, createdAt: now, updatedAt: now, createdBy: adminId },
@@ -127,6 +129,8 @@ function assignBlocksToPages(
 
   const assignments = [
     // Home
+    { pageId: pm.home, blockId: byTitle('Home Hero Image'), region: 'hero', position: 0, isShared: false },
+    { pageId: pm.home, blockId: byTitle('Home Hero CTA'), region: 'hero', position: 1, isShared: false },
     { pageId: pm.home, blockId: byTitle('Home Welcome'), region: 'content', position: 0, isShared: false },
     { pageId: pm.home, blockId: byTitle('Featured Programs'), region: 'features', position: 0, isShared: false },
     { pageId: pm.home, blockId: byTitle('Home CTA'), region: 'bottom', position: 0, isShared: false },

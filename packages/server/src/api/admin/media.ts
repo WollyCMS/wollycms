@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { eq, desc, sql } from 'drizzle-orm';
+import { eq, desc, sql, and, like, or, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 import { getDb } from '../../db/index.js';
 import { media } from '../../db/schema/index.js';
@@ -16,19 +16,32 @@ app.get('/', async (c) => {
   const db = getDb();
   const mimeFilter = c.req.query('type');
   const search = c.req.query('search');
+  const folder = c.req.query('folder');
   const limit = Math.min(parseInt(c.req.query('limit') || '50', 10), 100);
   const offset = parseInt(c.req.query('offset') || '0', 10);
 
-  const conditions: ReturnType<typeof eq>[] = [];
-  if (mimeFilter) conditions.push(sql`${media.mimeType} LIKE ${'%' + mimeFilter + '%'}`);
-  if (search) conditions.push(sql`(${media.title} LIKE ${'%' + search + '%'} OR ${media.originalName} LIKE ${'%' + search + '%'})`);
+  const conditions = [];
+  if (mimeFilter) conditions.push(like(media.mimeType, `%${mimeFilter}%`));
+  if (search) conditions.push(or(like(media.title, `%${search}%`), like(media.originalName, `%${search}%`)));
+  if (folder === '') {
+    conditions.push(or(isNull(media.folder), eq(media.folder, '')));
+  } else if (folder) {
+    conditions.push(eq(media.folder, folder));
+  }
 
-  const where = conditions.length > 0 ? sql`${conditions.map((c, i) => i === 0 ? c : sql` AND ${c}`)}` : undefined;
+  const where = conditions.length > 0 ? and(...conditions) : undefined;
 
-  const rows = await db.select().from(media).orderBy(desc(media.createdAt)).limit(limit).offset(offset);
-  const countResult = await db.select({ count: sql<number>`count(*)` }).from(media);
+  const rows = await db.select().from(media).where(where).orderBy(desc(media.createdAt)).limit(limit).offset(offset);
+  const countResult = await db.select({ count: sql<number>`count(*)` }).from(media).where(where);
 
   return c.json({ data: rows, meta: { total: countResult[0].count, limit, offset } });
+});
+
+/** GET /folders - List distinct folders */
+app.get('/folders', async (c) => {
+  const db = getDb();
+  const rows = await db.selectDistinct({ folder: media.folder }).from(media).where(sql`${media.folder} IS NOT NULL AND ${media.folder} != ''`).orderBy(media.folder);
+  return c.json({ data: rows.map((r) => r.folder) });
 });
 
 /** GET /:id - Get single media */
@@ -64,6 +77,7 @@ app.post('/', async (c) => {
   const now = new Date().toISOString();
   const altText = (body['altText'] as string) || null;
   const title = (body['title'] as string) || originalName;
+  const folder = (body['folder'] as string) || null;
 
   // Process image to extract dimensions and generate variants
   let width: number | null = null;
@@ -94,6 +108,7 @@ app.post('/', async (c) => {
     height,
     altText,
     title,
+    folder,
     path: filePath,
     variants,
     metadata: imageMetadata,
@@ -113,6 +128,7 @@ app.put('/:id', async (c) => {
   const parsed = z.object({
     altText: z.string().nullable().optional(),
     title: z.string().nullable().optional(),
+    folder: z.string().nullable().optional(),
     metadata: z.record(z.unknown()).nullable().optional(),
   }).safeParse(body);
   if (!parsed.success) return c.json({ errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message })) }, 400);

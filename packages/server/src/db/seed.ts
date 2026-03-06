@@ -18,12 +18,13 @@ const TABLE_NAMES = [
   'terms',
   'taxonomies',
   'menus',
-  'media',
   'redirects',
   'block_types',
   'content_types',
   'users',
 ];
+// Note: 'media' is intentionally excluded — reseeding should not
+// destroy real uploaded files. Media is managed via the admin UI.
 
 function clearTables(db: ReturnType<typeof getDb>) {
   db.run(sql`PRAGMA foreign_keys = OFF`);

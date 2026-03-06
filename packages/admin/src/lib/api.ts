@@ -60,11 +60,12 @@ export const api = {
     return res.data;
   },
 
-  upload: async (file: File, title?: string, altText?: string) => {
+  upload: async (file: File, title?: string, altText?: string, folder?: string) => {
     const form = new FormData();
     form.append('file', file);
     if (title) form.append('title', title);
     if (altText) form.append('altText', altText);
+    if (folder) form.append('folder', folder);
     return request<{ data: any }>('POST', '/media', form);
   },
 };
