@@ -17,6 +17,10 @@ export function isAuthenticated(): boolean {
   return !!getToken();
 }
 
+export function getAuthToken(): string | null {
+  return getToken();
+}
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = {};
   const token = getToken();

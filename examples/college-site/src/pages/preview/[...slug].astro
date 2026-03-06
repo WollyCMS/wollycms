@@ -1,0 +1,114 @@
+---
+export const prerender = false;
+
+import Layout from '../../layouts/Default.astro';
+import BlockRenderer from '@spacelycms/astro/components/BlockRenderer.astro';
+import { spacely } from '../../lib/spacely';
+import * as blockComponents from '../../lib/blocks';
+
+const { slug } = Astro.params;
+const token = Astro.url.searchParams.get('token');
+
+if (!token || !slug) {
+  return new Response('Missing token or slug', { status: 400 });
+}
+
+const API_BASE = 'http://localhost:4321/api/content';
+
+// Fetch draft page from preview endpoint
+const pageRes = await fetch(`${API_BASE}/preview/pages/${slug}?token=${token}`);
+if (!pageRes.ok) {
+  return new Response(`Page not found: ${slug}`, { status: 404 });
+}
+const pageJson = await pageRes.json();
+const page = pageJson.data;
+
+// Fetch menus and config (public endpoints, no auth needed)
+const [mainMenu, footerMenu, config] = await Promise.all([
+  spacely.menus.get('main'),
+  spacely.menus.get('footer'),
+  spacely.config.get(),
+]);
+
+const regions = page.regions ?? {};
+const contentBlocks = regions.content ?? [];
+const sidebarBlocks = regions.sidebar ?? [];
+const bottomBlocks = regions.bottom ?? [];
+const heroBlocks = regions.hero ?? [];
+const featureBlocks = regions.features ?? [];
+const hasSidebar = sidebarBlocks.length > 0;
+---
+
+<Layout title={`[Preview] ${page.title}`} menu={mainMenu} footerMenu={footerMenu} config={config}>
+  <div class="preview-banner">
+    Preview Mode — {page.status === 'draft' ? 'Draft' : page.status}
+  </div>
+
+  <section class="hero-region hero-interior">
+    <div class="container">
+      {heroBlocks.length > 0 ? (
+        <BlockRenderer blocks={heroBlocks} region="hero" components={blockComponents} />
+      ) : (
+        <h1 class="hero-title">{page.title}</h1>
+      )}
+      {page.fields?.subtitle && <p class="hero-tagline">{page.fields.subtitle as string}</p>}
+    </div>
+  </section>
+
+  <div class:list={['container', 'page-layout', { 'has-sidebar': hasSidebar }]}>
+    <article class="main-content">
+      <BlockRenderer blocks={contentBlocks} region="content" components={blockComponents} />
+    </article>
+
+    {hasSidebar && (
+      <aside class="sidebar">
+        <BlockRenderer blocks={sidebarBlocks} region="sidebar" components={blockComponents} />
+      </aside>
+    )}
+  </div>
+
+  {featureBlocks.length > 0 && (
+    <section class="features-region">
+      <div class="container">
+        <BlockRenderer blocks={featureBlocks} region="features" components={blockComponents} />
+      </div>
+    </section>
+  )}
+
+  {bottomBlocks.length > 0 && (
+    <section class="bottom-region">
+      <div class="container">
+        <BlockRenderer blocks={bottomBlocks} region="bottom" components={blockComponents} />
+      </div>
+    </section>
+  )}
+</Layout>
+
+<style is:global>
+  .preview-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10000;
+    background: #e67e22;
+    color: #fff;
+    text-align: center;
+    padding: 0.35rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  body {
+    padding-top: 2rem;
+  }
+</style>
+
+<script is:inline>
+  // Listen for refresh messages from the admin editor
+  window.addEventListener('message', (e) => {
+    if (e.data?.type === 'spacely:refresh') {
+      window.location.reload();
+    }
+  });
+</script>

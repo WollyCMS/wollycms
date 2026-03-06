@@ -2,11 +2,21 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { setupTestDatabase } from './setup.js';
 
 let app: typeof import('../src/app.js').default;
+let authToken: string;
 
 beforeAll(async () => {
   setupTestDatabase();
   const mod = await import('../src/app.js');
   app = mod.default;
+
+  // Login to get auth token for preview tests
+  const res = await app.request('/api/admin/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'admin@spacelycms.local', password: 'admin123' }),
+  });
+  const body = await res.json();
+  authToken = body.data.token;
 });
 
 function get(path: string) {
@@ -226,5 +236,37 @@ describe('GET /api/content/schemas', () => {
     expect(body.data.blockTypes.length).toBe(9);
     expect(body.data.contentTypes[0]).toHaveProperty('fieldsSchema');
     expect(body.data.blockTypes[0]).toHaveProperty('fieldsSchema');
+  });
+});
+
+// --- Preview API ---
+describe('GET /api/content/preview/pages/:slug', () => {
+  it('returns 401 without token', async () => {
+    const res = await get('/api/content/preview/pages/home');
+    expect(res.status).toBe(401);
+  });
+
+  it('returns page data with valid token (query param)', async () => {
+    const res = await get(`/api/content/preview/pages/home?token=${authToken}`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.data.slug).toBe('home');
+    expect(body.data.regions).toBeDefined();
+    expect(body.data.title).toBeDefined();
+  });
+
+  it('returns page data with valid token (Authorization header)', async () => {
+    const res = await app.request('/api/content/preview/pages/home', {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.data.slug).toBe('home');
+  });
+
+  it('returns 404 for non-existent page', async () => {
+    const res = await get(`/api/content/preview/pages/does-not-exist?token=${authToken}`);
+    expect(res.status).toBe(404);
   });
 });

@@ -130,7 +130,10 @@ all content without touching code or APIs.
 - [x] Type filter and sort controls on pages list and block library
 - [x] Client-side validation with friendly error messages
 - [x] RBAC enforcement: admin-only guards on users, content/block types, config
-- [x] Tests: 87 tests (23 content API + 64 admin API), all passing
+- [x] Content scheduling (scheduledAt field, content API filters future pages)
+- [x] Export/import (full JSON backup, admin-only, deduplication on import)
+- [x] Redirects search filtering
+- [x] Tests: 93 tests (23 content API + 70 admin API), all passing
 
 ### Known Limitations
 
@@ -170,7 +173,7 @@ frontend. The Storyblok-like experience.
   - Drag images into rich text
   - Table editing
   - Paste cleanup (Word, Google Docs)
-- [ ] Content scheduling (publish/unpublish on date)
+- [x] Content scheduling (completed in Phase 3)
 - [x] Revision history with rollback (completed in Phase 3)
 - [ ] Revision diff view (side-by-side comparison)
 - [ ] Multi-user: real-time presence (who's editing what)

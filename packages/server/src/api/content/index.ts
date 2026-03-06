@@ -6,6 +6,7 @@ import mediaRouter from './media.js';
 import redirectsRouter from './redirects.js';
 import configRouter from './config.js';
 import schemasRouter from './schemas.js';
+import previewRouter from './preview.js';
 
 const app = new Hono();
 
@@ -16,5 +17,6 @@ app.route('/media', mediaRouter);
 app.route('/redirects', redirectsRouter);
 app.route('/config', configRouter);
 app.route('/schemas', schemasRouter);
+app.route('/preview', previewRouter);
 
 export default app;
