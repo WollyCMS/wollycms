@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { authMiddleware } from '../../auth/middleware.js';
+import { rateLimiter } from '../../auth/rate-limit.js';
 import authRouter from './auth.js';
 import pagesRouter from './pages.js';
 import revisionsRouter from './revisions.js';
@@ -15,10 +16,14 @@ import dashboardRouter from './dashboard.js';
 import configRouter from './config.js';
 import exportImportRouter from './export-import.js';
 import presenceRouter from './presence.js';
+import webhooksRouter from './webhooks.js';
+import apiKeysRouter from './api-keys.js';
+import auditRouter from './audit.js';
 
 const app = new Hono();
 
-// Auth routes (login is public, /me is protected inside the router)
+// Auth routes with rate limiting (login is public, /me is protected inside)
+app.use('/auth/login', rateLimiter());
 app.route('/auth', authRouter);
 
 // All other admin routes require authentication
@@ -38,5 +43,8 @@ app.route('/dashboard', dashboardRouter);
 app.route('/config', configRouter);
 app.route('/', exportImportRouter);
 app.route('/presence', presenceRouter);
+app.route('/webhooks', webhooksRouter);
+app.route('/api-keys', apiKeysRouter);
+app.route('/audit-logs', auditRouter);
 
 export default app;

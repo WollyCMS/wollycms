@@ -5,6 +5,8 @@ import { getDb } from '../../db/index.js';
 import {
   pages, pageRevisions, contentTypes, blocks, blockTypes, pageBlocks,
 } from '../../db/schema/index.js';
+import { fireWebhooks } from '../../webhooks.js';
+import { logAudit } from '../../audit.js';
 import pageBlocksRouter from './page-blocks.js';
 
 const app = new Hono();
@@ -197,6 +199,12 @@ app.post('/', async (c) => {
     createdBy: payload.sub,
   }).returning();
 
+  logAudit(c, { action: 'create', entity: 'page', entityId: row.id, details: { title: row.title, slug } });
+  fireWebhooks('page.created', { id: row.id, title: row.title, slug });
+  if (row.status === 'published') {
+    fireWebhooks('page.published', { id: row.id, title: row.title, slug });
+  }
+
   return c.json({ data: row }, 201);
 });
 
@@ -255,6 +263,17 @@ app.put('/:id', async (c) => {
 
   await db.update(pages).set(updates).where(eq(pages.id, id));
   const [updated] = await db.select().from(pages).where(eq(pages.id, id)).limit(1);
+
+  logAudit(c, { action: 'update', entity: 'page', entityId: id, details: { title: updated.title } });
+  fireWebhooks('page.updated', { id, title: updated.title, slug: updated.slug });
+
+  // Detect publish/unpublish transitions
+  if (parsed.data.status === 'published' && existing.status !== 'published') {
+    fireWebhooks('page.published', { id, title: updated.title, slug: updated.slug });
+  } else if (parsed.data.status && parsed.data.status !== 'published' && existing.status === 'published') {
+    fireWebhooks('page.unpublished', { id, title: updated.title, slug: updated.slug });
+  }
+
   return c.json({ data: updated });
 });
 
@@ -262,9 +281,12 @@ app.put('/:id', async (c) => {
 app.delete('/:id', async (c) => {
   const db = getDb();
   const id = parseInt(c.req.param('id'), 10);
-  const [existing] = await db.select({ id: pages.id }).from(pages).where(eq(pages.id, id)).limit(1);
+  const [existing] = await db.select().from(pages).where(eq(pages.id, id)).limit(1);
   if (!existing) return c.json({ errors: [{ code: 'NOT_FOUND', message: 'Page not found' }] }, 404);
+  await db.delete(pageBlocks).where(eq(pageBlocks.pageId, id));
   await db.delete(pages).where(eq(pages.id, id));
+  logAudit(c, { action: 'delete', entity: 'page', entityId: id, details: { title: existing.title } });
+  fireWebhooks('page.deleted', { id, title: existing.title, slug: existing.slug });
   return c.json({ data: { deleted: true } });
 });
 

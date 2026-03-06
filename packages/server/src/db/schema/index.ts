@@ -6,3 +6,4 @@ export { taxonomies, terms, contentTerms } from './taxonomies.ts';
 export { menus, menuItems } from './menus.ts';
 export { media } from './media.ts';
 export { redirects, users } from './system.ts';
+export { webhooks, apiKeys, auditLogs } from './webhooks.ts';

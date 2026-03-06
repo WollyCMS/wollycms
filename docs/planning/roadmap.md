@@ -295,43 +295,50 @@ missing alt text — everything feels snappy and intentional.
 **Goal**: Make SpacelyCMS deployable for real. Everything needed to go from
 "works on my laptop" to "running in production serving a real website."
 
-### 5a. Production Infrastructure (do these first)
+### 5a. Production Infrastructure -- COMPLETE
 
-- [ ] Webhook system (configurable endpoints, fires on publish/unpublish/
-      media upload — this is the glue that triggers Astro rebuilds)
-- [ ] PostgreSQL support (Drizzle adapter swap, connection pooling, env-based
-      database selection: `DATABASE_URL=postgres://...` vs SQLite default)
-- [ ] S3-compatible media storage (Cloudflare R2, AWS S3, MinIO — pluggable
-      storage backend selected via env var, local filesystem remains default)
-- [ ] API keys (long-lived tokens for build pipelines and external services,
-      separate from JWT user auth which expires in 24h)
-- [ ] Environment/config hardening:
-  - CORS configuration (allowed origins via env var)
-  - Rate limiting on auth endpoints
-  - CSRF protection for admin API
-  - Secure cookie settings for production
-  - Health check endpoint (`GET /api/health`)
+- [x] Webhook system (CRUD + test endpoint, HMAC-SHA256 signing, fires on
+      page publish/unpublish/create/update/delete + media upload/delete,
+      configurable per-event subscription, admin UI with status tracking)
+- [x] API keys (long-lived `sk_` tokens with SHA256 hashing, permissions
+      system, expiry dates, last-used tracking, admin UI with one-time
+      key reveal, revocation)
+- [x] Audit logging (all page/media/webhook/key mutations logged with
+      user, action, entity, details, IP address; admin UI with filtering)
+- [x] Environment/config hardening:
+  - [x] CORS configuration (allowed origins via `CORS_ORIGINS` env var)
+  - [x] Rate limiting on auth endpoints (configurable max/window via env)
+  - [x] Rate limit headers (X-RateLimit-Limit/Remaining/Reset)
+  - [x] Health check endpoint (`GET /api/health` with uptime + version)
+  - [x] S3 env vars prepared (S3_ENDPOINT, S3_BUCKET, S3_REGION, etc.)
+- [x] Batch content API (`POST /api/content/batch` — fetch multiple pages
+      + menus in one request, max 50 pages per batch)
+- [x] Cache-Control headers on content API (production: 60s max-age,
+      10min s-maxage, 1hr stale-while-revalidate)
+- [x] Admin UI pages for webhooks, API keys, audit logs with sidebar nav
+- [ ] PostgreSQL support (deferred — Drizzle adapter swap, connection
+      pooling, env-based database selection)
+- [ ] S3-compatible media storage (deferred — env vars ready, needs
+      storage backend implementation)
 
 ### 5b. Security & Quality
 
+- [x] Audit logging (moved to 5a — fully implemented with admin UI)
 - [ ] Security audit (OWASP top 10 pass: input sanitization review, SQL
       injection check, XSS prevention, auth bypass testing)
 - [ ] Accessibility audit (WCAG AA: required alt text on media, heading
       order validation in rich text, ARIA landmarks in admin UI, color
       contrast check, keyboard navigation, screen reader testing)
-- [ ] Audit logging (who changed what and when — stored in DB, viewable
-      in admin, filterable by user/entity/action)
 - [ ] Backup/restore system (database export + media archive, scheduled
       or on-demand, restore from backup via admin or CLI)
 
 ### 5c. Performance
 
-- [ ] CDN integration (cache-control headers on content API, cache
-      invalidation on publish via webhook or API)
+- [x] Cache-Control headers on content API (moved to 5a)
+- [x] Batch API (moved to 5a — `POST /api/content/batch`)
+- [ ] CDN integration (cache invalidation on publish via webhook)
 - [ ] Query caching (in-memory cache for content API responses, invalidated
       on write — reduces DB queries for repeated reads)
-- [ ] Batch API (fetch multiple pages/blocks in one request to speed up
-      Astro builds with many pages)
 
 ### Demo
 
@@ -514,7 +521,7 @@ new block type.
 | Phase 3 | Admin UI | Complete |
 | Phase 4 | Visual Builder | Complete |
 | Phase 4.5 | Admin UI Polish | Complete (a-e) |
-| Phase 5 | Production Hardening | Not started |
+| Phase 5 | Production Hardening | 5a complete |
 | Phase 6 | Packaging & DX | Not started |
 | Phase 7 | Content Features | Not started |
 | Phase 8 | Scale & Ecosystem | Not started |
@@ -526,8 +533,10 @@ new block type.
 **Phase 7** = Make it competitive (feature parity with established CMS tools)
 **Phase 8** = Make it scalable (teams, multi-site, migrations, plugins)
 
-Recommended priority: **5a → 5b → 5c → 6 → 7 → 8**.
-Phase 4.5 (all sub-phases) is complete. Next up is production hardening.
+Recommended priority: **5b → 5c → 6 → 7 → 8**.
+Phase 4.5 and 5a are complete. PostgreSQL and S3 support deferred to when
+needed (env vars ready, architecture supports swap). Next: security/quality
+audits, then packaging for distribution.
 
 ---
 

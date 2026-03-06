@@ -27,12 +27,23 @@ const MIME_TYPES: Record<string, string> = {
 const app = new Hono();
 
 app.use('*', logger());
-app.use('*', cors());
+app.use('*', cors({
+  origin: env.CORS_ORIGINS === '*' ? '*' : env.CORS_ORIGINS.split(',').map((o) => o.trim()),
+  allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
+  exposeHeaders: ['X-RateLimit-Limit', 'X-RateLimit-Remaining', 'X-RateLimit-Reset'],
+  maxAge: 86400,
+}));
 
 app.route('/api/content', contentRouter);
 app.route('/api/admin', adminRouter);
 
-app.get('/api/health', (c) => c.json({ status: 'ok' }));
+app.get('/api/health', (c) => c.json({
+  status: 'ok',
+  version: '0.1.0',
+  uptime: Math.floor(process.uptime()),
+  timestamp: new Date().toISOString(),
+}));
 
 /**
  * GET /uploads/* - Serve uploaded files from MEDIA_DIR with correct content

@@ -8,6 +8,8 @@ import { mkdir, writeFile, unlink } from 'node:fs/promises';
 import { join, extname } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { processImage, isProcessableImage } from '../../media/processing.js';
+import { fireWebhooks } from '../../webhooks.js';
+import { logAudit } from '../../audit.js';
 
 const app = new Hono();
 
@@ -116,6 +118,9 @@ app.post('/', async (c) => {
     createdBy: payload.sub,
   }).returning();
 
+  logAudit(c, { action: 'create', entity: 'media', entityId: row.id, details: { filename: originalName } });
+  fireWebhooks('media.uploaded', { id: row.id, filename: originalName, mimeType: file.type });
+
   return c.json({ data: row }, 201);
 });
 
@@ -165,6 +170,8 @@ app.delete('/:id', async (c) => {
   }
 
   await db.delete(media).where(eq(media.id, id));
+  logAudit(c, { action: 'delete', entity: 'media', entityId: id, details: { filename: row.originalName } });
+  fireWebhooks('media.deleted', { id, filename: row.originalName });
   return c.json({ data: { deleted: true } });
 });
 

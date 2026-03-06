@@ -50,8 +50,9 @@ npm run test --workspace=packages/server       # Server tests only
 ## Current Status
 
 - **Phases 1-4**: Complete (Data + API, Astro Integration, Admin UI, Visual Page Builder + Live Preview)
-- **Phase 4.5**: Complete (all sub-phases a-e: Lucide icons, toasts, shortcuts, breadcrumbs, dirty state, Notion-style editor, visual block picker, hover quick-actions, device preview toggle, alt text warnings, dashboard quick actions, type color coding)
-- **Phase 5**: Not started (Production Hardening)
+- **Phase 4.5**: Complete (all sub-phases a-e)
+- **Phase 5a**: Complete (webhooks, API keys, audit logging, rate limiting, CORS, cache headers, batch API, health check)
+- **Phase 5b-c**: Not started (security audit, accessibility, backup/restore, query caching)
 - Monorepo: npm workspaces (packages/server, packages/admin, packages/astro, examples/college-site)
 - Database: 13 tables with full Drizzle schema + indexes + migrations
 - Seed data: 8 pages, 10 block types (incl. hero), 3 content types, 3 menus, 2 taxonomies

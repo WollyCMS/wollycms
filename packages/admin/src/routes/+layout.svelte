@@ -9,6 +9,7 @@
   import {
     LayoutDashboard, FileText, Blocks, Image, Menu, Tags,
     CornerDownRight, ClipboardList, Square, Users, Settings,
+    Webhook, KeyRound, ScrollText,
   } from 'lucide-svelte';
   import '../app.css';
 
@@ -81,6 +82,9 @@
       label: 'System',
       items: [
         { href: '/users', label: 'Users', icon: Users },
+        { href: '/webhooks', label: 'Webhooks', icon: Webhook },
+        { href: '/api-keys', label: 'API Keys', icon: KeyRound },
+        { href: '/audit-logs', label: 'Audit Log', icon: ScrollText },
         { href: '/settings', label: 'Settings', icon: Settings },
       ],
     },
