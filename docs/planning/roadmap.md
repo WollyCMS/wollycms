@@ -451,8 +451,8 @@ that make teams choose SpacelyCMS over Strapi, Directus, or Storyblok.
 - [x] SEO fields on pages (meta title, meta description, OG image, robots,
       canonical URL — editable in admin sidebar, available in content API
       as `seo` object with character count hints)
-- [ ] Sitemap generation (`/sitemap.xml` — auto-generated from published
-      pages, configurable per content type)
+- [x] Sitemap generation (`/sitemap.xml` — auto-generated from published
+      pages, excludes noindex pages, cached, invalidated on mutations)
 - [ ] OG image generation (auto-generate social sharing images from page
       title + hero image)
 - [ ] Structured data / JSON-LD helpers (article, breadcrumb, organization)

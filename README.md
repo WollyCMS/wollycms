@@ -61,6 +61,8 @@ docker compose up -d
 | `GET /api/content/config` | Site configuration |
 | `GET /api/content/schemas` | Content type and block type schemas |
 | `POST /api/content/batch` | Fetch multiple pages + menus in one request |
+| `GET /api/content/sitemap` | XML sitemap of published pages |
+| `GET /sitemap.xml` | Redirect to sitemap endpoint |
 | `GET /api/health` | Health check (uptime, version) |
 
 ## Tech Stack

@@ -69,7 +69,8 @@ app.get('/', async (c) => {
   }
 
   if (search) {
-    conditions.push(sql`${pages.title} LIKE ${'%' + search + '%'}`);
+    const escaped = search.replace(/%/g, '\\%').replace(/_/g, '\\_');
+    conditions.push(sql`(${pages.title} LIKE ${'%' + escaped + '%'} OR ${pages.slug} LIKE ${'%' + escaped + '%'})`);
   }
 
   if (conditions.length > 0) {
