@@ -1,0 +1,28 @@
+# SpacelyCMS Caddy Configuration
+# Replace cms.example.com with your domain
+# Caddy handles automatic HTTPS via Let's Encrypt
+
+cms.example.com {
+	# API and admin UI
+	reverse_proxy spacelycms:4321
+
+	# Compress responses
+	encode gzip zstd
+
+	# Security headers
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options SAMEORIGIN
+		Referrer-Policy strict-origin-when-cross-origin
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+
+	# Cache static assets (uploads have UUID filenames)
+	@uploads path /uploads/*
+	header @uploads Cache-Control "public, max-age=31536000, immutable"
+
+	# Cache admin SPA assets
+	@adminAssets path /admin/_app/*
+	header @adminAssets Cache-Control "public, max-age=31536000, immutable"
+}

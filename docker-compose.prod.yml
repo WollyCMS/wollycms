@@ -1,0 +1,51 @@
+services:
+  spacelycms:
+    build: .
+    environment:
+      - NODE_ENV=production
+      - PORT=4321
+      - HOST=0.0.0.0
+      - DATABASE_URL=sqlite:./data/spacely.db
+      - MEDIA_DIR=./uploads
+      - JWT_SECRET=${JWT_SECRET:?Set JWT_SECRET in .env}
+      - CORS_ORIGINS=${CORS_ORIGINS:-https://cms.example.com}
+      - RATE_LIMIT_AUTH=${RATE_LIMIT_AUTH:-10}
+      - RATE_LIMIT_WINDOW_MS=${RATE_LIMIT_WINDOW_MS:-900000}
+      - SITE_URL=${SITE_URL:-https://www.example.com}
+    volumes:
+      - spacely-data:/app/data
+      - spacely-uploads:/app/uploads
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:4321/api/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    networks:
+      - internal
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      spacelycms:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - internal
+
+volumes:
+  spacely-data:
+  spacely-uploads:
+  caddy-data:
+  caddy-config:
+
+networks:
+  internal:
