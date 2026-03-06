@@ -1,0 +1,34 @@
+---
+interface Props {
+  src: string;
+  alt?: string;
+  width?: number;
+  height?: number;
+  srcset?: string;
+  sizes?: string;
+  loading?: 'lazy' | 'eager';
+  class?: string;
+}
+
+const {
+  src,
+  alt = '',
+  width,
+  height,
+  srcset,
+  sizes,
+  loading = 'lazy',
+  class: className,
+} = Astro.props;
+---
+
+<img
+  src={src}
+  alt={alt}
+  width={width}
+  height={height}
+  srcset={srcset}
+  sizes={sizes}
+  loading={loading}
+  class={className}
+/>

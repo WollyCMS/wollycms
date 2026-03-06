@@ -1,0 +1,32 @@
+---
+import type { Menu, SiteConfig } from '@spacelycms/astro';
+import { menuHelpers } from '@spacelycms/astro';
+
+interface Props {
+  menu?: Menu;
+  config?: SiteConfig;
+}
+
+const { menu, config } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    {menu && (
+      <nav class="footer-nav" aria-label="Footer navigation">
+        <ul class="footer-links">
+          {menu.items.map((item) => {
+            const href = menuHelpers.getItemHref(item);
+            return href ? (
+              <li><a href={href}>{item.title}</a></li>
+            ) : null;
+          })}
+        </ul>
+      </nav>
+    )}
+    <p class="footer-copy">
+      &copy; {year} {config?.footer?.text ?? 'Southside College. All rights reserved.'}
+    </p>
+  </div>
+</footer>

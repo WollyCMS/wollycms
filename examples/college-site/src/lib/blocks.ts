@@ -1,0 +1,8 @@
+export { default as rich_text } from '../blocks/RichText.astro';
+export { default as accordion } from '../blocks/Accordion.astro';
+export { default as cta_button } from '../blocks/CtaButton.astro';
+export { default as contact_list } from '../blocks/ContactList.astro';
+export { default as location } from '../blocks/Location.astro';
+export { default as link_list } from '../blocks/LinkList.astro';
+export { default as image } from '../blocks/ImageBlock.astro';
+export { default as content_listing } from '../blocks/ContentListing.astro';

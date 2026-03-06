@@ -1,0 +1,28 @@
+---
+import type { BlockProps } from '@spacelycms/astro';
+
+interface Props extends BlockProps {
+  fields: {
+    heading?: string;
+    links: Array<{
+      title: string;
+      url: string;
+      description?: string;
+    }>;
+  };
+}
+
+const { fields } = Astro.props;
+---
+
+<div class="block block-link-list">
+  {fields.heading && <h3>{fields.heading}</h3>}
+  <ul class="link-list">
+    {fields.links.map((link) => (
+      <li>
+        <a href={link.url}>{link.title}</a>
+        {link.description && <p class="link-description">{link.description}</p>}
+      </li>
+    ))}
+  </ul>
+</div>

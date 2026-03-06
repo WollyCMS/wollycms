@@ -1,0 +1,20 @@
+---
+import type { BlockProps } from '@spacelycms/astro';
+
+interface Props extends BlockProps {
+  fields: {
+    text: string;
+    url: string;
+    style?: 'primary' | 'secondary' | 'outline';
+  };
+}
+
+const { fields } = Astro.props;
+const style = fields.style ?? 'primary';
+---
+
+<div class="block block-cta">
+  <a href={fields.url} class:list={['cta-button', `cta-${style}`]}>
+    {fields.text}
+  </a>
+</div>

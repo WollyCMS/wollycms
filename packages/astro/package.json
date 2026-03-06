@@ -2,5 +2,24 @@
   "name": "@spacelycms/astro",
   "version": "0.1.0",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./components/BlockRenderer.astro": "./src/components/BlockRenderer.astro",
+    "./components/SpacelyImage.astro": "./src/components/SpacelyImage.astro",
+    "./components/RichText.astro": "./src/components/RichText.astro"
+  },
+  "files": [
+    "src"
+  ],
+  "keywords": [
+    "astro",
+    "withastro",
+    "astro-component",
+    "cms",
+    "spacelycms"
+  ],
+  "peerDependencies": {
+    "astro": "^5.0.0"
+  }
 }

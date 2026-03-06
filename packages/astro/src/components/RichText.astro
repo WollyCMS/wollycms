@@ -1,0 +1,13 @@
+---
+import { renderRichText } from '../helpers/richtext.js';
+
+interface Props {
+  content: any;
+  class?: string;
+}
+
+const { content, class: className } = Astro.props;
+const html = renderRichText(content);
+---
+
+<div class:list={['rich-text', className]} set:html={html} />

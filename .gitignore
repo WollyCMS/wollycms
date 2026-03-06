@@ -21,6 +21,7 @@ build/
 .next/
 out/
 .astro/
+.svelte-kit/
 
 # Data
 data/

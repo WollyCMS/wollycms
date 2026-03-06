@@ -1,0 +1,54 @@
+---
+import type { BlockProps } from '@spacelycms/astro';
+import { spacely } from '../lib/spacely';
+
+interface Props extends BlockProps {
+  fields: {
+    heading?: string;
+    content_type?: string;
+    sort?: 'newest' | 'oldest' | 'title_asc' | 'title_desc';
+    limit?: number;
+    display?: 'list' | 'card_grid';
+  };
+}
+
+const { fields } = Astro.props;
+
+const sortMap: Record<string, string> = {
+  newest: 'published_at:desc',
+  oldest: 'published_at:asc',
+  title_asc: 'title:asc',
+  title_desc: 'title:desc',
+};
+
+const result = await spacely.pages.list({
+  type: fields.content_type,
+  sort: sortMap[fields.sort ?? 'newest'],
+  limit: fields.limit ?? 10,
+});
+
+const pages = result.data;
+const display = fields.display ?? 'list';
+---
+
+<div class:list={['block', 'block-content-listing', `display-${display}`]}>
+  {fields.heading && <h3>{fields.heading}</h3>}
+  {display === 'card_grid' ? (
+    <div class="card-grid">
+      {pages.map((page) => (
+        <a href={`/${page.slug}`} class="card">
+          <h4 class="card-title">{page.title}</h4>
+          {page.fields.subtitle && <p class="card-subtitle">{page.fields.subtitle as string}</p>}
+        </a>
+      ))}
+    </div>
+  ) : (
+    <ul class="content-list">
+      {pages.map((page) => (
+        <li>
+          <a href={`/${page.slug}`}>{page.title}</a>
+        </li>
+      ))}
+    </ul>
+  )}
+</div>

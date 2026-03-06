@@ -1,0 +1,26 @@
+---
+import RichTextRenderer from '@spacelycms/astro/components/RichText.astro';
+import type { BlockProps } from '@spacelycms/astro';
+
+interface Props extends BlockProps {
+  fields: {
+    heading?: string;
+    items: Array<{ title: string; body: any }>;
+    default_open?: boolean;
+  };
+}
+
+const { fields } = Astro.props;
+---
+
+<div class="block block-accordion">
+  {fields.heading && <h3 class="accordion-heading">{fields.heading}</h3>}
+  {fields.items.map((item, i) => (
+    <details class="accordion-item" open={fields.default_open && i === 0}>
+      <summary class="accordion-title">{item.title}</summary>
+      <div class="accordion-body">
+        <RichTextRenderer content={item.body} />
+      </div>
+    </details>
+  ))}
+</div>

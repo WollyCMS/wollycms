@@ -1,0 +1,55 @@
+---
+import Layout from '../layouts/Default.astro';
+import BlockRenderer from '@spacelycms/astro/components/BlockRenderer.astro';
+import { spacely } from '../lib/spacely';
+import * as blockComponents from '../lib/blocks';
+
+const page = await spacely.pages.getBySlug('home');
+const [mainMenu, footerMenu, config] = await Promise.all([
+  spacely.menus.get('main'),
+  spacely.menus.get('footer'),
+  spacely.config.get(),
+]);
+
+const regions = page.regions ?? {};
+const heroBlocks = regions.hero ?? [];
+const contentBlocks = regions.content ?? [];
+const featureBlocks = regions.features ?? [];
+const bottomBlocks = regions.bottom ?? [];
+---
+
+<Layout title={page.title} menu={mainMenu} footerMenu={footerMenu} config={config}>
+  {heroBlocks.length > 0 && (
+    <section class="hero-region hero-home">
+      <div class="container">
+        <h1 class="hero-title">{page.title}</h1>
+        {page.fields.tagline && <p class="hero-tagline">{page.fields.tagline}</p>}
+        <BlockRenderer blocks={heroBlocks} region="hero" components={blockComponents} />
+      </div>
+    </section>
+  )}
+
+  {contentBlocks.length > 0 && (
+    <section class="content-region">
+      <div class="container">
+        <BlockRenderer blocks={contentBlocks} region="content" components={blockComponents} />
+      </div>
+    </section>
+  )}
+
+  {featureBlocks.length > 0 && (
+    <section class="features-region">
+      <div class="container">
+        <BlockRenderer blocks={featureBlocks} region="features" components={blockComponents} />
+      </div>
+    </section>
+  )}
+
+  {bottomBlocks.length > 0 && (
+    <section class="bottom-region">
+      <div class="container">
+        <BlockRenderer blocks={bottomBlocks} region="bottom" components={blockComponents} />
+      </div>
+    </section>
+  )}
+</Layout>

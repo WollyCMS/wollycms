@@ -1,0 +1,43 @@
+---
+import type { Menu, SiteConfig } from '@spacelycms/astro';
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  menu?: Menu;
+  footerMenu?: Menu;
+  config?: SiteConfig;
+}
+
+const { title, menu, footerMenu, config } = Astro.props;
+const siteName = config?.siteName ?? 'Southside College';
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} | {siteName}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a href="/" class="site-logo">{siteName}</a>
+        {menu && <Navigation menu={menu} currentPath={Astro.url.pathname} />}
+      </div>
+    </header>
+
+    <main id="main-content">
+      <slot />
+    </main>
+
+    <Footer menu={footerMenu} config={config} />
+  </body>
+</html>

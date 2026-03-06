@@ -1,5 +1,6 @@
 import type { AppDatabase } from '../index.js';
 import { users } from '../schema/index.js';
+import { hashPassword } from '../../auth/password.js';
 
 export function seedUsers(db: AppDatabase) {
   const now = new Date().toISOString();
@@ -7,7 +8,7 @@ export function seedUsers(db: AppDatabase) {
   const inserted = db.insert(users).values({
     email: 'admin@spacelycms.local',
     name: 'Admin',
-    passwordHash: 'placeholder-hash',
+    passwordHash: hashPassword('admin123'),
     role: 'admin',
     createdAt: now,
   }).returning().all();

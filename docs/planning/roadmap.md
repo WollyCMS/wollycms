@@ -42,81 +42,98 @@ for pages with blocks, menus, and media URLs.
 
 ---
 
-## Phase 2: Astro Integration Package
+## Phase 2: Astro Integration Package -- COMPLETE
 
 **Goal**: An Astro site rendering real pages from SpacelyCMS with
 components for every block type.
 
 ### Deliverables
 
-- [ ] `@spacelycms/astro` npm package (monorepo or separate repo)
-  - SpacelyClient class (API fetcher with caching)
+- [x] `@spacelycms/astro` npm package (monorepo workspace)
+  - SpacelyClient class (API fetcher)
   - BlockRenderer component
   - SpacelyImage component
-  - RichText renderer
-  - Menu helpers
-- [ ] Reference Astro site (in `examples/` directory):
+  - RichText renderer (TipTap JSON → HTML)
+  - Menu helpers (isActive, getBreadcrumbs, getChildren, flattenMenu)
+- [x] Reference Astro site (in `examples/college-site/`):
   - `[...slug].astro` catch-all route
-  - Block components for all standard block types
+  - Block components for all 8 standard block types
   - Layout with header/footer/sidebar regions
-  - Navigation component rendering menu tree
+  - Navigation component rendering 3-level menu tree
+  - Breadcrumbs from menu tree
   - Responsive, accessible HTML output
-- [ ] Block component library:
+- [x] Block component library:
   - RichText, Accordion, CTA Button, Contact List, Location, Image,
-    Gallery, Link List, Card Grid, Content Listing, Alert, Embed
-- [ ] SSG mode: `getStaticPaths` fetching all pages at build time
-- [ ] SSR mode: per-request fetching
-- [ ] TypeScript types for all API responses
+    Link List, Content Listing
+- [x] SSG mode: `getStaticPaths` fetching all pages at build time
+- [x] TypeScript types for all API responses
+- [ ] SSR mode: per-request fetching (architecture supports it, not demoed)
 - [ ] Documentation: integration setup guide
 
 ### Demo
 
-Run `npm run dev` on the example Astro site — see a multi-page website
-with navigation, sidebars, accordions, contact blocks, all rendered from
-CMS data. Looks like a real college website.
+Run `npm run dev:site` — see a multi-page college website with
+navigation, sidebars, accordions, contact blocks, all rendered from
+CMS data. 8 pages built from seed data.
 
-### Estimated Effort: 1-2 weeks
+### Completed: 2026-03-06
 
 ---
 
-## Phase 3: Admin UI — Content Management
+## Phase 3: Admin UI — Content Management -- COMPLETE
 
 **Goal**: A web-based admin interface where a webmaster can create and edit
 all content without touching code or APIs.
 
 ### Deliverables
 
-- [ ] Admin API: full CRUD endpoints for all entities (authenticated)
-- [ ] Auth system: login, sessions, JWT
-- [ ] Admin SPA (SvelteKit or React):
-  - **Dashboard**: recent pages, quick stats
-  - **Pages**: list, create, edit, publish/unpublish, delete
+- [x] Admin API: full CRUD endpoints for all entities (authenticated)
+  - Pages (CRUD + block management per region)
+  - Blocks (library CRUD with usage tracking)
+  - Menus (CRUD menus + items, tree reordering)
+  - Taxonomies (CRUD vocabularies + terms)
+  - Media (upload, metadata edit, delete)
+  - Redirects (CRUD + bulk import)
+  - Content Types (CRUD with JSON schema editor)
+  - Block Types (CRUD with JSON schema editor)
+  - Users (CRUD with password hashing)
+  - Config/Settings (file-based)
+  - Dashboard (stats + recent pages)
+- [x] Auth system: JWT (HS256, 24h tokens), scrypt password hashing
+- [x] Admin SPA (SvelteKit 5, SPA mode):
+  - **Dashboard**: 7 stat cards, recent pages table
+  - **Pages**: list with search/filter, create modal, publish/unpublish
   - **Page Editor**: form-based with region tabs, block list per region,
-    add/remove/reorder blocks, block type selector
-  - **Block Library**: browse/create/edit reusable blocks, usage report
-  - **Block Editor**: form auto-generated from block type schema, rich text
-    editor (TipTap) for richtext fields
-  - **Media Library**: grid browser, upload (drag-drop), edit metadata,
-    search, filter by type
-  - **Menus**: tree view, drag-drop reorder, add/edit/remove items,
-    link to page or external URL
-  - **Taxonomies**: vocabulary list, term tree, CRUD
-  - **Redirects**: list, create, import CSV
-  - **Content Types**: schema editor (add/remove/reorder fields, define
-    regions) — for advanced users
-  - **Block Types**: schema editor (add/remove/reorder fields)
-  - **Users**: list, create, edit roles
-  - **Settings**: site name, logo, webhook URLs
-- [ ] Real-time validation: slug uniqueness, required fields, media types
-- [ ] Responsive layout (usable on tablet)
-- [ ] Tests: admin API tests, basic UI tests
+    add/remove blocks, inline field editing, block type selector
+  - **Block Library**: browse/create/delete reusable blocks
+  - **Media Library**: grid browser, upload, edit metadata, delete
+  - **Menus**: sidebar menu list, tree view, add/delete items
+  - **Taxonomies**: vocabulary list, term list/tree, CRUD
+  - **Redirects**: list, create, toggle active/inactive
+  - **Content Types**: JSON schema editor for fields and regions
+  - **Block Types**: JSON schema editor for fields
+  - **Users**: list, create with role selection, delete
+  - **Settings**: site name, tagline, footer text, social links
+- [x] Responsive layout (sidebar collapses on tablet)
+- [ ] Rich text editor (TipTap) — currently JSON textarea
+- [ ] Drag-drop reorder for blocks and menu items
+- [ ] Media: Sharp image processing for variant generation
+- [ ] Tests: admin API tests
+
+### Known Limitations
+
+- Media images from seed data are broken (DB records exist but no files
+  on disk — upload real files through the admin to test)
+- Rich text fields show raw TipTap JSON (visual editor planned for Phase 4)
+- Block/menu reordering is via API only (no drag-drop UI yet)
 
 ### Demo
 
-Log into the admin UI, create a new page, add blocks to regions, upload
-images, build a menu, publish — then see it rendered on the Astro site.
+Start server (`npm run dev`), open admin (`npm run dev:admin`), login with
+`admin@spacelycms.local` / `admin123`. Create pages, add blocks, upload
+media, manage menus and taxonomies, publish content.
 
-### Estimated Effort: 4-6 weeks
+### Completed: 2026-03-06
 
 ---
 

@@ -1,0 +1,37 @@
+---
+import type { BlockProps } from '@spacelycms/astro';
+
+interface Props extends BlockProps {
+  fields: {
+    name: string;
+    address: string;
+    city: string;
+    state: string;
+    zip: string;
+    phone?: string;
+    hours?: string;
+    map_url?: string;
+  };
+}
+
+const { fields } = Astro.props;
+---
+
+<div class="block block-location">
+  <h3>{fields.name}</h3>
+  <address>
+    {fields.address}<br />
+    {fields.city}, {fields.state} {fields.zip}
+  </address>
+  {fields.phone && (
+    <p class="location-phone">
+      <strong>Phone:</strong> <a href={`tel:${fields.phone}`}>{fields.phone}</a>
+    </p>
+  )}
+  {fields.hours && (
+    <p class="location-hours"><strong>Hours:</strong> {fields.hours}</p>
+  )}
+  {fields.map_url && (
+    <p><a href={fields.map_url} class="location-directions" target="_blank" rel="noopener">Get Directions &rarr;</a></p>
+  )}
+</div>

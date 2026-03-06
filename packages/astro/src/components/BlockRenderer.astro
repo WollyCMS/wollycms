@@ -1,0 +1,31 @@
+---
+import type { ResolvedBlock } from '../types.js';
+
+interface Props {
+  blocks: ResolvedBlock[];
+  region: string;
+  components: Record<string, any>;
+}
+
+const { blocks, region, components } = Astro.props;
+---
+
+{blocks.map((block, index) => {
+  const Component = components[block.block_type];
+  if (!Component) {
+    return <div class="spacely-block-unknown" data-type={block.block_type}>Unknown block type: {block.block_type}</div>;
+  }
+  return (
+    <Component
+      fields={block.fields}
+      block={{
+        id: block.id,
+        type: block.block_type,
+        title: block.title,
+        is_shared: block.is_shared,
+      }}
+      region={region}
+      position={index}
+    />
+  );
+})}

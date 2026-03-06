@@ -1,0 +1,77 @@
+---
+import Layout from '../layouts/Default.astro';
+import BlockRenderer from '@spacelycms/astro/components/BlockRenderer.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { spacely } from '../lib/spacely';
+import * as blockComponents from '../lib/blocks';
+
+export async function getStaticPaths() {
+  const result = await spacely.pages.list({ limit: 100 });
+  return result.data
+    .filter((p) => p.slug !== 'home')
+    .map((page) => ({
+      params: { slug: page.slug },
+      props: { slug: page.slug },
+    }));
+}
+
+const { slug } = Astro.props;
+const page = await spacely.pages.getBySlug(slug);
+const [mainMenu, footerMenu, config] = await Promise.all([
+  spacely.menus.get('main'),
+  spacely.menus.get('footer'),
+  spacely.config.get(),
+]);
+
+const regions = page.regions ?? {};
+const contentBlocks = regions.content ?? [];
+const sidebarBlocks = regions.sidebar ?? [];
+const bottomBlocks = regions.bottom ?? [];
+const heroBlocks = regions.hero ?? [];
+const featureBlocks = regions.features ?? [];
+const hasSidebar = sidebarBlocks.length > 0;
+---
+
+<Layout title={page.title} menu={mainMenu} footerMenu={footerMenu} config={config}>
+  {heroBlocks.length > 0 && (
+    <section class="hero-region">
+      <div class="container">
+        <BlockRenderer blocks={heroBlocks} region="hero" components={blockComponents} />
+      </div>
+    </section>
+  )}
+
+  <div class="container">
+    <Breadcrumbs menu={mainMenu} currentPath={Astro.url.pathname} />
+  </div>
+
+  <div class:list={['container', 'page-layout', { 'has-sidebar': hasSidebar }]}>
+    <article class="main-content">
+      <h1 class="page-title">{page.title}</h1>
+      {page.fields.subtitle && <p class="page-subtitle">{page.fields.subtitle}</p>}
+      <BlockRenderer blocks={contentBlocks} region="content" components={blockComponents} />
+    </article>
+
+    {hasSidebar && (
+      <aside class="sidebar">
+        <BlockRenderer blocks={sidebarBlocks} region="sidebar" components={blockComponents} />
+      </aside>
+    )}
+  </div>
+
+  {featureBlocks.length > 0 && (
+    <section class="features-region">
+      <div class="container">
+        <BlockRenderer blocks={featureBlocks} region="features" components={blockComponents} />
+      </div>
+    </section>
+  )}
+
+  {bottomBlocks.length > 0 && (
+    <section class="bottom-region">
+      <div class="container">
+        <BlockRenderer blocks={bottomBlocks} region="bottom" components={blockComponents} />
+      </div>
+    </section>
+  )}
+</Layout>

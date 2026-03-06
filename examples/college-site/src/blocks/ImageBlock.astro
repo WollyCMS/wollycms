@@ -1,0 +1,28 @@
+---
+import type { BlockProps } from '@spacelycms/astro';
+
+interface Props extends BlockProps {
+  fields: {
+    image: number | string;
+    caption?: string;
+    alt?: string;
+    link_url?: string;
+  };
+}
+
+const { fields } = Astro.props;
+const imgSrc = typeof fields.image === 'number'
+  ? `http://localhost:4321/api/content/media/${fields.image}/large`
+  : String(fields.image);
+---
+
+<figure class="block block-image">
+  {fields.link_url ? (
+    <a href={fields.link_url}>
+      <img src={imgSrc} alt={fields.alt ?? fields.caption ?? ''} loading="lazy" />
+    </a>
+  ) : (
+    <img src={imgSrc} alt={fields.alt ?? fields.caption ?? ''} loading="lazy" />
+  )}
+  {fields.caption && <figcaption>{fields.caption}</figcaption>}
+</figure>

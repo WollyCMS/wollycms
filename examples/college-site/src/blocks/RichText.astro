@@ -1,0 +1,16 @@
+---
+import RichTextRenderer from '@spacelycms/astro/components/RichText.astro';
+import type { BlockProps } from '@spacelycms/astro';
+
+interface Props extends BlockProps {
+  fields: {
+    body: any;
+  };
+}
+
+const { fields } = Astro.props;
+---
+
+<div class="block block-rich-text">
+  <RichTextRenderer content={fields.body} />
+</div>

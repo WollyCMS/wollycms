@@ -6,11 +6,15 @@
   "workspaces": [
     "packages/server",
     "packages/admin",
-    "packages/astro"
+    "packages/astro",
+    "examples/college-site"
   ],
   "scripts": {
     "dev": "npm run dev --workspace=packages/server",
+    "dev:admin": "npm run dev --workspace=packages/admin",
+    "dev:site": "npm run dev --workspace=examples/college-site",
     "build": "npm run build --workspace=packages/server",
+    "build:site": "npm run build --workspace=examples/college-site",
     "test": "npm run test --workspace=packages/server",
     "db:migrate": "npm run db:migrate --workspace=packages/server",
     "db:seed": "npm run db:seed --workspace=packages/server",

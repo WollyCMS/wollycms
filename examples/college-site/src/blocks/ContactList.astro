@@ -1,0 +1,35 @@
+---
+import type { BlockProps } from '@spacelycms/astro';
+
+interface Props extends BlockProps {
+  fields: {
+    heading?: string;
+    contacts: Array<{
+      name: string;
+      role?: string;
+      phone?: string;
+      email?: string;
+    }>;
+  };
+}
+
+const { fields } = Astro.props;
+---
+
+<div class="block block-contact-list">
+  {fields.heading && <h3>{fields.heading}</h3>}
+  <ul class="contact-list">
+    {fields.contacts.map((contact) => (
+      <li class="contact-item">
+        <strong class="contact-name">{contact.name}</strong>
+        {contact.role && <span class="contact-role">{contact.role}</span>}
+        {contact.phone && (
+          <a href={`tel:${contact.phone}`} class="contact-phone">{contact.phone}</a>
+        )}
+        {contact.email && (
+          <a href={`mailto:${contact.email}`} class="contact-email">{contact.email}</a>
+        )}
+      </li>
+    ))}
+  </ul>
+</div>

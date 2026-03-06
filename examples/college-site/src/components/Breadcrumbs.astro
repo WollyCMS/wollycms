@@ -1,0 +1,33 @@
+---
+import type { Menu } from '@spacelycms/astro';
+import { menuHelpers } from '@spacelycms/astro';
+
+interface Props {
+  menu: Menu;
+  currentPath: string;
+}
+
+const { menu, currentPath } = Astro.props;
+const trail = menuHelpers.getBreadcrumbs(menu.items, currentPath);
+---
+
+{trail.length > 0 && (
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="/">Home</a></li>
+      {trail.map((item, i) => {
+        const href = menuHelpers.getItemHref(item);
+        const isLast = i === trail.length - 1;
+        return (
+          <li aria-current={isLast ? 'page' : undefined}>
+            {isLast || !href ? (
+              <span>{item.title}</span>
+            ) : (
+              <a href={href}>{item.title}</a>
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  </nav>
+)}

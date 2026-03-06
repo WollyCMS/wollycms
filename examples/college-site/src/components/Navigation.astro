@@ -1,0 +1,78 @@
+---
+import type { Menu } from '@spacelycms/astro';
+import { menuHelpers } from '@spacelycms/astro';
+
+interface Props {
+  menu: Menu;
+  currentPath: string;
+}
+
+const { menu, currentPath } = Astro.props;
+---
+
+<nav class="main-nav" aria-label="Main navigation">
+  <ul class="nav-list" role="menubar">
+    {menu.items.map((item) => {
+      const href = menuHelpers.getItemHref(item);
+      const active = menuHelpers.isActive(item, currentPath);
+      const hasChildren = item.children.length > 0;
+
+      return (
+        <li class:list={['nav-item', { active, 'has-children': hasChildren }]} role="none">
+          {href ? (
+            <a
+              href={href}
+              class="nav-link"
+              role="menuitem"
+              aria-current={active ? 'page' : undefined}
+              aria-haspopup={hasChildren ? 'true' : undefined}
+            >
+              {item.title}
+            </a>
+          ) : (
+            <span class="nav-link" role="menuitem" aria-haspopup={hasChildren ? 'true' : undefined}>
+              {item.title}
+            </span>
+          )}
+          {hasChildren && (
+            <ul class="nav-submenu" role="menu">
+              {item.children.map((child) => {
+                const childHref = menuHelpers.getItemHref(child);
+                const childActive = menuHelpers.isActive(child, currentPath);
+                const childHasChildren = child.children.length > 0;
+
+                return (
+                  <li class:list={['nav-subitem', { active: childActive }]} role="none">
+                    {childHref ? (
+                      <a href={childHref} class="nav-sublink" role="menuitem" aria-current={childActive ? 'page' : undefined}>
+                        {child.title}
+                      </a>
+                    ) : (
+                      <span class="nav-sublink" role="menuitem">{child.title}</span>
+                    )}
+                    {childHasChildren && (
+                      <ul class="nav-submenu-nested" role="menu">
+                        {child.children.map((grandchild) => {
+                          const gcHref = menuHelpers.getItemHref(grandchild);
+                          return (
+                            <li role="none">
+                              {gcHref ? (
+                                <a href={gcHref} class="nav-sublink" role="menuitem">{grandchild.title}</a>
+                              ) : (
+                                <span class="nav-sublink" role="menuitem">{grandchild.title}</span>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </li>
+      );
+    })}
+  </ul>
+</nav>

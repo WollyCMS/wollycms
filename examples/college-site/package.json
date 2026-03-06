@@ -1,0 +1,15 @@
+{
+  "name": "college-site-example",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@spacelycms/astro": "*",
+    "astro": "^5.7.0"
+  }
+}
