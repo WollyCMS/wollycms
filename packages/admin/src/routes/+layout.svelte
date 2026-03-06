@@ -6,6 +6,7 @@
   import { api } from '$lib/api.js';
   import ToastContainer from '$lib/components/ToastContainer.svelte';
   import KeyboardShortcuts from '$lib/components/KeyboardShortcuts.svelte';
+  import GlobalSearch from '$lib/components/GlobalSearch.svelte';
   import {
     LayoutDashboard, FileText, Blocks, Image, Menu, Tags,
     CornerDownRight, ClipboardList, Square, Users, Settings,
@@ -159,6 +160,9 @@
       </div>
     </aside>
     <main class="main-content" id="main-content">
+      <div class="main-header">
+        <GlobalSearch />
+      </div>
       {@render children()}
     </main>
   </div>

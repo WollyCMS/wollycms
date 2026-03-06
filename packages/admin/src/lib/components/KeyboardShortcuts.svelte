@@ -15,6 +15,10 @@
         <div class="shortcut-group">
           <h3>Global</h3>
           <div class="shortcut-row">
+            <span class="shortcut-desc">Search</span>
+            <div class="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>K</kbd></div>
+          </div>
+          <div class="shortcut-row">
             <span class="shortcut-desc">Show shortcuts</span>
             <kbd>?</kbd>
           </div>

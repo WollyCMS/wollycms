@@ -285,6 +285,13 @@ button:focus-visible,
   min-height: 100vh;
 }
 
+/* Main header (search bar) */
+.main-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
 /* Page header */
 .page-header {
   display: flex;

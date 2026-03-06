@@ -19,6 +19,7 @@ import presenceRouter from './presence.js';
 import webhooksRouter from './webhooks.js';
 import apiKeysRouter from './api-keys.js';
 import auditRouter from './audit.js';
+import searchRouter from './search.js';
 
 const app = new Hono();
 
@@ -46,5 +47,6 @@ app.route('/presence', presenceRouter);
 app.route('/webhooks', webhooksRouter);
 app.route('/api-keys', apiKeysRouter);
 app.route('/audit-logs', auditRouter);
+app.route('/search', searchRouter);
 
 export default app;
