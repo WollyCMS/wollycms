@@ -5,8 +5,13 @@
 node_modules/
 dist/
 build/
+.svelte-kit/
+.astro/
 data/
 uploads/
+*.db
+*.sqlite
+*.sqlite3
 *.log
 .DS_Store
 Thumbs.db
@@ -14,6 +19,6 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
-.claude/settings.local.json
+.claude/
 CLAUDE.local.md
 docs/research/

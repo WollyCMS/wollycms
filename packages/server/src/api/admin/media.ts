@@ -7,6 +7,7 @@ import { env } from '../../env.js';
 import { mkdir, writeFile, unlink } from 'node:fs/promises';
 import { join, extname } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { processImage, isProcessableImage } from '../../media/processing.js';
 
 const app = new Hono();
 
@@ -64,16 +65,38 @@ app.post('/', async (c) => {
   const altText = (body['altText'] as string) || null;
   const title = (body['title'] as string) || originalName;
 
+  // Process image to extract dimensions and generate variants
+  let width: number | null = null;
+  let height: number | null = null;
+  let variants: Record<string, string> = {};
+  let imageMetadata: Record<string, unknown> = {};
+
+  if (isProcessableImage(file.type)) {
+    try {
+      const result = await processImage(filePath, uploadDir);
+      if (result) {
+        width = result.width;
+        height = result.height;
+        variants = result.variants;
+        imageMetadata = result.metadata;
+      }
+    } catch (err) {
+      console.error('Image processing failed, saving original only:', err);
+    }
+  }
+
   const [row] = await db.insert(media).values({
     filename,
     originalName,
     mimeType: file.type,
     size: buffer.length,
+    width,
+    height,
     altText,
     title,
     path: filePath,
-    variants: {},
-    metadata: {},
+    variants,
+    metadata: imageMetadata,
     createdAt: now,
     createdBy: payload.sub,
   }).returning();
@@ -107,11 +130,22 @@ app.delete('/:id', async (c) => {
   const [row] = await db.select().from(media).where(eq(media.id, id)).limit(1);
   if (!row) return c.json({ errors: [{ code: 'NOT_FOUND', message: 'Media not found' }] }, 404);
 
-  // Delete file from disk
+  // Delete original file from disk
   try {
     await unlink(row.path);
   } catch {
     // File may already be gone
+  }
+
+  // Delete variant files from disk
+  if (row.variants && typeof row.variants === 'object') {
+    for (const variantPath of Object.values(row.variants)) {
+      try {
+        await unlink(variantPath);
+      } catch {
+        // Variant file may already be gone
+      }
+    }
   }
 
   await db.delete(media).where(eq(media.id, id));

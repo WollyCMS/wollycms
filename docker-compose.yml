@@ -1,0 +1,26 @@
+services:
+  spacelycms:
+    build: .
+    ports:
+      - "4321:4321"
+    environment:
+      - NODE_ENV=production
+      - PORT=4321
+      - HOST=0.0.0.0
+      - DATABASE_URL=sqlite:./data/spacely.db
+      - MEDIA_DIR=./uploads
+      - JWT_SECRET=${JWT_SECRET:?Set JWT_SECRET in .env}
+    volumes:
+      - spacely-data:/app/data
+      - spacely-uploads:/app/uploads
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:4321/api/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+volumes:
+  spacely-data:
+  spacely-uploads:

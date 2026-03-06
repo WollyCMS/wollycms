@@ -1,0 +1,69 @@
+# Stage 1: Install dependencies
+FROM node:22-slim AS deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+COPY packages/server/package.json packages/server/
+COPY packages/admin/package.json packages/admin/
+COPY packages/astro/package.json packages/astro/
+COPY examples/college-site/package.json examples/college-site/
+RUN npm ci --ignore-scripts
+# Sharp needs native binaries — install separately
+RUN cd packages/server && npm rebuild sharp
+
+# Stage 2: Build admin SPA
+FROM deps AS build-admin
+COPY packages/admin/ packages/admin/
+COPY tsconfig.json ./
+RUN npm run build --workspace=packages/admin
+
+# Stage 3: Build server
+FROM deps AS build-server
+COPY packages/server/ packages/server/
+COPY tsconfig.json ./
+RUN npm run build --workspace=packages/server
+
+# Stage 4: Production image
+FROM node:22-slim AS production
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tini \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Create non-root user
+RUN groupadd -r spacely && useradd -r -g spacely -m spacely
+
+# Copy production node_modules
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages/server/node_modules ./packages/server/node_modules
+
+# Copy built server
+COPY --from=build-server /app/packages/server/dist ./packages/server/dist
+COPY --from=build-server /app/packages/server/drizzle ./packages/server/drizzle
+COPY packages/server/package.json packages/server/
+
+# Copy built admin SPA
+COPY --from=build-admin /app/packages/admin/build ./packages/admin/build
+
+# Copy root package.json for workspace resolution
+COPY package.json ./
+
+# Create data and uploads directories
+RUN mkdir -p data uploads && chown -R spacely:spacely /app
+
+USER spacely
+
+ENV NODE_ENV=production
+ENV PORT=4321
+ENV HOST=0.0.0.0
+ENV DATABASE_URL=sqlite:./data/spacely.db
+ENV MEDIA_DIR=./uploads
+ENV JWT_SECRET=change-me-in-production
+
+EXPOSE 4321
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD node -e "fetch('http://localhost:4321/api/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"
+
+ENTRYPOINT ["tini", "--"]
+CMD ["node", "packages/server/dist/index.js"]

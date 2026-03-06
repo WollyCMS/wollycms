@@ -166,12 +166,22 @@ describe('GET /api/content/media/:id/:variant', () => {
     expect(body.data.width).toBeDefined();
   });
 
-  it('returns media reference for original variant', async () => {
+  it('returns 404 for original variant when file is missing on disk', async () => {
+    // Seed data has paths to files that do not exist on disk,
+    // so the content API correctly returns FILE_NOT_FOUND.
     const res = await get('/api/content/media/1/original');
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(404);
     const body = await res.json();
-    expect(body.data.variant).toBe('original');
-    expect(body.data.path).toBeDefined();
+    expect(body.errors[0].code).toBe('FILE_NOT_FOUND');
+  });
+
+  it('returns 404 for unavailable variant', async () => {
+    // Media record 4 (college-logo.png) has empty variants {},
+    // so requesting "thumbnail" should return VARIANT_NOT_FOUND.
+    const res = await get('/api/content/media/4/thumbnail');
+    expect(res.status).toBe(404);
+    const body = await res.json();
+    expect(body.errors[0].code).toBe('VARIANT_NOT_FOUND');
   });
 
   it('returns 404 for non-existent media', async () => {

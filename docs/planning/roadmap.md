@@ -29,9 +29,9 @@ managed via API (no admin UI yet — use seed scripts or API client).
   - `GET /api/content/config`
   - `GET /api/content/schemas`
 - [x] Tests: 22 Vitest tests for all API endpoints
-- [ ] Media storage: local filesystem with Sharp image processing
-- [ ] Basic auth middleware (placeholder for admin API)
-- [ ] Docker setup: Dockerfile + docker-compose.yml
+- [x] Media storage: local filesystem with Sharp image processing
+- [x] Basic auth middleware (JWT implemented in Phase 3)
+- [x] Docker setup: Dockerfile + docker-compose.yml
 
 ### Demo
 
@@ -115,17 +115,15 @@ all content without touching code or APIs.
   - **Users**: list, create with role selection, delete
   - **Settings**: site name, tagline, footer text, social links
 - [x] Responsive layout (sidebar collapses on tablet)
-- [ ] Rich text editor (TipTap) — currently JSON textarea
-- [ ] Drag-drop reorder for blocks and menu items
-- [ ] Media: Sharp image processing for variant generation
-- [ ] Tests: admin API tests
+- [x] Rich text editor (TipTap WYSIWYG with toolbar)
+- [x] Drag-drop reorder for blocks and menu items
+- [x] Media: Sharp image processing for variant generation (thumbnail, medium, large WebP)
+- [x] Tests: 71 tests (23 content API + 48 admin API)
 
 ### Known Limitations
 
 - Media images from seed data are broken (DB records exist but no files
   on disk — upload real files through the admin to test)
-- Rich text fields show raw TipTap JSON (visual editor planned for Phase 4)
-- Block/menu reordering is via API only (no drag-drop UI yet)
 
 ### Demo
 

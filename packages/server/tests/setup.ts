@@ -15,7 +15,12 @@ const TEST_DB_PATH = './data/test.db';
 // Set env before any module reads it
 process.env.DATABASE_URL = `sqlite:${TEST_DB_PATH}`;
 
+let initialized = false;
+
 export function setupTestDatabase() {
+  if (initialized) return;
+  initialized = true;
+
   mkdirSync('./data', { recursive: true });
   if (existsSync(TEST_DB_PATH)) {
     unlinkSync(TEST_DB_PATH);

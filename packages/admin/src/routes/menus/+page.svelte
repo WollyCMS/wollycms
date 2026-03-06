@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { api } from '$lib/api.js';
+  import SortableList from '$lib/components/SortableList.svelte';
 
   let menus = $state<any[]>([]);
   let selectedMenu = $state<any>(null);
@@ -71,6 +72,27 @@
     }
     return flat;
   }
+
+  function flatMenuItems(): any[] {
+    return renderItems(selectedMenu?.items || []);
+  }
+
+  async function reorderMenuItems(reordered: any[]) {
+    if (!selectedMenu) return;
+    const items = reordered.map((item: any, i: number) => ({
+      id: item.id,
+      parentId: item.parentId ?? null,
+      position: i,
+      depth: item.depth ?? 0,
+    }));
+    try {
+      await api.put(`/menus/${selectedMenu.id}/items-order`, { items });
+      loadMenu(selectedMenu.id);
+    } catch (err: any) {
+      error = err.message;
+      loadMenu(selectedMenu.id);
+    }
+  }
 </script>
 
 <div class="page-header">
@@ -101,22 +123,15 @@
         </div>
       </div>
 
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Title</th><th>URL</th><th></th></tr></thead>
-          <tbody>
-            {#each renderItems(selectedMenu.items || []) as item}
-              <tr>
-                <td style="padding-left: {1 + item.depth * 1.5}rem;">{item.title}</td>
-                <td style="color: var(--c-text-light);">{item.url || item.pageSlug || '-'}</td>
-                <td style="text-align: right;">
-                  <button class="btn btn-sm btn-danger" onclick={() => deleteItem(item.id)}>Delete</button>
-                </td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
+      <SortableList items={flatMenuItems()} onReorder={reorderMenuItems}>
+        {#snippet children(item, i)}
+          <div class="menu-item-row" style="display: flex; align-items: center; padding: 0.6rem 0.75rem; gap: 0.75rem;">
+            <span style="flex: 1; padding-left: {item.depth * 1.5}rem; font-size: 0.9rem;">{item.title}</span>
+            <span style="color: var(--c-text-light); font-size: 0.85rem; min-width: 120px;">{item.url || item.pageSlug || '-'}</span>
+            <button class="btn btn-sm btn-danger" onclick={() => deleteItem(item.id)}>Delete</button>
+          </div>
+        {/snippet}
+      </SortableList>
     {:else}
       <div class="empty-state"><p>Select a menu from the left</p></div>
     {/if}

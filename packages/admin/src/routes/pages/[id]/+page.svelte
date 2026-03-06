@@ -3,6 +3,8 @@
   import { page as routePage } from '$app/stores';
   import { goto } from '$app/navigation';
   import { api } from '$lib/api.js';
+  import RichTextEditor from '$lib/components/RichTextEditor.svelte';
+  import SortableList from '$lib/components/SortableList.svelte';
 
   let pageData = $state<any>(null);
   let contentType = $state<any>(null);
@@ -124,6 +126,21 @@
     const bt = blockTypes.find((t: any) => t.slug === blockTypeSlug);
     return bt?.fieldsSchema || [];
   }
+
+  function sortableBlocks(region: string): any[] {
+    return getRegionBlocks(region).map((b: any) => ({ ...b, id: b.pb_id }));
+  }
+
+  async function reorderBlocks(reordered: any[]) {
+    const order = reordered.map((b: any) => b.pb_id);
+    pageData.regions[activeRegion] = reordered;
+    try {
+      await api.put(`/pages/${id}/blocks-order`, { region: activeRegion, order });
+    } catch (err: any) {
+      error = err.message;
+      load();
+    }
+  }
 </script>
 
 {#if !pageData}
@@ -198,61 +215,58 @@
         </div>
 
         <div class="card">
-          {#each getRegionBlocks(activeRegion) as block, i}
-            <div class="block-editor" style="padding: 1rem; border: 1px solid var(--c-border); border-radius: var(--radius); margin-bottom: 0.75rem;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                <strong style="font-size: 0.9rem;">
-                  {block.block_type}
-                  {#if block.is_shared}<span class="badge badge-published" style="margin-left: 0.5rem;">shared</span>{/if}
-                </strong>
-                <button class="btn btn-sm btn-danger" onclick={() => removeBlock(block.pb_id)}>Remove</button>
-              </div>
-              {#each getFieldSchema(block.block_type) as field}
-                <div class="form-group">
-                  <label style="font-size: 0.8rem;">{field.label || field.name}</label>
-                  {#if field.type === 'richtext'}
-                    <textarea class="form-control" value={typeof block.fields[field.name] === 'object' ? JSON.stringify(block.fields[field.name], null, 2) : (block.fields[field.name] || '')}
-                      onblur={(e) => {
-                        try {
-                          const val = JSON.parse((e.target as HTMLTextAreaElement).value);
-                          updateBlockField(block.pb_id, block.block_id || block.pb_id, field.name, val);
-                        } catch { /* keep as string */ }
-                      }}
-                      style="min-height: 120px; font-family: monospace; font-size: 0.8rem;"
-                    ></textarea>
-                  {:else if field.type === 'select'}
-                    <select class="form-control" value={block.fields[field.name] || field.default || ''}
-                      onchange={(e) => updateBlockField(block.pb_id, block.block_id || block.pb_id, field.name, (e.target as HTMLSelectElement).value)}>
-                      {#each (field.settings?.options || field.options || []) as opt}
-                        <option value={typeof opt === 'string' ? opt : opt.value}>{typeof opt === 'string' ? opt : opt.label}</option>
-                      {/each}
-                    </select>
-                  {:else if field.type === 'boolean'}
-                    <input type="checkbox" checked={!!block.fields[field.name]}
-                      onchange={(e) => updateBlockField(block.pb_id, block.block_id || block.pb_id, field.name, (e.target as HTMLInputElement).checked)} />
-                  {:else if field.type === 'number'}
-                    <input type="number" class="form-control" value={block.fields[field.name] || ''}
-                      oninput={(e) => updateBlockField(block.pb_id, block.block_id || block.pb_id, field.name, Number((e.target as HTMLInputElement).value))} />
-                  {:else if field.type === 'repeater'}
-                    <textarea class="form-control" value={JSON.stringify(block.fields[field.name] || [], null, 2)}
-                      onblur={(e) => {
-                        try {
-                          const val = JSON.parse((e.target as HTMLTextAreaElement).value);
-                          updateBlockField(block.pb_id, block.block_id || block.pb_id, field.name, val);
-                        } catch { /* ignore parse errors */ }
-                      }}
-                      style="min-height: 100px; font-family: monospace; font-size: 0.8rem;"
-                    ></textarea>
-                  {:else}
-                    <input class="form-control" value={block.fields[field.name] || ''}
-                      oninput={(e) => updateBlockField(block.pb_id, block.block_id || block.pb_id, field.name, (e.target as HTMLInputElement).value)} />
-                  {/if}
+          <SortableList items={sortableBlocks(activeRegion)} onReorder={reorderBlocks}>
+            {#snippet children(block, i)}
+              <div class="block-editor" style="padding: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                  <strong style="font-size: 0.9rem;">
+                    {block.block_type}
+                    {#if block.is_shared}<span class="badge badge-published" style="margin-left: 0.5rem;">shared</span>{/if}
+                  </strong>
+                  <button class="btn btn-sm btn-danger" onclick={() => removeBlock(block.pb_id)}>Remove</button>
                 </div>
-              {/each}
-            </div>
-          {/each}
+                {#each getFieldSchema(block.block_type) as field}
+                  <div class="form-group">
+                    <label style="font-size: 0.8rem;">{field.label || field.name}</label>
+                    {#if field.type === 'richtext'}
+                      <RichTextEditor
+                        content={block.fields[field.name] || ''}
+                        onUpdate={(json) => updateBlockField(block.pb_id, block.block_id || block.pb_id, field.name, json)}
+                      />
+                    {:else if field.type === 'select'}
+                      <select class="form-control" value={block.fields[field.name] || field.default || ''}
+                        onchange={(e) => updateBlockField(block.pb_id, block.block_id || block.pb_id, field.name, (e.target as HTMLSelectElement).value)}>
+                        {#each (field.settings?.options || field.options || []) as opt}
+                          <option value={typeof opt === 'string' ? opt : opt.value}>{typeof opt === 'string' ? opt : opt.label}</option>
+                        {/each}
+                      </select>
+                    {:else if field.type === 'boolean'}
+                      <input type="checkbox" checked={!!block.fields[field.name]}
+                        onchange={(e) => updateBlockField(block.pb_id, block.block_id || block.pb_id, field.name, (e.target as HTMLInputElement).checked)} />
+                    {:else if field.type === 'number'}
+                      <input type="number" class="form-control" value={block.fields[field.name] || ''}
+                        oninput={(e) => updateBlockField(block.pb_id, block.block_id || block.pb_id, field.name, Number((e.target as HTMLInputElement).value))} />
+                    {:else if field.type === 'repeater'}
+                      <textarea class="form-control" value={JSON.stringify(block.fields[field.name] || [], null, 2)}
+                        onblur={(e) => {
+                          try {
+                            const val = JSON.parse((e.target as HTMLTextAreaElement).value);
+                            updateBlockField(block.pb_id, block.block_id || block.pb_id, field.name, val);
+                          } catch { /* ignore parse errors */ }
+                        }}
+                        style="min-height: 100px; font-family: monospace; font-size: 0.8rem;"
+                      ></textarea>
+                    {:else}
+                      <input class="form-control" value={block.fields[field.name] || ''}
+                        oninput={(e) => updateBlockField(block.pb_id, block.block_id || block.pb_id, field.name, (e.target as HTMLInputElement).value)} />
+                    {/if}
+                  </div>
+                {/each}
+              </div>
+            {/snippet}
+          </SortableList>
 
-          <button class="btn btn-outline" style="width: 100%;" onclick={() => showAddBlock = true}>
+          <button class="btn btn-outline" style="width: 100%; margin-top: 0.75rem;" onclick={() => showAddBlock = true}>
             + Add Block to {activeRegion}
           </button>
         </div>

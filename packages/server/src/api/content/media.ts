@@ -1,17 +1,30 @@
 import { Hono } from 'hono';
 import { eq } from 'drizzle-orm';
+import { readFile, stat } from 'node:fs/promises';
 import { getDb } from '../../db/index.js';
 import { media } from '../../db/schema/index.js';
 
 const VALID_VARIANTS = ['original', 'thumbnail', 'medium', 'large', 'info'] as const;
 type Variant = (typeof VALID_VARIANTS)[number];
 
+/** One year in seconds for immutable cache headers. */
+const CACHE_MAX_AGE = 31536000;
+
+/**
+ * Determine Content-Type for a variant file.
+ * Generated variants are always WebP; originals keep their stored mimeType.
+ */
+function getContentType(variant: string, originalMimeType: string): string {
+  return variant === 'original' ? originalMimeType : 'image/webp';
+}
+
 const app = new Hono();
 
 /**
- * GET /:id/:variant - Serve media file info by id and variant.
+ * GET /:id/:variant - Serve media files or metadata.
  * Variants: original, thumbnail, medium, large, info.
- * For now, returns media record as JSON. Actual file serving comes later.
+ * - "info" returns JSON metadata.
+ * - All other variants serve the actual file binary with correct headers.
  */
 app.get('/:id/:variant', async (c) => {
   const db = getDb();
@@ -47,7 +60,7 @@ app.get('/:id/:variant', async (c) => {
 
   const record = rows[0];
 
-  // For "info" variant, return full metadata
+  // For "info" variant, return full metadata as JSON
   if (variant === 'info') {
     return c.json({
       data: {
@@ -67,24 +80,37 @@ app.get('/:id/:variant', async (c) => {
     });
   }
 
-  // For other variants, return file reference info (actual streaming comes later)
-  const variantPath =
+  // Resolve the file path for the requested variant
+  const filePath =
     variant === 'original'
       ? record.path
       : record.variants?.[variant] || null;
 
-  return c.json({
-    data: {
-      id: record.id,
-      variant,
-      mimeType: record.mimeType,
-      path: variantPath,
-      width: record.width,
-      height: record.height,
-      altText: record.altText,
-      title: record.title,
-    },
-  });
+  if (!filePath) {
+    return c.json(
+      { errors: [{ code: 'VARIANT_NOT_FOUND', message: `Variant "${variant}" not available for this media` }] },
+      404,
+    );
+  }
+
+  // Read and serve the file
+  try {
+    await stat(filePath);
+  } catch {
+    return c.json(
+      { errors: [{ code: 'FILE_NOT_FOUND', message: 'File not found on disk' }] },
+      404,
+    );
+  }
+
+  const fileBuffer = await readFile(filePath);
+  const contentType = getContentType(variant, record.mimeType);
+
+  c.header('Content-Type', contentType);
+  c.header('Content-Length', String(fileBuffer.length));
+  c.header('Cache-Control', `public, max-age=${CACHE_MAX_AGE}, immutable`);
+
+  return c.body(fileBuffer);
 });
 
 export default app;
