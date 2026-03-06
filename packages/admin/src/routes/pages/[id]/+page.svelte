@@ -5,6 +5,7 @@
   import { api } from '$lib/api.js';
   import RichTextEditor from '$lib/components/RichTextEditor.svelte';
   import SortableList from '$lib/components/SortableList.svelte';
+  import MediaPicker from '$lib/components/MediaPicker.svelte';
 
   let pageData = $state<any>(null);
   let contentType = $state<any>(null);
@@ -15,16 +16,25 @@
   let showAddBlock = $state(false);
   let saving = $state(false);
 
+  // Menu placement
+  let allMenus = $state<any[]>([]);
+  let menuDetails = $state<Record<number, any>>({});
+  let showMenuAdd = $state(false);
+  let menuAddTarget = $state<number | null>(null);
+  let menuAddParent = $state<number | null>(null);
+
   const id = $derived($routePage.params.id);
 
   async function load() {
     try {
-      const [pageRes, btRes] = await Promise.all([
+      const [pageRes, btRes, menusRes] = await Promise.all([
         api.get<{ data: any }>(`/pages/${id}`),
         api.get<{ data: any[] }>('/block-types'),
+        api.get<{ data: any[] }>('/menus'),
       ]);
       pageData = pageRes.data;
       blockTypes = btRes.data;
+      allMenus = menusRes.data;
       if (pageData.typeId) {
         const ctRes = await api.get<{ data: any }>(`/content-types/${pageData.typeId}`);
         contentType = ctRes.data;
@@ -32,9 +42,82 @@
           activeRegion = contentType.regions[0].name;
         }
       }
+      await loadMenuDetails();
     } catch (err: any) {
       error = err.message;
     }
+  }
+
+  async function loadMenuDetails() {
+    const details: Record<number, any> = {};
+    for (const menu of allMenus) {
+      const res = await api.get<{ data: any }>(`/menus/${menu.id}`);
+      details[menu.id] = res.data;
+    }
+    menuDetails = details;
+  }
+
+  function getPageMenuPlacements(): { menuId: number; menuName: string; itemId: number; itemTitle: string; parentTitle: string | null }[] {
+    const placements: any[] = [];
+    for (const menu of allMenus) {
+      const detail = menuDetails[menu.id];
+      if (!detail) continue;
+      const flat = flattenMenuItems(detail.items || []);
+      for (const item of flat) {
+        if (item.pageId === parseInt(id, 10)) {
+          const parent = flat.find((f: any) => f.id === item.parentId);
+          placements.push({
+            menuId: menu.id,
+            menuName: detail.name,
+            itemId: item.id,
+            itemTitle: item.title,
+            parentTitle: parent?.title || null,
+          });
+        }
+      }
+    }
+    return placements;
+  }
+
+  function flattenMenuItems(items: any[], depth = 0): any[] {
+    const flat: any[] = [];
+    for (const item of items) {
+      flat.push({ ...item, depth });
+      if (item.children?.length) flat.push(...flattenMenuItems(item.children, depth + 1));
+    }
+    return flat;
+  }
+
+  function getMenuItemsForSelect(menuId: number): any[] {
+    const detail = menuDetails[menuId];
+    if (!detail) return [];
+    return flattenMenuItems(detail.items || []);
+  }
+
+  async function addToMenu() {
+    if (!menuAddTarget) return;
+    try {
+      await api.post(`/menus/${menuAddTarget}/items`, {
+        title: pageData.title,
+        pageId: parseInt(id, 10),
+        parentId: menuAddParent,
+      });
+      showMenuAdd = false;
+      menuAddTarget = null;
+      menuAddParent = null;
+      await loadMenuDetails();
+      success = 'Added to menu.';
+      setTimeout(() => success = '', 3000);
+    } catch (err: any) { error = err.message; }
+  }
+
+  async function removeFromMenu(menuId: number, itemId: number) {
+    try {
+      await api.del(`/menus/${menuId}/items/${itemId}`);
+      await loadMenuDetails();
+      success = 'Removed from menu.';
+      setTimeout(() => success = '', 3000);
+    } catch (err: any) { error = err.message; }
   }
 
   onMount(load);
@@ -127,6 +210,17 @@
     return bt?.fieldsSchema || [];
   }
 
+  function isFieldVisible(field: any, allFields: any[], blockFields: Record<string, any>): boolean {
+    // Video block conditional: media only when source=upload, url only when source=youtube/vimeo
+    if (field.name === 'media' && allFields.some((f: any) => f.name === 'source')) {
+      return blockFields['source'] === 'upload' || !blockFields['source'];
+    }
+    if (field.name === 'url' && allFields.some((f: any) => f.name === 'source')) {
+      return blockFields['source'] === 'youtube' || blockFields['source'] === 'vimeo';
+    }
+    return true;
+  }
+
   function sortableBlocks(region: string): any[] {
     return getRegionBlocks(region).map((b: any) => ({ ...b, id: b.pb_id }));
   }
@@ -195,10 +289,25 @@
           {#each contentType.fieldsSchema as field}
             <div class="form-group">
               <label>{field.label || field.name}</label>
-              <input class="form-control" value={pageData.fields?.[field.name] || ''} oninput={(e) => {
-                if (!pageData.fields) pageData.fields = {};
-                pageData.fields[field.name] = (e.target as HTMLInputElement).value;
-              }} />
+              {#if field.type === 'media'}
+                <MediaPicker
+                  value={pageData.fields?.[field.name] || null}
+                  onSelect={(mediaId) => {
+                    if (!pageData.fields) pageData.fields = {};
+                    pageData.fields[field.name] = mediaId;
+                  }}
+                />
+              {:else if field.type === 'url'}
+                <input type="url" class="form-control" value={pageData.fields?.[field.name] || ''} placeholder="https://..." oninput={(e) => {
+                  if (!pageData.fields) pageData.fields = {};
+                  pageData.fields[field.name] = (e.target as HTMLInputElement).value;
+                }} />
+              {:else}
+                <input class="form-control" value={pageData.fields?.[field.name] || ''} oninput={(e) => {
+                  if (!pageData.fields) pageData.fields = {};
+                  pageData.fields[field.name] = (e.target as HTMLInputElement).value;
+                }} />
+              {/if}
             </div>
           {/each}
         {/if}
@@ -226,12 +335,18 @@
                   <button class="btn btn-sm btn-danger" onclick={() => removeBlock(block.pb_id)}>Remove</button>
                 </div>
                 {#each getFieldSchema(block.block_type) as field}
+                  {#if isFieldVisible(field, getFieldSchema(block.block_type), block.fields)}
                   <div class="form-group">
                     <label style="font-size: 0.8rem;">{field.label || field.name}</label>
                     {#if field.type === 'richtext'}
                       <RichTextEditor
                         content={block.fields[field.name] || ''}
                         onUpdate={(json) => updateBlockField(block.pb_id, block.block_id || block.pb_id, field.name, json)}
+                      />
+                    {:else if field.type === 'media'}
+                      <MediaPicker
+                        value={block.fields[field.name] || null}
+                        onSelect={(mediaId) => updateBlockField(block.pb_id, block.block_id || block.pb_id, field.name, mediaId)}
                       />
                     {:else if field.type === 'select'}
                       <select class="form-control" value={block.fields[field.name] || field.default || ''}
@@ -256,11 +371,15 @@
                         }}
                         style="min-height: 100px; font-family: monospace; font-size: 0.8rem;"
                       ></textarea>
+                    {:else if field.type === 'url'}
+                      <input type="url" class="form-control" value={block.fields[field.name] || ''} placeholder="https://..."
+                        oninput={(e) => updateBlockField(block.pb_id, block.block_id || block.pb_id, field.name, (e.target as HTMLInputElement).value)} />
                     {:else}
                       <input class="form-control" value={block.fields[field.name] || ''}
                         oninput={(e) => updateBlockField(block.pb_id, block.block_id || block.pb_id, field.name, (e.target as HTMLInputElement).value)} />
                     {/if}
                   </div>
+                  {/if}
                 {/each}
               </div>
             {/snippet}
@@ -281,6 +400,62 @@
         <p style="font-size: 0.85rem; color: var(--c-text-light);">Status: <span class="badge badge-{pageData.status}">{pageData.status}</span></p>
         <p style="font-size: 0.85rem; color: var(--c-text-light);">Created: {new Date(pageData.meta.created_at).toLocaleString()}</p>
         <p style="font-size: 0.85rem; color: var(--c-text-light);">Updated: {new Date(pageData.meta.updated_at).toLocaleString()}</p>
+      </div>
+
+      <div class="card" style="margin-bottom: 1rem;">
+        <h3 style="font-size: 0.95rem; margin-bottom: 0.75rem;">Menu Placement</h3>
+        {#each getPageMenuPlacements() as placement}
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--c-border);">
+            <div style="font-size: 0.85rem;">
+              <strong>{placement.menuName}</strong>
+              {#if placement.parentTitle}
+                <span style="color: var(--c-text-light);"> under {placement.parentTitle}</span>
+              {/if}
+            </div>
+            <button class="btn btn-sm btn-danger" style="padding: 0.15rem 0.4rem; font-size: 0.75rem;" onclick={() => removeFromMenu(placement.menuId, placement.itemId)}>×</button>
+          </div>
+        {/each}
+        {#if getPageMenuPlacements().length === 0}
+          <p style="font-size: 0.85rem; color: var(--c-text-light); margin-bottom: 0.5rem;">Not in any menu</p>
+        {/if}
+
+        {#if !showMenuAdd}
+          <button class="btn btn-sm btn-outline" style="width: 100%; margin-top: 0.5rem;" onclick={() => { showMenuAdd = true; menuAddTarget = allMenus[0]?.id ?? null; }}>
+            + Add to Menu
+          </button>
+        {:else}
+          <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--c-border);">
+            <div class="form-group" style="margin-bottom: 0.5rem;">
+              <label style="font-size: 0.75rem;">Menu</label>
+              <select class="form-control" value={menuAddTarget ?? ''} onchange={(e) => {
+                menuAddTarget = parseInt((e.target as HTMLSelectElement).value, 10) || null;
+                menuAddParent = null;
+              }}>
+                {#each allMenus as menu}
+                  <option value={menu.id}>{menu.name}</option>
+                {/each}
+              </select>
+            </div>
+            {#if menuAddTarget}
+              <div class="form-group" style="margin-bottom: 0.5rem;">
+                <label style="font-size: 0.75rem;">Parent Item</label>
+                <select class="form-control" value={menuAddParent ?? ''} onchange={(e) => {
+                  const val = (e.target as HTMLSelectElement).value;
+                  menuAddParent = val ? parseInt(val, 10) : null;
+                }}>
+                  <option value="">— Top Level —</option>
+                  {#each getMenuItemsForSelect(menuAddTarget) as item}
+                    <option value={item.id}>{'—'.repeat(item.depth)} {item.title}</option>
+                  {/each}
+                </select>
+              </div>
+            {/if}
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn btn-sm btn-outline" style="flex: 1;" onclick={() => { showMenuAdd = false; menuAddTarget = null; menuAddParent = null; }}>Cancel</button>
+              <button class="btn btn-sm btn-primary" style="flex: 1;" onclick={addToMenu}>Add</button>
+            </div>
+          </div>
+        {/if}
       </div>
     </div>
   </div>

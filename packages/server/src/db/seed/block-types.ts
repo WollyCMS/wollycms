@@ -190,6 +190,33 @@ export function seedBlockTypes(db: AppDatabase) {
       icon: 'grid',
       settings: {},
     },
+    {
+      name: 'Video',
+      slug: 'video',
+      description: 'Video from upload or YouTube/Vimeo embed.',
+      fieldsSchema: [
+        {
+          name: 'source',
+          label: 'Source',
+          type: 'select',
+          default: 'upload',
+          settings: {
+            options: [
+              { label: 'Upload', value: 'upload' },
+              { label: 'YouTube', value: 'youtube' },
+              { label: 'Vimeo', value: 'vimeo' },
+            ],
+          },
+        },
+        { name: 'media', label: 'Video File', type: 'media' },
+        { name: 'url', label: 'Video URL', type: 'url' },
+        { name: 'caption', label: 'Caption', type: 'text' },
+        { name: 'autoplay', label: 'Autoplay (muted)', type: 'boolean', default: false },
+        { name: 'loop', label: 'Loop', type: 'boolean', default: false },
+      ],
+      icon: 'video',
+      settings: {},
+    },
   ];
 
   const inserted = db.insert(blockTypes).values(types).returning().all();

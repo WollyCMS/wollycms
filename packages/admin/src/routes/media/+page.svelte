@@ -56,7 +56,7 @@
   <h1>Media Library ({items.length})</h1>
   <label class="btn btn-primary" style="cursor: pointer;">
     {uploading ? 'Uploading...' : '+ Upload'}
-    <input type="file" multiple accept="image/*" onchange={handleUpload} style="display: none;" />
+    <input type="file" multiple accept="image/*,video/*" onchange={handleUpload} style="display: none;" />
   </label>
 </div>
 
@@ -67,7 +67,12 @@
     <div class="card" style="padding: 0; overflow: hidden;">
       <div style="height: 140px; background: var(--c-bg); display: flex; align-items: center; justify-content: center; overflow: hidden;">
         {#if item.mimeType?.startsWith('image/')}
-          <img src="/api/content/media/{item.id}/medium" alt={item.altText || ''} style="max-width: 100%; max-height: 100%; object-fit: cover;" />
+          <img src="/api/content/media/{item.id}/thumbnail" alt={item.altText || ''} style="max-width: 100%; max-height: 100%; object-fit: cover;" />
+        {:else if item.mimeType?.startsWith('video/')}
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem; color: var(--c-text-light);">
+            <span style="font-size: 2rem;">🎬</span>
+            <span style="font-size: 0.7rem;">{item.mimeType.split('/')[1].toUpperCase()}</span>
+          </div>
         {:else}
           <span style="font-size: 2rem;">📁</span>
         {/if}
