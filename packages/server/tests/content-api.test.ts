@@ -239,6 +239,54 @@ describe('GET /api/content/schemas', () => {
   });
 });
 
+// --- SEO ---
+describe('Content API SEO', () => {
+  it('page response includes seo object', async () => {
+    const res = await get('/api/content/pages/home');
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.data.seo).toBeDefined();
+    expect(body.data.seo).toHaveProperty('meta_title');
+    expect(body.data.seo).toHaveProperty('meta_description');
+    expect(body.data.seo).toHaveProperty('og_image');
+    expect(body.data.seo).toHaveProperty('canonical_url');
+    expect(body.data.seo).toHaveProperty('robots');
+  });
+});
+
+// --- Sitemap ---
+describe('GET /api/content/sitemap', () => {
+  it('returns XML sitemap', async () => {
+    const res = await get('/api/content/sitemap');
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain('<?xml');
+    expect(body).toContain('<urlset');
+    expect(body).toContain('<url>');
+    expect(body).toContain('<loc>');
+  });
+});
+
+// --- ETag ---
+describe('Content API ETag', () => {
+  it('returns ETag header on GET', async () => {
+    const res = await get('/api/content/pages/home');
+    expect(res.status).toBe(200);
+    expect(res.headers.get('ETag')).toBeTruthy();
+  });
+
+  it('returns 304 for matching If-None-Match', async () => {
+    const res1 = await get('/api/content/pages/home');
+    const etag = res1.headers.get('ETag');
+    expect(etag).toBeTruthy();
+
+    const res2 = await app.request('/api/content/pages/home', {
+      headers: { 'If-None-Match': etag! },
+    });
+    expect(res2.status).toBe(304);
+  });
+});
+
 // --- Preview API ---
 describe('GET /api/content/preview/pages/:slug', () => {
   it('returns 401 without token', async () => {

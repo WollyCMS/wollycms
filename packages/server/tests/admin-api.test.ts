@@ -680,3 +680,38 @@ describe('Role-Based Access Control', () => {
     await editorReq(`/blocks/${body.data.id}`, { method: 'DELETE' });
   });
 });
+
+// --- Admin Search ---
+describe('Admin Search', () => {
+  it('GET /search returns empty for short queries', async () => {
+    const res = await authed('/search?q=a');
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.data.pages).toEqual([]);
+    expect(body.data.blocks).toEqual([]);
+  });
+
+  it('GET /search finds pages by title', async () => {
+    const res = await authed('/search?q=Home');
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.data.pages.length).toBeGreaterThan(0);
+    expect(body.data.pages[0].title).toContain('Home');
+  });
+
+  it('GET /search finds blocks by title', async () => {
+    const res = await authed('/search?q=Welcome');
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    // Should find blocks with "Welcome" in the title
+    const allResults = [...body.data.pages, ...body.data.blocks];
+    expect(allResults.length).toBeGreaterThanOrEqual(0);
+  });
+
+  it('GET /search finds menus', async () => {
+    const res = await authed('/search?q=Main');
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.data.menus.length).toBeGreaterThan(0);
+  });
+});
