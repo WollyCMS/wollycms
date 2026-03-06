@@ -374,29 +374,32 @@ A developer should go from zero to running CMS in under 5 minutes.
 - [ ] Publish `spacelycms` CLI to npm (setup, migrate, seed, type-gen)
 - [ ] Versioning strategy (semver, changelog, release automation)
 
-### 6b. CLI & Scaffolding
+### 6b. CLI & Scaffolding -- PARTIAL
 
-- [ ] `npx create-spacely` — interactive project scaffolding:
-  - Choose database (SQLite / PostgreSQL)
-  - Choose media storage (local / S3 / R2)
-  - Generate `.env`, `docker-compose.yml`, seed data
-  - Option to include example Astro site
+- [ ] `npx create-spacely` — interactive project scaffolding
 - [ ] `npx spacely types generate` — generate TypeScript types from CMS
       schemas (content types + block types → `.d.ts` file)
-- [ ] `npx spacely migrate` — run migrations
-- [ ] `npx spacely seed` — populate sample data
-- [ ] `npx spacely export` / `npx spacely import` — CLI backup/restore
+- [x] `spacely migrate` — run migrations
+- [x] `spacely seed` — populate sample data
+- [x] `spacely start` — start production server
+- [x] `spacely export` — export all data as JSON
+- [x] `spacely health` — check server health
+- [ ] `npx spacely import` — import from JSON file
 
-### 6c. Docker & Deployment
+### 6c. Docker & Deployment -- PARTIAL
 
 - [ ] Published Docker image (`docker pull spacelycms/server`)
-- [ ] Docker Compose templates:
-  - `docker-compose.dev.yml` (SQLite, local media, hot reload)
-  - `docker-compose.prod.yml` (PostgreSQL, S3 media, Caddy reverse proxy)
-- [ ] Deployment guides:
-  - VPS with Docker (DigitalOcean, Hetzner)
-  - Cloudflare Pages + cloud server
-  - Railway / Render / Fly.io one-click deploy
+- [x] Docker Compose dev template (`docker-compose.dev.yml`)
+- [ ] Docker Compose prod template (PostgreSQL, S3, Caddy reverse proxy)
+- [ ] Deployment guides
+
+### 6x. Build Pipeline -- COMPLETE
+
+- [x] TypeScript build with zero errors (`tsc` with `rewriteRelativeImportExtensions`)
+- [x] Hono JWT payload type declarations (ContextVariableMap)
+- [x] Fixed all pre-existing TS type errors (payload unknown, Zod/Drizzle casts)
+- [x] `npm run build` builds server + admin
+- [x] `bin` entry point for CLI in package.json
 
 ### 6d. Starter Templates
 
@@ -443,10 +446,11 @@ that make teams choose SpacelyCMS over Strapi, Directus, or Storyblok.
 - [ ] Admin search (full-text search across all pages and blocks in the
       admin UI)
 
-### 7b. SEO & Meta
+### 7b. SEO & Meta -- PARTIAL
 
-- [ ] SEO fields on pages (meta title, meta description, OG image, robots,
-      canonical URL — editable in admin, available in content API)
+- [x] SEO fields on pages (meta title, meta description, OG image, robots,
+      canonical URL — editable in admin sidebar, available in content API
+      as `seo` object with character count hints)
 - [ ] Sitemap generation (`/sitemap.xml` — auto-generated from published
       pages, configurable per content type)
 - [ ] OG image generation (auto-generate social sharing images from page
@@ -536,7 +540,7 @@ new block type.
 | Phase 4 | Visual Builder | Complete |
 | Phase 4.5 | Admin UI Polish | Complete (a-e) |
 | Phase 5 | Production Hardening | Complete (5a-5c) |
-| Phase 6 | Packaging & DX | Not started |
+| Phase 6 | Packaging & DX | In progress (build, CLI, Docker dev) |
 | Phase 7 | Content Features | Not started |
 | Phase 8 | Scale & Ecosystem | Not started |
 

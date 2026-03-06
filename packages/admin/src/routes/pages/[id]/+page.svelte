@@ -53,6 +53,8 @@
     cleanSnapshot = JSON.stringify({
       title: pageData.title, slug: pageData.slug,
       status: pageData.status, fields: pageData.fields,
+      metaTitle: pageData.metaTitle, metaDescription: pageData.metaDescription,
+      ogImage: pageData.ogImage, canonicalUrl: pageData.canonicalUrl, robots: pageData.robots,
     });
   }
 
@@ -61,6 +63,8 @@
     const current = JSON.stringify({
       title: pageData.title, slug: pageData.slug,
       status: pageData.status, fields: pageData.fields,
+      metaTitle: pageData.metaTitle, metaDescription: pageData.metaDescription,
+      ogImage: pageData.ogImage, canonicalUrl: pageData.canonicalUrl, robots: pageData.robots,
     });
     dirty = current !== cleanSnapshot;
   }
@@ -154,6 +158,11 @@
       await api.put(`/pages/${id}`, {
         title: pageData.title, slug: pageData.slug, status: pageData.status,
         fields: pageData.fields || {}, scheduledAt: pageData.scheduledAt || null,
+        metaTitle: pageData.metaTitle || null,
+        metaDescription: pageData.metaDescription || null,
+        ogImage: pageData.ogImage || null,
+        canonicalUrl: pageData.canonicalUrl || null,
+        robots: pageData.robots || null,
       });
       toast.success('Page saved.');
       takeSnapshot();

@@ -15,6 +15,11 @@ export const pages = sqliteTable('pages', {
   updatedAt: text('updated_at').notNull(),
   publishedAt: text('published_at'),
   scheduledAt: text('scheduled_at'),
+  metaTitle: text('meta_title'),
+  metaDescription: text('meta_description'),
+  ogImage: text('og_image'),
+  canonicalUrl: text('canonical_url'),
+  robots: text('robots'),
   createdBy: integer('created_by').references(() => users.id),
 }, (table) => [
   index('idx_pages_slug').on(table.slug),

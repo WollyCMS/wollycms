@@ -168,6 +168,51 @@
 </div>
 
 <div class="card" style="margin-bottom: 1rem;">
+  <h3 style="font-size: 0.95rem; margin-bottom: 0.75rem;">SEO & Meta</h3>
+  <div class="form-group" style="margin-bottom: 0.5rem;">
+    <label style="font-size: 0.8rem; font-weight: 600;">Meta Title</label>
+    <input class="form-control" style="font-size: 0.85rem;" placeholder={pageData.title}
+      value={pageData.metaTitle || ''}
+      oninput={(e) => { pageData.metaTitle = (e.target as HTMLInputElement).value || null; }} />
+    <p style="font-size: 0.7rem; color: var(--c-text-light); margin-top: 0.15rem;">
+      {(pageData.metaTitle || pageData.title || '').length}/60 characters
+    </p>
+  </div>
+  <div class="form-group" style="margin-bottom: 0.5rem;">
+    <label style="font-size: 0.8rem; font-weight: 600;">Meta Description</label>
+    <textarea class="form-control" style="font-size: 0.85rem; min-height: 60px;" placeholder="Page description for search engines..."
+      value={pageData.metaDescription || ''}
+      oninput={(e) => { pageData.metaDescription = (e.target as HTMLTextAreaElement).value || null; }}></textarea>
+    <p style="font-size: 0.7rem; color: var(--c-text-light); margin-top: 0.15rem;">
+      {(pageData.metaDescription || '').length}/160 characters
+    </p>
+  </div>
+  <div class="form-group" style="margin-bottom: 0.5rem;">
+    <label style="font-size: 0.8rem; font-weight: 600;">OG Image URL</label>
+    <input class="form-control mono" style="font-size: 0.8rem;" placeholder="https://..."
+      value={pageData.ogImage || ''}
+      oninput={(e) => { pageData.ogImage = (e.target as HTMLInputElement).value || null; }} />
+  </div>
+  <div class="form-group" style="margin-bottom: 0.5rem;">
+    <label style="font-size: 0.8rem; font-weight: 600;">Canonical URL</label>
+    <input class="form-control mono" style="font-size: 0.8rem;" placeholder="Leave empty for default"
+      value={pageData.canonicalUrl || ''}
+      oninput={(e) => { pageData.canonicalUrl = (e.target as HTMLInputElement).value || null; }} />
+  </div>
+  <div class="form-group" style="margin-bottom: 0;">
+    <label style="font-size: 0.8rem; font-weight: 600;">Robots</label>
+    <select class="form-control" style="font-size: 0.85rem;"
+      value={pageData.robots || ''}
+      onchange={(e) => { pageData.robots = (e.target as HTMLSelectElement).value || null; }}>
+      <option value="">Default (index, follow)</option>
+      <option value="noindex">noindex</option>
+      <option value="nofollow">nofollow</option>
+      <option value="noindex, nofollow">noindex, nofollow</option>
+    </select>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom: 1rem;">
   <h3 style="font-size: 0.95rem; margin-bottom: 0.75rem;">Menu Placement</h3>
   {#each getPageMenuPlacements() as placement}
     <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--c-border);">

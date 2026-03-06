@@ -19,6 +19,11 @@ const pageSchema = z.object({
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
   fields: z.record(z.unknown()).default({}),
   scheduledAt: z.string().nullable().optional(),
+  metaTitle: z.string().nullable().optional(),
+  metaDescription: z.string().nullable().optional(),
+  ogImage: z.string().nullable().optional(),
+  canonicalUrl: z.string().nullable().optional(),
+  robots: z.string().nullable().optional(),
 });
 
 const pageUpdateSchema = pageSchema.partial();
