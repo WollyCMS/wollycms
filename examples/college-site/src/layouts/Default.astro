@@ -12,7 +12,7 @@ interface Props {
 }
 
 const { title, menu, footerMenu, config } = Astro.props;
-const siteName = config?.siteName ?? 'Southside College';
+const siteName = config?.siteName ?? 'Southside Virginia Community College';
 ---
 
 <!DOCTYPE html>
@@ -20,16 +20,30 @@ const siteName = config?.siteName ?? 'Southside College';
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title} | {siteName}</title>
+    <title>{title} | SVCC</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto+Slab:wght@400;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet" />
   </head>
   <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
     <header class="site-header">
+      <div class="container">
+        <div class="header-top">
+          <ul class="header-top-links">
+            <li><a href="#">Apply Now</a></li>
+            <li><a href="#">mysvcc</a></li>
+            <li><a href="#">Give</a></li>
+          </ul>
+        </div>
+      </div>
       <div class="container header-inner">
-        <a href="/" class="site-logo">{siteName}</a>
+        <a href="/" class="site-logo">
+          <img src="/svcc-logo.png" alt={siteName} width="285" height="73" />
+        </a>
+        <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
         {menu && <Navigation menu={menu} currentPath={Astro.url.pathname} />}
       </div>
     </header>
@@ -39,5 +53,16 @@ const siteName = config?.siteName ?? 'Southside College';
     </main>
 
     <Footer menu={footerMenu} config={config} />
+
+    <script is:inline>
+      const toggle = document.getElementById('menuToggle');
+      const nav = document.querySelector('.main-nav');
+      if (toggle && nav) {
+        toggle.addEventListener('click', () => {
+          const open = nav.classList.toggle('open');
+          toggle.setAttribute('aria-expanded', String(open));
+        });
+      }
+    </script>
   </body>
 </html>

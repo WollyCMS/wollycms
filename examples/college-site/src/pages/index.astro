@@ -22,7 +22,6 @@ const bottomBlocks = regions.bottom ?? [];
   {heroBlocks.length > 0 && (
     <section class="hero-region hero-home">
       <div class="container">
-        <h1 class="hero-title">{page.title}</h1>
         {page.fields.tagline && <p class="hero-tagline">{page.fields.tagline}</p>}
         <BlockRenderer blocks={heroBlocks} region="hero" components={blockComponents} />
       </div>

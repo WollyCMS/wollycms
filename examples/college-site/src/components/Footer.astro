@@ -9,24 +9,38 @@ interface Props {
 
 const { menu, config } = Astro.props;
 const year = new Date().getFullYear();
+const siteName = config?.siteName ?? 'Southside Virginia Community College';
 ---
 
 <footer class="site-footer">
-  <div class="container footer-inner">
-    {menu && (
-      <nav class="footer-nav" aria-label="Footer navigation">
-        <ul class="footer-links">
-          {menu.items.map((item) => {
-            const href = menuHelpers.getItemHref(item);
-            return href ? (
-              <li><a href={href}>{item.title}</a></li>
-            ) : null;
-          })}
-        </ul>
-      </nav>
-    )}
-    <p class="footer-copy">
-      &copy; {year} {config?.footer?.text ?? 'Southside College. All rights reserved.'}
-    </p>
+  <div class="container">
+    <div class="pre-footer">
+      <div class="footer-brand">
+        <span class="footer-brand-name">{siteName}</span>
+        <span class="footer-brand-sub">A part of the Virginia Community College System</span>
+      </div>
+      <ul class="footer-social">
+        <li><a href="#" aria-label="Facebook">Facebook</a></li>
+        <li><a href="#" aria-label="Instagram">Instagram</a></li>
+        <li><a href="#" aria-label="YouTube">YouTube</a></li>
+      </ul>
+    </div>
+    <div class="footer-main">
+      {menu && (
+        <nav class="footer-nav" aria-label="Footer navigation">
+          <ul class="footer-links">
+            {menu.items.map((item) => {
+              const href = menuHelpers.getItemHref(item);
+              return href ? (
+                <li><a href={href}>{item.title}</a></li>
+              ) : null;
+            })}
+          </ul>
+        </nav>
+      )}
+      <p class="footer-copy">
+        &copy; {year} {config?.footer?.text ?? 'Southside Virginia Community College. All rights reserved.'}
+      </p>
+    </div>
   </div>
 </footer>
