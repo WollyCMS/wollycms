@@ -41,6 +41,7 @@ app.post('/', async (c) => {
     name: parsed.data.name,
     passwordHash,
     role: 'admin',
+    createdAt: new Date().toISOString(),
   }).returning({ id: users.id, email: users.email, name: users.name, role: users.role });
 
   return c.json({ data: { user } }, 201);
