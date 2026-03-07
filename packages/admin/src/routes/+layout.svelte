@@ -18,7 +18,7 @@
   let { children } = $props();
   const auth = getAuth();
   const isPublicPage = $derived(
-    $page.url.pathname === `${base}/login` || $page.url.pathname === `${base}/setup`,
+    page.url.pathname === `${base}/login` || page.url.pathname === `${base}/setup`,
   );
   let needsSetup = $state(false);
   let showShortcuts = $state(false);
@@ -32,7 +32,7 @@
     } catch { /* assume setup done if check fails */ }
 
     if (needsSetup) {
-      if ($page.url.pathname !== `${base}/setup`) goto(`${base}/setup`);
+      if (page.url.pathname !== `${base}/setup`) goto(`${base}/setup`);
       return;
     }
 
@@ -46,7 +46,7 @@
   });
 
   $effect(() => {
-    if (needsSetup && $page.url.pathname !== `${base}/setup`) {
+    if (needsSetup && page.url.pathname !== `${base}/setup`) {
       goto(`${base}/setup`);
       return;
     }
@@ -152,9 +152,9 @@
             <a
               href="{base}{item.href}"
               class="nav-item"
-              class:active={$page.url.pathname === `${base}${item.href}` || ($page.url.pathname.startsWith(`${base}${item.href}/`) && item.href !== '/')}
+              class:active={page.url.pathname === `${base}${item.href}` || (page.url.pathname.startsWith(`${base}${item.href}/`) && item.href !== '/')}
               title={item.label}
-              aria-current={$page.url.pathname === `${base}${item.href}` ? 'page' : undefined}
+              aria-current={page.url.pathname === `${base}${item.href}` ? 'page' : undefined}
             >
               <span class="nav-icon" aria-hidden="true"><item.icon size={18} /></span>
               <span class="nav-label">{item.label}</span>

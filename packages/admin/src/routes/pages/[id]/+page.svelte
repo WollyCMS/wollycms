@@ -33,7 +33,7 @@
 
   let cleanSnapshot = $state('');
 
-  const id = $derived($routePage.params.id ?? '');
+  const id = $derived(routePage.params.id ?? '');
 
   const breadcrumbs = $derived([
     { label: 'Dashboard', href: '/' },
