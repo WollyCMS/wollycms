@@ -1,14 +1,17 @@
 # Stage 1: Install dependencies
 FROM node:22-slim AS deps
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 make g++ \
+    && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json ./
 COPY packages/server/package.json packages/server/
 COPY packages/admin/package.json packages/admin/
 COPY packages/astro/package.json packages/astro/
 COPY examples/college-site/package.json examples/college-site/
 RUN npm ci --ignore-scripts
-# Sharp needs native binaries — install separately
-RUN cd packages/server && npm rebuild sharp
+# Rebuild native modules (better-sqlite3, sharp)
+RUN npm rebuild better-sqlite3 && cd packages/server && npm rebuild sharp
 
 # Stage 2: Build admin SPA
 FROM deps AS build-admin
