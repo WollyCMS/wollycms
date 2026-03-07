@@ -13,6 +13,7 @@ import previewRouter from './preview.js';
 import batchRouter from './batch.js';
 import sitemapRouter from './sitemap.js';
 import searchRouter from './search.js';
+import ogImageRouter from './og-image.js';
 
 const app = new Hono();
 
@@ -52,5 +53,6 @@ app.route('/preview', previewRouter);
 app.route('/batch', batchRouter);
 app.route('/sitemap', sitemapRouter);
 app.route('/search', searchRouter);
+app.route('/og', ogImageRouter);
 
 export default app;

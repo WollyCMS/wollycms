@@ -7,3 +7,4 @@ export { default as link_list } from '../blocks/LinkList.astro';
 export { default as image } from '../blocks/ImageBlock.astro';
 export { default as content_listing } from '../blocks/ContentListing.astro';
 export { default as hero } from '../blocks/Hero.astro';
+export { default as embed } from '../blocks/Embed.astro';

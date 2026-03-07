@@ -233,7 +233,7 @@ describe('GET /api/content/schemas', () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.data.contentTypes.length).toBe(3);
-    expect(body.data.blockTypes.length).toBe(10);
+    expect(body.data.blockTypes.length).toBe(11);
     expect(body.data.contentTypes[0]).toHaveProperty('fieldsSchema');
     expect(body.data.blockTypes[0]).toHaveProperty('fieldsSchema');
   });

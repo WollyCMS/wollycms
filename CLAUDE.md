@@ -57,7 +57,7 @@ npm run test --workspace=packages/server       # Server tests only
 - **Phase 7**: In progress (SEO fields, sitemap, admin search, JSON-LD helpers)
 - Monorepo: npm workspaces (packages/server, packages/admin, packages/astro, examples/college-site)
 - Database: 17 tables with dual SQLite/PostgreSQL Drizzle schemas + indexes + migrations
-- Seed data: 8 pages, 10 block types (incl. hero), 3 content types, 3 menus, 2 taxonomies
+- Seed data: 8 pages, 11 block types (incl. hero, embed), 3 content types, 3 menus, 2 taxonomies
 - Content API: 11 endpoints including preview, search, sitemap (108 tests passing: 34 content + 74 admin)
 - Schema files use `.ts` imports (drizzle-kit requires this); `rewriteRelativeImportExtensions` in tsconfig converts to `.js` on build
 - Dual database: SQLite schemas in `schema/`, PG schemas in `schema-pg/`; smart barrel in `schema/index.ts` auto-selects based on `DATABASE_URL`

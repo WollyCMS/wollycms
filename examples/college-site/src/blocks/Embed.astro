@@ -1,0 +1,49 @@
+---
+import type { BlockProps } from '@spacelycms/astro';
+
+interface Props extends BlockProps {
+  fields: {
+    title?: string;
+    code?: string;
+    max_width?: string;
+    aspect_ratio?: 'none' | '16/9' | '4/3' | '1/1';
+  };
+}
+
+const { fields } = Astro.props;
+const maxWidth = fields.max_width || '100%';
+const aspectRatio = fields.aspect_ratio && fields.aspect_ratio !== 'none' ? fields.aspect_ratio : null;
+---
+
+{fields.code && (
+  <div class="embed-block" style={`max-width: ${maxWidth}; margin: 0 auto;`}>
+    {fields.title && <h3 class="embed-title">{fields.title}</h3>}
+    <div
+      class:list={['embed-wrapper', { 'embed-responsive': !!aspectRatio }]}
+      style={aspectRatio ? `aspect-ratio: ${aspectRatio};` : undefined}
+      set:html={fields.code}
+    />
+  </div>
+)}
+
+<style>
+  .embed-block {
+    margin: 1.5rem 0;
+  }
+  .embed-title {
+    margin-bottom: 0.75rem;
+  }
+  .embed-responsive {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+  }
+  .embed-responsive :global(iframe) {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: 0;
+  }
+</style>

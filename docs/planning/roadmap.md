@@ -255,8 +255,6 @@ content management faster and more pleasant.
       badge, mapped from block type `icon` field)
 - [x] Move-to-region modal (select target region from list, color-coded
       region indicators, only shown when page has multiple regions)
-- [ ] Region mini-wireframe at top of editor (deferred — simple diagram
-      showing where hero/content/sidebar/bottom appear on the page)
 
 ### 4.5d. Media & Preview Polish -- COMPLETE
 
@@ -269,8 +267,6 @@ content management faster and more pleasant.
       iframe width transition)
 - [x] Shareable preview link (copy button in preview toolbar copies
       tokenized preview URL to clipboard with toast feedback)
-- [ ] Side-by-side vs stacked preview toggle (deferred — some editors
-      prefer preview below rather than beside)
 
 ### 4.5e. Page List & Dashboard -- COMPLETE
 
@@ -279,8 +275,6 @@ content management faster and more pleasant.
 - [x] Content type color coding on page list rows (colored left-border
       bar per content type — gold/blue/green for home/landing/secondary)
 - [x] Recent pages linked to editor (dashboard page titles now clickable)
-- [ ] Page list thumbnail column (deferred — hero image as tiny preview)
-- [ ] Quick inline title edit on page list (deferred)
 
 ### Demo
 

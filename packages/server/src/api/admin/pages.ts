@@ -8,6 +8,7 @@ import {
 import { fireWebhooks } from '../../webhooks.js';
 import { logAudit } from '../../audit.js';
 import { cacheInvalidate } from '../../cache.js';
+import { clearOgCache } from '../content/og-image.js';
 import pageBlocksRouter from './page-blocks.js';
 
 const app = new Hono();
@@ -121,6 +122,7 @@ app.post('/bulk', async (c) => {
   }
 
   cacheInvalidate('pages:');
+  clearOgCache();
   return c.json({ data: { affected: ids.length, action } });
 });
 
@@ -213,6 +215,7 @@ app.post('/', async (c) => {
     fireWebhooks('page.published', { id: row.id, title: row.title, slug });
   }
   cacheInvalidate('pages:');
+  clearOgCache();
 
   return c.json({ data: row }, 201);
 });
@@ -284,6 +287,7 @@ app.put('/:id', async (c) => {
   }
 
   cacheInvalidate('pages:');
+  clearOgCache();
   return c.json({ data: updated });
 });
 
@@ -298,6 +302,7 @@ app.delete('/:id', async (c) => {
   await logAudit(c, { action: 'delete', entity: 'page', entityId: id, details: { title: existing.title } });
   fireWebhooks('page.deleted', { id, title: existing.title, slug: existing.slug });
   cacheInvalidate('pages:');
+  clearOgCache();
   return c.json({ data: { deleted: true } });
 });
 

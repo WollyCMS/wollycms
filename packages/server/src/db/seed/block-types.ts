@@ -219,6 +219,37 @@ export async function seedBlockTypes(db: AppDatabase) {
       settings: {},
     },
     {
+      name: 'Embed',
+      slug: 'embed',
+      description: 'Embed external content via HTML/iframe (forms, maps, widgets).',
+      fieldsSchema: [
+        { name: 'title', label: 'Title (optional)', type: 'text' },
+        { name: 'code', label: 'Embed Code', type: 'textarea', required: true },
+        {
+          name: 'max_width',
+          label: 'Max Width',
+          type: 'text',
+          default: '100%',
+        },
+        {
+          name: 'aspect_ratio',
+          label: 'Aspect Ratio',
+          type: 'select',
+          default: 'none',
+          settings: {
+            options: [
+              { label: 'None (auto height)', value: 'none' },
+              { label: '16:9 (video)', value: '16/9' },
+              { label: '4:3', value: '4/3' },
+              { label: '1:1 (square)', value: '1/1' },
+            ],
+          },
+        },
+      ],
+      icon: 'code',
+      settings: {},
+    },
+    {
       name: 'Video',
       slug: 'video',
       description: 'Video from upload or YouTube/Vimeo embed.',
