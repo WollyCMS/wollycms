@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { base } from '$app/paths';
   import { api } from '$lib/api.js';
   import { getAuth } from '$lib/auth.svelte.js';
 
@@ -16,7 +17,7 @@
     try {
       const result = await api.login(email, password);
       auth.user = result.user;
-      goto('/');
+      goto(`${base}/`);
     } catch (err: any) {
       error = err.message || 'Login failed';
     } finally {

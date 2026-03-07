@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { base } from '$app/paths';
   import { api } from '$lib/api.js';
   import { Search, FileText, Blocks, Image, Menu, X } from 'lucide-svelte';
 
@@ -39,7 +40,7 @@
     open = false;
     query = '';
     results = { pages: [], blocks: [], media: [], menus: [] };
-    goto(path);
+    goto(`${base}${path}`);
   }
 
   function handleKeydown(e: KeyboardEvent) {

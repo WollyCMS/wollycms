@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
+  import { base } from '$app/paths';
   import { getAuth } from '$lib/auth.svelte.js';
   import { api } from '$lib/api.js';
   import ToastContainer from '$lib/components/ToastContainer.svelte';
@@ -16,14 +17,14 @@
 
   let { children } = $props();
   const auth = getAuth();
-  const isLogin = $derived($page.url.pathname === '/login');
+  const isLogin = $derived($page.url.pathname === `${base}/login`);
   let showShortcuts = $state(false);
   let navCounts = $state<Record<string, number>>({});
 
   onMount(async () => {
     await auth.load();
     if (!auth.user && !isLogin) {
-      goto('/login');
+      goto(`${base}/login`);
     }
     if (auth.user) {
       loadNavCounts();
@@ -32,7 +33,7 @@
 
   $effect(() => {
     if (auth.loaded && !auth.user && !isLogin) {
-      goto('/login');
+      goto(`${base}/login`);
     }
   });
 
@@ -119,7 +120,7 @@
   <div class="admin-layout">
     <aside class="sidebar" aria-label="Admin navigation">
       <div class="sidebar-header">
-        <a href="/" class="logo" aria-label="WollyCMS Dashboard">
+        <a href="{base}/" class="logo" aria-label="WollyCMS Dashboard">
           <span class="logo-icon" aria-hidden="true">S</span>
           <span class="logo-text">WollyCMS</span>
         </a>
@@ -131,11 +132,11 @@
           {/if}
           {#each section.items as item}
             <a
-              href={item.href}
+              href="{base}{item.href}"
               class="nav-item"
-              class:active={$page.url.pathname === item.href || ($page.url.pathname.startsWith(item.href + '/') && item.href !== '/')}
+              class:active={$page.url.pathname === `${base}${item.href}` || ($page.url.pathname.startsWith(`${base}${item.href}/`) && item.href !== '/')}
               title={item.label}
-              aria-current={$page.url.pathname === item.href ? 'page' : undefined}
+              aria-current={$page.url.pathname === `${base}${item.href}` ? 'page' : undefined}
             >
               <span class="nav-icon" aria-hidden="true"><item.icon size={18} /></span>
               <span class="nav-label">{item.label}</span>
