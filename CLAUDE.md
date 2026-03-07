@@ -52,7 +52,7 @@ npm run test --workspace=packages/server       # Server tests only
 
 - **Phases 1-4**: Complete (Data + API, Astro Integration, Admin UI, Visual Page Builder + Live Preview)
 - **Phase 4.5**: Complete (all sub-phases a-e)
-- **Phase 5**: Complete (webhooks, API keys, audit logging, rate limiting, CORS, cache headers, batch API, health check, security hardening, accessibility, query caching, ETag)
+- **Phase 5**: Complete (webhooks, API keys, audit logging, rate limiting, CORS, cache headers, batch API, health check, security hardening, accessibility, query caching, ETag, S3/R2 media storage)
 - **Phase 6**: In progress (CLI, build pipeline, Docker, type generation)
 - **Phase 7**: In progress (SEO fields, sitemap, admin search, JSON-LD helpers)
 - Monorepo: npm workspaces (packages/server, packages/admin, packages/astro, examples/college-site)
@@ -63,6 +63,7 @@ npm run test --workspace=packages/server       # Server tests only
 - Dual database: SQLite schemas in `schema/`, PG schemas in `schema-pg/`; smart barrel in `schema/index.ts` auto-selects based on `DATABASE_URL`
 - SQLite drizzle config: `drizzle.config.ts` → `drizzle/`; PG config: `drizzle-pg.config.ts` → `drizzle-pg/`
 - App factory: `src/app.ts` (testable), `src/index.ts` (server entry)
+- Media storage: pluggable backend — local filesystem (dev) or S3-compatible/R2 (prod), set via `MEDIA_STORAGE` env var
 
 ## Architecture Key Points
 

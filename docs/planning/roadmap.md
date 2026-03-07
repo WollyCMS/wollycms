@@ -318,8 +318,9 @@ missing alt text — everything feels snappy and intentional.
 - [x] Admin UI pages for webhooks, API keys, audit logs with sidebar nav
 - [x] PostgreSQL support (dual-dialect Drizzle schemas, auto-detection
       via DATABASE_URL, PG migrations, async query compatibility)
-- [ ] S3-compatible media storage (deferred — env vars ready, needs
-      storage backend implementation)
+- [x] S3-compatible media storage (pluggable storage backend — local
+      filesystem for dev, Cloudflare R2 recommended for production;
+      @aws-sdk/client-s3 for S3-compatible uploads/deletes)
 
 ### 5b. Security & Quality -- COMPLETE
 
@@ -562,9 +563,10 @@ new block type.
 
 Recommended priority: **6 → 7 → 8**.
 Phases 1-5 complete. PostgreSQL support complete (dual SQLite/PG with
-auto-detection). S3 media storage deferred to when needed (env vars
-ready, architecture supports swap). CDN integration deferred (webhooks
-already enable cache invalidation). Next: packaging for distribution.
+auto-detection). S3-compatible media storage complete (Cloudflare R2
+recommended — zero egress, global CDN). Recommended production
+architecture: Cloudflare Tunnel + R2 + Cloudflare Pages. Next:
+packaging for distribution.
 
 ---
 

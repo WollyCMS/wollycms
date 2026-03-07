@@ -3,11 +3,10 @@ import { eq, desc, sql, and, like, or, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 import { getDb } from '../../db/index.js';
 import { media } from '../../db/schema/index.js';
-import { env } from '../../env.js';
-import { mkdir, writeFile, unlink } from 'node:fs/promises';
-import { join, extname } from 'node:path';
+import { extname } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { processImage, isProcessableImage } from '../../media/processing.js';
+import { getStorage } from '../../media/storage.js';
 import { fireWebhooks } from '../../webhooks.js';
 import { logAudit } from '../../audit.js';
 
@@ -55,6 +54,7 @@ function escapeLike(s: string): string {
 /** GET / - List media with filtering and pagination */
 app.get('/', async (c) => {
   const db = getDb();
+  const storage = getStorage();
   const mimeFilter = c.req.query('type');
   const search = c.req.query('search');
   const folder = c.req.query('folder');
@@ -75,7 +75,16 @@ app.get('/', async (c) => {
   const rows = await db.select().from(media).where(where).orderBy(desc(media.createdAt)).limit(limit).offset(offset);
   const countResult = await db.select({ count: sql<number>`count(*)` }).from(media).where(where);
 
-  return c.json({ data: rows, meta: { total: countResult[0].count, limit, offset } });
+  // Add public URLs to each row
+  const data = rows.map((row) => ({
+    ...row,
+    url: storage.getUrl(row.path),
+    variantUrls: row.variants && typeof row.variants === 'object'
+      ? Object.fromEntries(Object.entries(row.variants as Record<string, string>).map(([k, v]) => [k, storage.getUrl(v)]))
+      : {},
+  }));
+
+  return c.json({ data, meta: { total: countResult[0].count, limit, offset } });
 });
 
 /** GET /folders - List distinct folders */
@@ -88,15 +97,26 @@ app.get('/folders', async (c) => {
 /** GET /:id - Get single media */
 app.get('/:id', async (c) => {
   const db = getDb();
+  const storage = getStorage();
   const id = parseInt(c.req.param('id'), 10);
   const [row] = await db.select().from(media).where(eq(media.id, id)).limit(1);
   if (!row) return c.json({ errors: [{ code: 'NOT_FOUND', message: 'Media not found' }] }, 404);
-  return c.json({ data: row });
+
+  return c.json({
+    data: {
+      ...row,
+      url: storage.getUrl(row.path),
+      variantUrls: row.variants && typeof row.variants === 'object'
+        ? Object.fromEntries(Object.entries(row.variants as Record<string, string>).map(([k, v]) => [k, storage.getUrl(v)]))
+        : {},
+    },
+  });
 });
 
 /** POST / - Upload media */
 app.post('/', async (c) => {
   const db = getDb();
+  const storage = getStorage();
   const payload = c.get('jwtPayload');
   const body = await c.req.parseBody();
   const file = body['file'];
@@ -121,12 +141,10 @@ app.post('/', async (c) => {
   }
 
   const filename = `${randomUUID()}${ext}`;
-  const uploadDir = env.MEDIA_DIR;
-
-  await mkdir(uploadDir, { recursive: true });
-  const filePath = join(uploadDir, filename);
   const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(filePath, buffer);
+
+  // Upload original to storage
+  const storedPath = await storage.upload(filename, buffer, file.type);
 
   const now = new Date().toISOString();
   const altText = (body['altText'] as string) || null;
@@ -141,12 +159,17 @@ app.post('/', async (c) => {
 
   if (isProcessableImage(file.type)) {
     try {
-      const result = await processImage(filePath, uploadDir);
+      const result = await processImage(buffer, filename.replace(ext, ''));
       if (result) {
         width = result.width;
         height = result.height;
-        variants = result.variants;
         imageMetadata = result.metadata;
+
+        // Upload each variant to storage
+        for (const variant of result.variants) {
+          const variantPath = await storage.uploadVariant(variant.filename, variant.buffer, 'image/webp');
+          variants[variant.name] = variantPath;
+        }
       }
     } catch (err) {
       console.error('Image processing failed, saving original only:', err);
@@ -163,7 +186,7 @@ app.post('/', async (c) => {
     altText,
     title,
     folder,
-    path: filePath,
+    path: storedPath,
     variants,
     metadata: imageMetadata,
     createdAt: now,
@@ -173,12 +196,21 @@ app.post('/', async (c) => {
   await logAudit(c, { action: 'create', entity: 'media', entityId: row.id, details: { filename: originalName } });
   fireWebhooks('media.uploaded', { id: row.id, filename: originalName, mimeType: file.type });
 
-  return c.json({ data: row }, 201);
+  return c.json({
+    data: {
+      ...row,
+      url: storage.getUrl(row.path),
+      variantUrls: variants && typeof variants === 'object'
+        ? Object.fromEntries(Object.entries(variants).map(([k, v]) => [k, storage.getUrl(v)]))
+        : {},
+    },
+  }, 201);
 });
 
 /** PUT /:id - Update media metadata */
 app.put('/:id', async (c) => {
   const db = getDb();
+  const storage = getStorage();
   const id = parseInt(c.req.param('id'), 10);
   const body = await c.req.json().catch(() => null);
 
@@ -192,32 +224,34 @@ app.put('/:id', async (c) => {
 
   await db.update(media).set(parsed.data).where(eq(media.id, id));
   const [updated] = await db.select().from(media).where(eq(media.id, id)).limit(1);
-  return c.json({ data: updated });
+
+  return c.json({
+    data: {
+      ...updated,
+      url: storage.getUrl(updated.path),
+      variantUrls: updated.variants && typeof updated.variants === 'object'
+        ? Object.fromEntries(Object.entries(updated.variants as Record<string, string>).map(([k, v]) => [k, storage.getUrl(v)]))
+        : {},
+    },
+  });
 });
 
 /** DELETE /:id - Delete media */
 app.delete('/:id', async (c) => {
   const db = getDb();
+  const storage = getStorage();
   const id = parseInt(c.req.param('id'), 10);
 
   const [row] = await db.select().from(media).where(eq(media.id, id)).limit(1);
   if (!row) return c.json({ errors: [{ code: 'NOT_FOUND', message: 'Media not found' }] }, 404);
 
-  // Delete original file from disk
-  try {
-    await unlink(row.path);
-  } catch {
-    // File may already be gone
-  }
+  // Delete original from storage
+  await storage.delete(row.path);
 
-  // Delete variant files from disk
+  // Delete variant files from storage
   if (row.variants && typeof row.variants === 'object') {
-    for (const variantPath of Object.values(row.variants)) {
-      try {
-        await unlink(variantPath);
-      } catch {
-        // Variant file may already be gone
-      }
+    for (const variantPath of Object.values(row.variants as Record<string, string>)) {
+      await storage.delete(variantPath);
     }
   }
 

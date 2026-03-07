@@ -1,8 +1,8 @@
 import { Hono } from 'hono';
 import { eq } from 'drizzle-orm';
-import { readFile, stat } from 'node:fs/promises';
 import { getDb } from '../../db/index.js';
 import { media } from '../../db/schema/index.js';
+import { getStorage } from '../../media/storage.js';
 
 const VALID_VARIANTS = ['original', 'thumbnail', 'medium', 'large', 'info'] as const;
 type Variant = (typeof VALID_VARIANTS)[number];
@@ -23,11 +23,13 @@ const app = new Hono();
 /**
  * GET /:id/:variant - Serve media files or metadata.
  * Variants: original, thumbnail, medium, large, info.
- * - "info" returns JSON metadata.
- * - All other variants serve the actual file binary with correct headers.
+ * - "info" returns JSON metadata with public URLs.
+ * - For S3/R2 storage: redirects to the public CDN URL.
+ * - For local storage: serves the file binary with correct headers.
  */
 app.get('/:id/:variant', async (c) => {
   const db = getDb();
+  const storage = getStorage();
   const id = parseInt(c.req.param('id'), 10);
   const variant = c.req.param('variant') as string;
 
@@ -60,8 +62,12 @@ app.get('/:id/:variant', async (c) => {
 
   const record = rows[0];
 
-  // For "info" variant, return full metadata as JSON
+  // For "info" variant, return full metadata as JSON with public URLs
   if (variant === 'info') {
+    const variantUrls = record.variants && typeof record.variants === 'object'
+      ? Object.fromEntries(Object.entries(record.variants as Record<string, string>).map(([k, v]) => [k, storage.getUrl(v)]))
+      : {};
+
     return c.json({
       data: {
         id: record.id,
@@ -73,6 +79,8 @@ app.get('/:id/:variant', async (c) => {
         height: record.height,
         altText: record.altText,
         title: record.title,
+        url: storage.getUrl(record.path),
+        variantUrls,
         variants: record.variants,
         metadata: record.metadata,
         createdAt: record.createdAt,
@@ -80,11 +88,11 @@ app.get('/:id/:variant', async (c) => {
     });
   }
 
-  // Resolve the file path for the requested variant
+  // Resolve the file path/key for the requested variant
   const filePath =
     variant === 'original'
       ? record.path
-      : record.variants?.[variant] || null;
+      : (record.variants as Record<string, string> | null)?.[variant] || null;
 
   if (!filePath) {
     return c.json(
@@ -93,24 +101,28 @@ app.get('/:id/:variant', async (c) => {
     );
   }
 
-  // Read and serve the file
-  try {
-    await stat(filePath);
-  } catch {
+  // For external storage (S3/R2), redirect to the public CDN URL
+  if (storage.isExternal) {
+    const publicUrl = storage.getUrl(filePath);
+    return c.redirect(publicUrl, 302);
+  }
+
+  // For local storage, read and serve the file
+  const fileBuffer = await storage.read(filePath);
+  if (!fileBuffer) {
     return c.json(
       { errors: [{ code: 'FILE_NOT_FOUND', message: 'File not found on disk' }] },
       404,
     );
   }
 
-  const fileBuffer = await readFile(filePath);
   const contentType = getContentType(variant, record.mimeType);
 
   c.header('Content-Type', contentType);
   c.header('Content-Length', String(fileBuffer.length));
   c.header('Cache-Control', `public, max-age=${CACHE_MAX_AGE}, immutable`);
 
-  return c.body(fileBuffer);
+  return c.body(fileBuffer as unknown as ArrayBuffer);
 });
 
 export default app;

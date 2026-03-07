@@ -11,6 +11,7 @@ import { env, isProduction } from './env.js';
 import { cacheSize } from './cache.js';
 import { bodyLimit } from 'hono/body-limit';
 import { HTTPException } from 'hono/http-exception';
+import { getStorage } from './media/storage.js';
 
 /** Map common file extensions to MIME types for static serving. */
 const MIME_TYPES: Record<string, string> = {
@@ -80,40 +81,43 @@ app.get('/api/health', (c) => c.json({
 /**
  * GET /uploads/* - Serve uploaded files from MEDIA_DIR with correct content
  * types and long-lived cache headers (filenames contain UUIDs).
+ * Only mounted for local storage — S3/R2 media is served directly from CDN.
  */
-app.get('/uploads/*', async (c) => {
-  const requestedPath = c.req.path.replace(/^\/uploads\//, '');
+if (!getStorage().isExternal) {
+  app.get('/uploads/*', async (c) => {
+    const requestedPath = c.req.path.replace(/^\/uploads\//, '');
 
-  if (requestedPath.includes('..') || requestedPath.startsWith('/') || requestedPath.includes('\0')) {
-    return c.json({ errors: [{ code: 'FORBIDDEN', message: 'Invalid path' }] }, 403);
-  }
+    if (requestedPath.includes('..') || requestedPath.startsWith('/') || requestedPath.includes('\0')) {
+      return c.json({ errors: [{ code: 'FORBIDDEN', message: 'Invalid path' }] }, 403);
+    }
 
-  const mediaRoot = resolve(env.MEDIA_DIR);
-  const filePath = resolve(join(env.MEDIA_DIR, requestedPath));
+    const mediaRoot = resolve(env.MEDIA_DIR);
+    const filePath = resolve(join(env.MEDIA_DIR, requestedPath));
 
-  if (!filePath.startsWith(mediaRoot)) {
-    return c.json({ errors: [{ code: 'FORBIDDEN', message: 'Invalid path' }] }, 403);
-  }
+    if (!filePath.startsWith(mediaRoot)) {
+      return c.json({ errors: [{ code: 'FORBIDDEN', message: 'Invalid path' }] }, 403);
+    }
 
-  try {
-    const fileStat = await stat(filePath);
-    if (!fileStat.isFile()) {
+    try {
+      const fileStat = await stat(filePath);
+      if (!fileStat.isFile()) {
+        return c.notFound();
+      }
+    } catch {
       return c.notFound();
     }
-  } catch {
-    return c.notFound();
-  }
 
-  const fileBuffer = await readFile(filePath);
-  const ext = extname(filePath).toLowerCase();
-  const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+    const fileBuffer = await readFile(filePath);
+    const ext = extname(filePath).toLowerCase();
+    const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
-  c.header('Content-Type', contentType);
-  c.header('Content-Length', String(fileBuffer.length));
-  c.header('Cache-Control', 'public, max-age=31536000, immutable');
+    c.header('Content-Type', contentType);
+    c.header('Content-Length', String(fileBuffer.length));
+    c.header('Cache-Control', 'public, max-age=31536000, immutable');
 
-  return c.body(fileBuffer);
-});
+    return c.body(fileBuffer);
+  });
+}
 
 // Serve admin SPA (production: built static files)
 if (env.NODE_ENV === 'production') {

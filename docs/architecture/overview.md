@@ -18,6 +18,8 @@
 
 ## System Architecture
 
+### Development
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     SpacelyCMS Server                        │
@@ -82,6 +84,47 @@
 │  Docker, any static host (SSG) or edge runtime (SSR)        │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+### Production (Recommended: Cloudflare Tunnel + R2 + Pages)
+
+```
+┌──────────────────────────────────┐
+│       Your Infrastructure        │
+│                                  │
+│  SpacelyCMS Server (:4321)       │
+│  SQLite or PostgreSQL            │
+│           │                      │
+│      cloudflared tunnel          │
+│      (outbound only, no open     │
+│       ports on your machine)     │
+└──────────┬───────────────────────┘
+           │  encrypted tunnel
+           ▼
+┌───────────────────────────────────────────────────────────┐
+│                      Cloudflare                            │
+│                                                            │
+│  ┌──────────────┐  ┌─────────────────┐  ┌──────────────┐  │
+│  │  Tunnel       │  │  R2 Bucket      │  │  Pages       │  │
+│  │              │  │                 │  │              │  │
+│  │ cms.yoursite │  │ media.yoursite  │  │ yoursite.com │  │
+│  │ .com         │  │ .com            │  │              │  │
+│  │              │  │ (S3-compatible, │  │ Astro static │  │
+│  │ Admin UI +   │  │  global CDN,    │  │ site at edge │  │
+│  │ API          │  │  zero egress)   │  │              │  │
+│  └──────────────┘  └─────────────────┘  └──────────────┘  │
+│                                                ▲           │
+│                     webhook on publish ─────────┘           │
+└───────────────────────────────────────────────────────────┘
+```
+
+Key benefits:
+- **No open ports** — `cloudflared` creates an outbound-only tunnel
+- **No egress fees** — R2 has zero egress costs for media
+- **Edge delivery** — Media and Astro site served from 300+ Cloudflare PoPs
+- **Auto-rebuild** — CMS webhook triggers Cloudflare Pages deploy on publish
+
+See [Deployment Guide](../guides/deployment.md#recommended-production-architecture)
+for step-by-step setup.
 
 ---
 
@@ -171,8 +214,11 @@ about Astro internals — it just serves JSON.
 
 ### 5. Media is Abstracted
 
-The media storage layer is pluggable: local filesystem for dev, S3-compatible
-for production. The API serves optimized variants (resized, WebP) regardless of
+The media storage layer is pluggable: local filesystem for development,
+S3-compatible object storage for production. The recommended production
+backend is **Cloudflare R2** — it is S3-compatible, globally distributed via
+Cloudflare's CDN, and has zero egress fees. AWS S3 and MinIO are also
+supported. The API serves optimized variants (resized, WebP) regardless of
 backend.
 
 ---

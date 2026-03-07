@@ -101,6 +101,127 @@ Default credentials: `admin@spacelycms.local` / `admin123`
 
 ---
 
+## Recommended Production Architecture
+
+The recommended way to run SpacelyCMS in production is a three-layer
+architecture using Cloudflare services. This gives you zero open ports,
+global CDN media delivery, and edge-hosted static pages — all on
+commodity hardware.
+
+```
+┌─────────────────────────────────┐
+│       Your Infrastructure       │
+│                                 │
+│   SpacelyCMS Server (:4321)     │
+│   SQLite or PostgreSQL          │
+│         │                       │
+│    cloudflared tunnel           │
+└────────┬────────────────────────┘
+         │ encrypted tunnel (no open ports)
+         ▼
+┌──────────────────────────────────────────────────────────┐
+│                     Cloudflare                            │
+│                                                           │
+│  ┌─────────────────┐  ┌────────────────┐  ┌───────────┐  │
+│  │ Cloudflare      │  │ Cloudflare R2  │  │ Cloudflare│  │
+│  │ Tunnel          │  │ (media bucket) │  │ Pages     │  │
+│  │                 │  │                │  │           │  │
+│  │ cms.yoursite.com│  │ media.yoursite │  │ yoursite  │  │
+│  │ → localhost:4321│  │ .com (CDN)     │  │ .com      │  │
+│  └─────────────────┘  └────────────────┘  └───────────┘  │
+│                                                           │
+│  Admin UI + API        Images, video,      Astro static   │
+│  (authenticated)       documents (global)  site (edge)    │
+└──────────────────────────────────────────────────────────┘
+```
+
+**Why this setup?**
+
+- **No open ports** — `cloudflared` creates an outbound tunnel; your server
+  never listens on a public IP.
+- **No egress fees** — R2 has zero egress costs, unlike AWS S3.
+- **Global edge** — Media and the Astro site are served from 300+ PoPs.
+- **Automatic rebuilds** — A SpacelyCMS webhook triggers Cloudflare Pages
+  to rebuild when content changes.
+
+### 1. Set up a Cloudflare Tunnel
+
+Install `cloudflared` and create a tunnel that points to your local CMS:
+
+```bash
+# Install cloudflared
+curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 \
+  -o /usr/local/bin/cloudflared && chmod +x /usr/local/bin/cloudflared
+
+# Authenticate with Cloudflare
+cloudflared tunnel login
+
+# Create a tunnel
+cloudflared tunnel create spacelycms
+
+# Route your CMS domain to the tunnel
+cloudflared tunnel route dns spacelycms cms.yoursite.com
+
+# Run the tunnel (points to your local CMS server)
+cloudflared tunnel --url http://localhost:4321 run spacelycms
+```
+
+For production, run `cloudflared` as a systemd service:
+
+```bash
+sudo cloudflared service install
+sudo systemctl enable --now cloudflared
+```
+
+Your CMS admin is now accessible at `https://cms.yoursite.com` with no
+open ports on your server.
+
+### 2. Set up Cloudflare R2 for media
+
+1. In the Cloudflare dashboard, go to **R2 Object Storage** and create a
+   bucket (e.g., `spacely-media`).
+2. Under **Settings > Public access**, connect a custom domain
+   (e.g., `media.yoursite.com`).
+3. Under **Manage R2 API Tokens**, create an API token with read/write
+   access to the bucket. Note the **Access Key ID** and **Secret Access Key**.
+4. Find your **Account ID** in the Cloudflare dashboard sidebar.
+
+Add to your `.env`:
+
+```bash
+MEDIA_STORAGE=s3
+S3_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+S3_BUCKET=spacely-media
+S3_REGION=auto
+S3_ACCESS_KEY=<your-r2-access-key-id>
+S3_SECRET_KEY=<your-r2-secret-access-key>
+S3_PUBLIC_URL=https://media.yoursite.com
+```
+
+R2 is S3-compatible, so SpacelyCMS uses the standard S3 client internally.
+Set `S3_REGION=auto` — R2 ignores regions but the S3 SDK requires a value.
+
+### 3. Deploy the Astro frontend to Cloudflare Pages
+
+1. Push your Astro site to a Git repository (GitHub or GitLab).
+2. In the Cloudflare dashboard, go to **Pages** and create a new project
+   from your repository.
+3. Set the build command to `npm run build` and the output directory to
+   `dist/`.
+4. Add environment variable `PUBLIC_CMS_URL=https://cms.yoursite.com`.
+5. Note the **Deploy Hook URL** from **Settings > Builds & deployments >
+   Deploy hooks** (create one named "spacely-publish").
+
+In the SpacelyCMS admin, go to **Webhooks** and create a webhook:
+
+- **URL**: the Cloudflare Pages deploy hook URL
+- **Events**: `page.published`, `page.unpublished`, `page.deleted`
+
+Now when you publish content in the CMS, Cloudflare Pages automatically
+rebuilds and deploys the Astro site.
+
+---
+
 ## Manual Deployment (No Docker)
 
 ### Prerequisites
@@ -260,7 +381,14 @@ tar -czf media-backup.tar.gz uploads/
 | `PORT` | `4321` | Server port |
 | `HOST` | `localhost` | Server bind address |
 | `JWT_SECRET` | — | **Required.** Secret for JWT signing |
-| `MEDIA_DIR` | `./uploads` | Media storage path |
+| `MEDIA_STORAGE` | `local` | Media backend: `local` or `s3` |
+| `MEDIA_DIR` | `./uploads` | Media storage path (local mode) |
+| `S3_ENDPOINT` | — | S3-compatible endpoint URL (e.g., `https://<id>.r2.cloudflarestorage.com`) |
+| `S3_BUCKET` | — | Bucket name (e.g., `spacely-media`) |
+| `S3_REGION` | — | Bucket region (`auto` for Cloudflare R2) |
+| `S3_ACCESS_KEY` | — | S3/R2 access key ID |
+| `S3_SECRET_KEY` | — | S3/R2 secret access key |
+| `S3_PUBLIC_URL` | — | Public URL for media (e.g., `https://media.yoursite.com`) |
 | `SITE_URL` | `http://localhost:4322` | Frontend URL |
 | `CORS_ORIGINS` | `*` | Allowed origins (comma-separated) |
 | `RATE_LIMIT_AUTH` | `10` | Max login attempts per window |

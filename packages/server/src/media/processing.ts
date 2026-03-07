@@ -1,14 +1,18 @@
 import sharp from 'sharp';
-import { join, parse as parsePath } from 'node:path';
-import { mkdir } from 'node:fs/promises';
 
 export type VariantPaths = Record<string, string>;
 
 export interface ProcessedImage {
   width: number;
   height: number;
-  variants: VariantPaths;
   metadata: Record<string, unknown>;
+  variants: VariantResult[];
+}
+
+export interface VariantResult {
+  name: string;
+  buffer: Buffer;
+  filename: string;
 }
 
 interface VariantConfig {
@@ -32,17 +36,16 @@ export function isProcessableImage(mimeType: string): boolean {
 }
 
 /**
- * Process an uploaded image: extract dimensions, generate WebP variants.
+ * Process an image buffer: extract dimensions, generate WebP variant buffers.
  *
- * Returns null for non-image files or if processing fails entirely.
- * Generates thumbnail (150x150 cover), medium (max 600px), large (max 1200px)
- * as WebP files saved alongside the original.
+ * Returns the image metadata and variant buffers. The caller is responsible
+ * for persisting the variants to the appropriate storage backend.
  */
 export async function processImage(
-  filePath: string,
-  uploadDir: string,
+  inputBuffer: Buffer,
+  baseFilename: string,
 ): Promise<ProcessedImage | null> {
-  const sharpInstance = sharp(filePath);
+  const sharpInstance = sharp(inputBuffer);
   let sharpMeta: sharp.Metadata;
 
   try {
@@ -69,28 +72,22 @@ export async function processImage(
     hasAlpha: sharpMeta.hasAlpha,
   };
 
-  const { name: basename } = parsePath(filePath);
-  const variantsDir = join(uploadDir, 'variants');
-  await mkdir(variantsDir, { recursive: true });
-
-  const variants: VariantPaths = {};
+  const variants: VariantResult[] = [];
 
   for (const config of VARIANT_CONFIGS) {
-    const variantFilename = `${basename}-${config.name}.webp`;
-    const variantPath = join(variantsDir, variantFilename);
+    const variantFilename = `${baseFilename}-${config.name}.webp`;
 
     try {
-      await sharp(filePath)
+      const buffer = await sharp(inputBuffer)
         .resize(config.width, config.height, { fit: config.fit, withoutEnlargement: true })
         .webp({ quality: 80 })
-        .toFile(variantPath);
+        .toBuffer();
 
-      variants[config.name] = variantPath;
+      variants.push({ name: config.name, buffer, filename: variantFilename });
     } catch (err) {
       console.error(`Failed to generate ${config.name} variant:`, err);
-      // Continue with other variants even if one fails
     }
   }
 
-  return { width, height, variants, metadata };
+  return { width, height, metadata, variants };
 }
