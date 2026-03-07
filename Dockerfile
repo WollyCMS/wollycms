@@ -33,9 +33,8 @@ WORKDIR /app
 # Create non-root user
 RUN groupadd -r wolly && useradd -r -g wolly -m wolly
 
-# Copy production node_modules
+# Copy production node_modules (workspaces hoists to root)
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/packages/server/node_modules ./packages/server/node_modules
 
 # Copy built server
 COPY --from=build-server /app/packages/server/dist ./packages/server/dist
@@ -58,7 +57,7 @@ ENV PORT=4321
 ENV HOST=0.0.0.0
 ENV DATABASE_URL=sqlite:./data/wolly.db
 ENV MEDIA_DIR=./uploads
-ENV JWT_SECRET=change-me-in-production
+# JWT_SECRET must be provided at runtime via .env or docker compose
 
 EXPOSE 4321
 
