@@ -25,7 +25,7 @@ export async function fireWebhooks(event: WebhookEvent, data: Record<string, unk
     .from(webhooks)
     .where(eq(webhooks.isActive, true));
 
-  const matching = allHooks.filter((h) => {
+  const matching = allHooks.filter((h: typeof allHooks[0]) => {
     const events: string[] = JSON.parse(h.events);
     return events.includes(event) || events.includes('*');
   });

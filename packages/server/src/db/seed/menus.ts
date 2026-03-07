@@ -67,8 +67,8 @@ export async function seedMainMenuChildren(
     .from(menuItems)
     .where(and(eq(menuItems.menuId, mainMenuId), eq(menuItems.depth, 0)));
 
-  const admissionsId = topItems.find((i) => i.title === 'Admissions')!.id;
-  const academicsId = topItems.find((i) => i.title === 'Academics')!.id;
+  const admissionsId = topItems.find((i: typeof topItems[0]) => i.title === 'Admissions')!.id;
+  const academicsId = topItems.find((i: typeof topItems[0]) => i.title === 'Academics')!.id;
 
   // Admissions children (depth 1)
   const admChildren = await db.insert(menuItems).values([
@@ -77,7 +77,7 @@ export async function seedMainMenuChildren(
     { menuId: mainMenuId, parentId: admissionsId, title: 'Financial Aid', url: '/financial-aid', target: '_self' as const, position: 2, depth: 1, isExpanded: true },
   ]).returning();
 
-  const finAidId = admChildren.find((i) => i.title === 'Financial Aid')!.id;
+  const finAidId = admChildren.find((i: typeof admChildren[0]) => i.title === 'Financial Aid')!.id;
 
   // Financial Aid children (depth 2)
   await db.insert(menuItems).values([

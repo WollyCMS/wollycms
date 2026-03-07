@@ -55,7 +55,7 @@ app.get('/:slug/terms', async (c) => {
 
   // Return flat list or tree based on whether taxonomy is hierarchical
   if (!taxonomy.hierarchical) {
-    const data = termRows.map((t) => ({
+    const data = termRows.map((t: typeof termRows[0]) => ({
       id: t.id,
       name: t.name,
       slug: t.slug,

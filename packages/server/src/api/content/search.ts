@@ -62,7 +62,7 @@ app.get('/', async (c) => {
     .orderBy(desc(pages.publishedAt))
     .limit(limit);
 
-  const data = rows.map((r) => ({
+  const data = rows.map((r: typeof rows[0]) => ({
     id: r.id,
     type: r.typeSlug,
     title: r.title,

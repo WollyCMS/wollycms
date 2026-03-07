@@ -29,7 +29,7 @@ export async function runScheduledPublishing(): Promise<number> {
   await db
     .update(pages)
     .set({ status: 'published', publishedAt: now, updatedAt: now })
-    .where(sql`${pages.id} IN (${sql.join(due.map(p => sql`${p.id}`), sql`, `)})`);
+    .where(sql`${pages.id} IN (${sql.join(due.map((p: typeof due[0]) => sql`${p.id}`), sql`, `)})`);
 
   cacheInvalidate('pages:');
 

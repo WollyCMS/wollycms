@@ -26,7 +26,7 @@ app.get('/:pageId/revisions', async (c) => {
     .offset(offset);
 
   return c.json({
-    data: rows.map((r) => ({
+    data: rows.map((r: typeof rows[0]) => ({
       id: r.id,
       pageId: r.pageId,
       title: r.title,
@@ -86,7 +86,7 @@ app.post('/:pageId/revisions/:revId/restore', async (c) => {
     slug: page.slug,
     status: page.status!,
     fields: page.fields,
-    blocks: currentBlocks.map((b) => ({
+    blocks: currentBlocks.map((b: typeof currentBlocks[0]) => ({
       region: b.region, position: b.position, isShared: b.isShared,
       overrides: b.overrides, blockType: b.blockTypeSlug,
       title: b.blockTitle, fields: b.blockFields,

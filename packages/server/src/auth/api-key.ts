@@ -43,7 +43,7 @@ export function apiKeyAuth(requiredPermission: string) {
       return c.json({ errors: [{ code: 'UNAUTHORIZED', message: 'API key expired' }] }, 401);
     }
 
-    const permissions = key.permissions.split(',').map((p) => p.trim());
+    const permissions = key.permissions.split(',').map((p: string) => p.trim());
     if (!permissions.includes('*') && !permissions.includes(requiredPermission)) {
       return c.json({ errors: [{ code: 'FORBIDDEN', message: 'Insufficient permissions' }] }, 403);
     }

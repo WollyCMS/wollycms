@@ -141,15 +141,15 @@ async function main() {
       }
 
       // Union type
-      const pageUnion = ctRows.map((ct) => `${pascalCase(ct.slug)}Page`).join(' | ');
+      const pageUnion = ctRows.map((ct: typeof ctRows[0]) => `${pascalCase(ct.slug)}Page`).join(' | ');
       output += `export type WollyPage = ${pageUnion};\n\n`;
 
       // Block type slug union
-      const blockSlugs = btRows.map((bt) => `'${bt.slug}'`).join(' | ');
+      const blockSlugs = btRows.map((bt: typeof btRows[0]) => `'${bt.slug}'`).join(' | ');
       output += `export type BlockTypeSlug = ${blockSlugs};\n\n`;
 
       // Content type slug union
-      const ctSlugs = ctRows.map((ct) => `'${ct.slug}'`).join(' | ');
+      const ctSlugs = ctRows.map((ct: typeof ctRows[0]) => `'${ct.slug}'`).join(' | ');
       output += `export type ContentTypeSlug = ${ctSlugs};\n`;
 
       writeFileSync(outputPath, output);
@@ -185,7 +185,7 @@ async function main() {
       const db = getDb();
       const importTable = async (
         name: string,
-        table: Parameters<typeof db.insert>[0],
+        table: any,
         rows: unknown[],
         dedup: (row: Record<string, unknown>) => ReturnType<typeof eq>,
       ) => {
@@ -193,7 +193,7 @@ async function main() {
         for (const row of rows as Record<string, unknown>[]) {
           const [existing] = await db.select().from(table).where(dedup(row)).limit(1);
           if (!existing) {
-            await db.insert(table).values(row as typeof table.$inferInsert);
+            await db.insert(table).values(row);
             imported++;
           }
         }

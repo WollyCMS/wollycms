@@ -76,7 +76,7 @@ app.get('/', async (c) => {
   const countResult = await db.select({ count: sql<number>`count(*)` }).from(media).where(where);
 
   // Add public URLs to each row
-  const data = rows.map((row) => ({
+  const data = rows.map((row: typeof rows[0]) => ({
     ...row,
     url: storage.getUrl(row.path),
     variantUrls: row.variants && typeof row.variants === 'object'
@@ -91,7 +91,7 @@ app.get('/', async (c) => {
 app.get('/folders', async (c) => {
   const db = getDb();
   const rows = await db.selectDistinct({ folder: media.folder }).from(media).where(sql`${media.folder} IS NOT NULL AND ${media.folder} != ''`).orderBy(media.folder);
-  return c.json({ data: rows.map((r) => r.folder) });
+  return c.json({ data: rows.map((r: typeof rows[0]) => r.folder) });
 });
 
 /** GET /:id - Get single media */

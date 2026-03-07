@@ -21,7 +21,7 @@ app.get('/', async (c) => {
   const db = getDb();
   const rows = await db.select().from(webhooks);
   return c.json({
-    data: rows.map((r) => ({
+    data: rows.map((r: typeof rows[0]) => ({
       ...r,
       events: JSON.parse(r.events),
       secret: r.secret ? '***' : null,
@@ -97,7 +97,7 @@ app.delete('/:id', async (c) => {
 /** POST /:id/test - Send test webhook */
 app.post('/:id/test', rateLimiter({ max: 5, windowMs: 60_000 }), async (c) => {
   const db = getDb();
-  const id = parseInt(c.req.param('id'), 10);
+  const id = parseInt(c.req.param('id') || '0', 10);
   const [hook] = await db.select().from(webhooks).where(eq(webhooks.id, id)).limit(1);
   if (!hook) return c.json({ errors: [{ code: 'NOT_FOUND', message: 'Webhook not found' }] }, 404);
 

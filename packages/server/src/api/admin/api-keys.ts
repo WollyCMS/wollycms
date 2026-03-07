@@ -19,7 +19,7 @@ app.get('/', async (c) => {
   const db = getDb();
   const rows = await db.select().from(apiKeys);
   return c.json({
-    data: rows.map((r) => ({
+    data: rows.map((r: typeof rows[0]) => ({
       id: r.id,
       name: r.name,
       keyPrefix: r.keyPrefix,

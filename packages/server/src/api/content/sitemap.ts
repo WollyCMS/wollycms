@@ -37,8 +37,8 @@ app.get('/', async (c) => {
   const siteUrl = env.SITE_URL.replace(/\/$/, '');
 
   const urls = rows
-    .filter((r) => !r.robots?.includes('noindex'))
-    .map((r) => {
+    .filter((r: typeof rows[0]) => !r.robots?.includes('noindex'))
+    .map((r: typeof rows[0]) => {
       const loc = r.slug === 'home' ? siteUrl + '/' : `${siteUrl}/${r.slug}`;
       const lastmod = r.updatedAt.split('T')[0];
       return `  <url>\n    <loc>${escapeXml(loc)}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </url>`;

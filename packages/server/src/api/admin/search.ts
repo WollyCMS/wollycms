@@ -66,10 +66,10 @@ app.get('/', async (c) => {
 
   return c.json({
     data: {
-      pages: pageResults.map((p) => ({ ...p, type: 'page' as const })),
-      blocks: blockResults.map((b) => ({ ...b, type: 'block' as const })),
-      media: mediaResults.map((m) => ({ ...m, type: 'media' as const })),
-      menus: menuResults.map((m) => ({ ...m, type: 'menu' as const })),
+      pages: pageResults.map((p: typeof pageResults[0]) => ({ ...p, type: 'page' as const })),
+      blocks: blockResults.map((b: typeof blockResults[0]) => ({ ...b, type: 'block' as const })),
+      media: mediaResults.map((m: typeof mediaResults[0]) => ({ ...m, type: 'media' as const })),
+      menus: menuResults.map((m: typeof menuResults[0]) => ({ ...m, type: 'menu' as const })),
     },
   });
 });

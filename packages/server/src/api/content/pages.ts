@@ -65,14 +65,14 @@ app.get('/', async (c) => {
           ),
         );
 
-      taxonomyPageIds = matchingPages.map((r) => r.entityId);
-      if (taxonomyPageIds.length === 0) {
+      taxonomyPageIds = matchingPages.map((r: typeof matchingPages[0]) => r.entityId);
+      if (taxonomyPageIds!.length === 0) {
         return c.json({ data: [], meta: { total: 0, limit, offset } });
       }
     }
   }
 
-  if (taxonomyPageIds && taxonomyPageIds.length > 0) {
+  if (taxonomyPageIds !== null && taxonomyPageIds.length > 0) {
     conditions.push(inArray(pages.id, taxonomyPageIds));
   }
 
@@ -112,7 +112,7 @@ app.get('/', async (c) => {
     .limit(limit)
     .offset(offset);
 
-  const data = rows.map((row) => ({
+  const data = rows.map((row: typeof rows[0]) => ({
     id: row.id,
     type: row.typeSlug,
     title: row.title,

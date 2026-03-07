@@ -30,7 +30,7 @@ app.get('/', async (c) => {
   const [{ count }] = await db.select({ count: sql<number>`count(*)` }).from(auditLogs).where(where);
 
   return c.json({
-    data: rows.map((r) => ({
+    data: rows.map((r: typeof rows[0]) => ({
       ...r,
       details: r.details ? JSON.parse(r.details) : null,
     })),

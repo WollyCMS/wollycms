@@ -87,7 +87,7 @@ app.get('/', async (c) => {
   const rows = await query.orderBy(sortFn(sortCol)).limit(limit).offset(offset);
 
   return c.json({
-    data: rows.map((r) => ({
+    data: rows.map((r: typeof rows[0]) => ({
       id: r.id, type: r.typeSlug, typeName: r.typeName, title: r.title, slug: r.slug,
       status: r.status, fields: r.fields,
       scheduledAt: r.scheduledAt,
@@ -259,7 +259,7 @@ app.put('/:id', async (c) => {
     slug: existing.slug,
     status: existing.status!,
     fields: existing.fields,
-    blocks: currentBlocks.map((b) => ({
+    blocks: currentBlocks.map((b: typeof currentBlocks[0]) => ({
       region: b.region, position: b.position, isShared: b.isShared,
       overrides: b.overrides, blockId: b.isShared ? b.blockId : undefined,
       blockType: b.blockTypeSlug, title: b.blockTitle, fields: b.blockFields,
