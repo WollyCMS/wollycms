@@ -8,6 +8,9 @@ const config = {
     adapter: adapter({
       fallback: 'index.html',
     }),
+    paths: {
+      base: '/admin',
+    },
     alias: {
       '$lib': 'src/lib',
     },

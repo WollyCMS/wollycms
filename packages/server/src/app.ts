@@ -67,6 +67,9 @@ app.use('*', cors({
 app.route('/api/content', contentRouter);
 app.route('/api/admin', adminRouter);
 
+// Root redirects to admin UI
+app.get('/', (c) => c.redirect('/admin'));
+
 // Convenience redirect for /sitemap.xml
 app.get('/sitemap.xml', (c) => c.redirect('/api/content/sitemap'));
 

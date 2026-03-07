@@ -71,7 +71,7 @@
   <div class="card" style="max-width: 600px; margin-top: 1.5rem;">
     <h2 style="font-size: 1.1rem; margin-bottom: 1rem;">Data Management</h2>
     <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-      <a href="/api/admin/export" class="btn btn-outline" target="_blank" rel="noopener">Export All Content (JSON)</a>
+      <button class="btn btn-outline" onclick={() => window.open('/api/admin/export', '_blank')}>Export All Content (JSON)</button>
       <label class="btn btn-outline" style="cursor: pointer;">
         {importing ? 'Importing...' : 'Import Content (JSON)'}
         <input type="file" accept=".json" style="display: none;" onchange={async (e) => {
