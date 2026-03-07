@@ -52,7 +52,7 @@ app.post('/', async (c) => {
         sql`(${pages.scheduledAt} IS NULL OR ${pages.scheduledAt} <= ${now})`,
       ));
 
-    const pageIds = pageRows.map((p) => p.id);
+    const pageIds = pageRows.map((p: { id: number }) => p.id);
     const pbByPageId = new Map<number, Array<{
       pbId: number;
       region: string;
@@ -130,7 +130,7 @@ app.post('/', async (c) => {
     const slugList = parsed.data.menus.slice(0, 10);
     const menusResult: Record<string, unknown> = {};
     const menuRows = await db.select().from(menus).where(inArray(menus.slug, slugList));
-    const menuIds = menuRows.map((m) => m.id);
+    const menuIds = menuRows.map((m: { id: number }) => m.id);
     const menuItemsRows = menuIds.length > 0
       ? await db.select().from(menuItems).where(inArray(menuItems.menuId, menuIds)).orderBy(asc(menuItems.menuId), asc(menuItems.position))
       : [];
