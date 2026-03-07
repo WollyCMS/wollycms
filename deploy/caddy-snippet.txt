@@ -1,0 +1,6 @@
+# Add this block to /srv/compose/caddy/Caddyfile on mothership
+
+wollycms.home.cwolly.com {
+    import home_tls
+    reverse_proxy host.docker.internal:4321
+}

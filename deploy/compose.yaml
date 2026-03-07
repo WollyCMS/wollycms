@@ -1,0 +1,31 @@
+services:
+  wollycms:
+    image: forgejo.home.cwolly.com/chad/wollycms:latest
+    ports:
+      - 4321:4321
+    environment:
+      - NODE_ENV=production
+      - PORT=4321
+      - HOST=0.0.0.0
+      - DATABASE_URL=sqlite:./data/wolly.db
+      - MEDIA_STORAGE=local
+      - MEDIA_DIR=./uploads
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      - SITE_URL=${SITE_URL:-https://cwolly.com}
+    volumes:
+      - /tank/appdata/wollycms/data:/app/data
+      - /tank/appdata/wollycms/uploads:/app/uploads
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://localhost:4321/api/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
