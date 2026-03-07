@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { page as routePage } from '$app/stores';
+  import { page as routePage } from '$app/state';
   import { beforeNavigate } from '$app/navigation';
   import { api } from '$lib/api.js';
   import { toast } from '$lib/toast.svelte.js';
