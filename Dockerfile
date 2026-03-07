@@ -33,8 +33,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Create non-root user with fixed UID/GID for volume mount compatibility
-RUN groupadd -g 1000 wolly && useradd -u 1000 -g wolly -m wolly
+# Use built-in node user (UID 1000) — no need to create a custom user
 
 # Copy production node_modules (workspaces hoists to root)
 COPY --from=deps /app/node_modules ./node_modules
@@ -51,9 +50,9 @@ COPY --from=build-admin /app/packages/admin/build ./packages/admin/build
 COPY package.json ./
 
 # Create data and uploads directories
-RUN mkdir -p data uploads && chown -R wolly:wolly /app
+RUN mkdir -p data uploads && chown -R node:node /app
 
-USER wolly
+USER node
 
 ENV NODE_ENV=production
 ENV PORT=4321
