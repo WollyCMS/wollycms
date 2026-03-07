@@ -16,7 +16,6 @@
 
   let iframeEl = $state<HTMLIFrameElement | null>(null);
   let loading = $state(true);
-  let previewUrl = $state(buildPreviewUrl(slug));
   let deviceMode = $state<'mobile' | 'tablet' | 'desktop'>('desktop');
   let sessionReady = $state(false);
 
@@ -28,6 +27,8 @@
   function buildPreviewUrl(s: string): string {
     return `${PREVIEW_BASE}/${s}`;
   }
+
+  let previewUrl = $state(buildPreviewUrl(slug));
 
   async function ensurePreviewSession() {
     if (sessionReady) return true;
