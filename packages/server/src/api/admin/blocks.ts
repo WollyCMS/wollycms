@@ -33,7 +33,10 @@ app.get('/', async (c) => {
 
   const conditions: ReturnType<typeof eq>[] = [];
   if (reusableOnly) conditions.push(eq(blocks.isReusable, true));
-  if (search) conditions.push(sql`${blocks.title} LIKE ${'%' + search + '%'}`);
+  if (search) {
+    const term = `%${search.replace(/%/g, '\\%').replace(/_/g, '\\_')}%`;
+    conditions.push(sql`${blocks.title} LIKE ${term}`);
+  }
 
   if (typeSlug) {
     const [bt] = await db.select({ id: blockTypes.id }).from(blockTypes).where(eq(blockTypes.slug, typeSlug)).limit(1);

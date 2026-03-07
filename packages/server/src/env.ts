@@ -7,7 +7,11 @@ export const env = {
   DATABASE_URL: process.env.DATABASE_URL || 'sqlite:./data/spacely.db',
   MEDIA_STORAGE: process.env.MEDIA_STORAGE || 'local',
   MEDIA_DIR: process.env.MEDIA_DIR || './uploads',
-  JWT_SECRET: process.env.JWT_SECRET || 'dev-secret-change-me',
+  JWT_SECRET: (() => {
+    if (process.env.JWT_SECRET) return process.env.JWT_SECRET;
+    if (process.env.NODE_ENV === 'production') throw new Error('JWT_SECRET environment variable is required in production');
+    return 'dev-secret-change-me';
+  })(),
   CORS_ORIGINS: process.env.CORS_ORIGINS || '*',
   RATE_LIMIT_AUTH: parseInt(process.env.RATE_LIMIT_AUTH || '10', 10),
   RATE_LIMIT_WINDOW_MS: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10),

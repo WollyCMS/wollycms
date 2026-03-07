@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { api } from '$lib/api.js';
   import { toast } from '$lib/toast.svelte.js';
+  import { focusTrap } from '$lib/focusTrap.js';
 
   let webhooks = $state<any[]>([]);
   let showCreate = $state(false);
@@ -114,7 +115,7 @@
 
 {#if showCreate}
   <div class="modal-overlay" onclick={() => { showCreate = false; resetForm(); }} role="dialog" aria-labelledby="webhook-modal-title" aria-modal="true">
-    <div class="modal" onclick={(e) => e.stopPropagation()}>
+    <div class="modal" onclick={(e) => e.stopPropagation()} use:focusTrap onescape={() => { showCreate = false; resetForm(); }}>
       <div class="modal-header">
         <h2 id="webhook-modal-title">{editId ? 'Edit' : 'New'} Webhook</h2>
         <button class="btn-icon" onclick={() => { showCreate = false; resetForm(); }} aria-label="Close">&#10005;</button>

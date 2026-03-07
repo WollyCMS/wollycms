@@ -1,6 +1,7 @@
 <script lang="ts">
   import { api } from '$lib/api.js';
   import RevisionDiff from './RevisionDiff.svelte';
+  import { focusTrap } from '$lib/focusTrap.js';
 
   let {
     pageData,
@@ -306,11 +307,11 @@
 </div>
 
 {#if revisionDetail}
-  <div class="modal-overlay" onclick={() => revisionDetail = null} role="dialog">
-    <div class="modal" onclick={(e) => e.stopPropagation()} style="max-width: 600px;">
+  <div class="modal-overlay" onclick={() => revisionDetail = null} role="dialog" aria-modal="true" aria-labelledby="revision-detail-title">
+    <div class="modal" onclick={(e) => e.stopPropagation()} style="max-width: 600px;" use:focusTrap onescape={() => revisionDetail = null}>
       <div class="modal-header">
-        <h2>Revision: {revisionDetail.title}</h2>
-        <button class="btn-icon" onclick={() => revisionDetail = null}>&#10005;</button>
+        <h2 id="revision-detail-title">Revision: {revisionDetail.title}</h2>
+        <button class="btn-icon" onclick={() => revisionDetail = null} aria-label="Close">&#10005;</button>
       </div>
       <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
         <p style="font-size: 0.85rem;"><strong>Slug:</strong> /{revisionDetail.slug} &middot; <strong>Status:</strong> <span class="badge badge-{revisionDetail.status}">{revisionDetail.status}</span></p>

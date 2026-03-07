@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { api } from '$lib/api.js';
+  import { focusTrap } from '$lib/focusTrap.js';
 
   let redirects = $state<any[]>([]);
   let filteredRedirects = $derived(
@@ -79,9 +80,9 @@
 </div>
 
 {#if showCreate}
-  <div class="modal-overlay" onclick={() => showCreate = false} role="dialog">
-    <div class="modal" onclick={(e) => e.stopPropagation()}>
-      <div class="modal-header"><h2>New Redirect</h2><button class="btn-icon" onclick={() => showCreate = false}>✕</button></div>
+  <div class="modal-overlay" onclick={() => showCreate = false} role="dialog" aria-modal="true" aria-labelledby="new-redirect-title">
+    <div class="modal" onclick={(e) => e.stopPropagation()} use:focusTrap onescape={() => showCreate = false}>
+      <div class="modal-header"><h2 id="new-redirect-title">New Redirect</h2><button class="btn-icon" onclick={() => showCreate = false} aria-label="Close">✕</button></div>
       <form class="modal-body" onsubmit={(e) => { e.preventDefault(); createRedirect(); }}>
         <div class="form-group"><label>From Path</label><input class="form-control" bind:value={newRedirect.fromPath} placeholder="/old-path" required /></div>
         <div class="form-group"><label>To Path</label><input class="form-control" bind:value={newRedirect.toPath} placeholder="/new-path" required /></div>

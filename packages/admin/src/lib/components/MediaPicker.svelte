@@ -1,6 +1,7 @@
 <script lang="ts">
   import { api } from '$lib/api.js';
   import { AlertTriangle } from 'lucide-svelte';
+  import { focusTrap } from '$lib/focusTrap.js';
 
   let { value, onSelect }: { value: number | null; onSelect: (mediaId: number | null) => void } = $props();
 
@@ -86,11 +87,11 @@
 </div>
 
 {#if open}
-  <div class="modal-overlay" onclick={() => open = false} role="dialog">
-    <div class="modal" style="max-width: 720px;" onclick={(e) => e.stopPropagation()}>
+  <div class="modal-overlay" onclick={() => open = false} role="dialog" aria-modal="true" aria-labelledby="select-media-title">
+    <div class="modal" style="max-width: 720px;" onclick={(e) => e.stopPropagation()} use:focusTrap onescape={() => open = false}>
       <div class="modal-header">
-        <h2>Select Media</h2>
-        <button class="btn-icon" onclick={() => open = false}>&#10005;</button>
+        <h2 id="select-media-title">Select Media</h2>
+        <button class="btn-icon" onclick={() => open = false} aria-label="Close">&#10005;</button>
       </div>
       <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
         {#if loading}

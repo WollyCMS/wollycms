@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { api } from '$lib/api.js';
   import { toast } from '$lib/toast.svelte.js';
+  import { focusTrap } from '$lib/focusTrap.js';
   import RichTextEditor from '$lib/components/RichTextEditor.svelte';
   import MediaPicker from '$lib/components/MediaPicker.svelte';
 
@@ -107,9 +108,9 @@
 </div>
 
 {#if showCreate}
-  <div class="modal-overlay" onclick={() => showCreate = false} role="dialog">
-    <div class="modal" onclick={(e) => e.stopPropagation()}>
-      <div class="modal-header"><h2>New Shared Block</h2><button class="btn-icon" onclick={() => showCreate = false}>✕</button></div>
+  <div class="modal-overlay" onclick={() => showCreate = false} role="dialog" aria-modal="true" aria-labelledby="new-block-title">
+    <div class="modal" onclick={(e) => e.stopPropagation()} use:focusTrap onescape={() => showCreate = false}>
+      <div class="modal-header"><h2 id="new-block-title">New Shared Block</h2><button class="btn-icon" onclick={() => showCreate = false} aria-label="Close">✕</button></div>
       <form class="modal-body" onsubmit={(e) => { e.preventDefault(); createBlock(); }}>
         <div class="form-group">
           <label for="nb-title">Title</label>
@@ -131,11 +132,11 @@
 {/if}
 
 {#if editBlock}
-  <div class="modal-overlay" onclick={() => editBlock = null} role="dialog">
-    <div class="modal" style="max-width: 700px;" onclick={(e) => e.stopPropagation()}>
+  <div class="modal-overlay" onclick={() => editBlock = null} role="dialog" aria-modal="true" aria-labelledby="edit-block-title">
+    <div class="modal" style="max-width: 700px;" onclick={(e) => e.stopPropagation()} use:focusTrap onescape={() => editBlock = null}>
       <div class="modal-header">
-        <h2>Edit: {editBlock.typeName}</h2>
-        <button class="btn-icon" onclick={() => editBlock = null}>✕</button>
+        <h2 id="edit-block-title">Edit: {editBlock.typeName}</h2>
+        <button class="btn-icon" onclick={() => editBlock = null} aria-label="Close">✕</button>
       </div>
       <form class="modal-body" onsubmit={(e) => { e.preventDefault(); saveEdit(); }}>
         <div class="form-group">

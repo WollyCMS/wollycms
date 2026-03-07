@@ -144,7 +144,7 @@ button:focus-visible,
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.82);
   text-decoration: none;
   font-size: 0.9rem;
   transition: background 0.15s, color 0.15s;
@@ -179,7 +179,7 @@ button:focus-visible,
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.75px;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.5);
   padding: 0.75rem 1rem 0.25rem;
 }
 

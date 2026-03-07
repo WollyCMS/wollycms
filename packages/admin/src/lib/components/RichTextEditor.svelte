@@ -6,6 +6,7 @@
   import Link from '@tiptap/extension-link';
   import Underline from '@tiptap/extension-underline';
   import Image from '@tiptap/extension-image';
+  import { focusTrap } from '$lib/focusTrap.js';
   import Table from '@tiptap/extension-table';
   import TableRow from '@tiptap/extension-table-row';
   import TableCell from '@tiptap/extension-table-cell';
@@ -321,11 +322,11 @@
 </div>
 
 {#if showImagePicker}
-  <div class="modal-overlay" onclick={() => showImagePicker = false} role="dialog">
-    <div class="modal" onclick={(e) => e.stopPropagation()} style="max-width: 700px;">
+  <div class="modal-overlay" onclick={() => showImagePicker = false} role="dialog" aria-modal="true" aria-labelledby="insert-image-title">
+    <div class="modal" onclick={(e) => e.stopPropagation()} style="max-width: 700px;" use:focusTrap onescape={() => showImagePicker = false}>
       <div class="modal-header">
-        <h2>Insert Image</h2>
-        <button class="btn-icon" onclick={() => showImagePicker = false}>&#10005;</button>
+        <h2 id="insert-image-title">Insert Image</h2>
+        <button class="btn-icon" onclick={() => showImagePicker = false} aria-label="Close">&#10005;</button>
       </div>
       <div class="modal-body">
         <MediaPicker value={null} onSelect={onImageSelect} />

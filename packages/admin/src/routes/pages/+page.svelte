@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { api } from '$lib/api.js';
   import { toast } from '$lib/toast.svelte.js';
+  import { focusTrap } from '$lib/focusTrap.js';
 
   const typeColors: Record<string, string> = {
     home_page: '#d69e2e',
@@ -211,7 +212,7 @@
 
 {#if showCreate}
   <div class="modal-overlay" onclick={() => showCreate = false} role="dialog" aria-labelledby="new-page-title" aria-modal="true">
-    <div class="modal" onclick={(e) => e.stopPropagation()}>
+    <div class="modal" onclick={(e) => e.stopPropagation()} use:focusTrap onescape={() => showCreate = false}>
       <div class="modal-header">
         <h2 id="new-page-title">New Page</h2>
         <button class="btn-icon" onclick={() => showCreate = false} aria-label="Close">&#10005;</button>

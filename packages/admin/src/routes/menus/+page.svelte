@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { api } from '$lib/api.js';
+  import { focusTrap } from '$lib/focusTrap.js';
   import SortableList from '$lib/components/SortableList.svelte';
 
   let menus = $state<any[]>([]);
@@ -222,9 +223,9 @@
 </div>
 
 {#if showCreate}
-  <div class="modal-overlay" onclick={() => showCreate = false} role="dialog">
-    <div class="modal" onclick={(e) => e.stopPropagation()}>
-      <div class="modal-header"><h2>New Menu</h2><button class="btn-icon" onclick={() => showCreate = false}>✕</button></div>
+  <div class="modal-overlay" onclick={() => showCreate = false} role="dialog" aria-modal="true" aria-labelledby="new-menu-title">
+    <div class="modal" onclick={(e) => e.stopPropagation()} use:focusTrap onescape={() => showCreate = false}>
+      <div class="modal-header"><h2 id="new-menu-title">New Menu</h2><button class="btn-icon" onclick={() => showCreate = false} aria-label="Close">✕</button></div>
       <form class="modal-body" onsubmit={(e) => { e.preventDefault(); createMenu(); }}>
         <div class="form-group"><label>Name</label><input class="form-control" bind:value={newMenu.name} required /></div>
         <div class="form-group"><label>Slug</label><input class="form-control" bind:value={newMenu.slug} required /></div>
@@ -238,9 +239,9 @@
 {/if}
 
 {#if showAddItem}
-  <div class="modal-overlay" onclick={() => showAddItem = false} role="dialog">
-    <div class="modal" onclick={(e) => e.stopPropagation()}>
-      <div class="modal-header"><h2>Add Menu Item</h2><button class="btn-icon" onclick={() => showAddItem = false}>✕</button></div>
+  <div class="modal-overlay" onclick={() => showAddItem = false} role="dialog" aria-modal="true" aria-labelledby="add-menu-item-title">
+    <div class="modal" onclick={(e) => e.stopPropagation()} use:focusTrap onescape={() => showAddItem = false}>
+      <div class="modal-header"><h2 id="add-menu-item-title">Add Menu Item</h2><button class="btn-icon" onclick={() => showAddItem = false} aria-label="Close">✕</button></div>
       <form class="modal-body" onsubmit={(e) => { e.preventDefault(); addItem(); }}>
         <div class="form-group"><label>Title</label><input class="form-control" bind:value={newItem.title} required /></div>
         <div class="form-group">

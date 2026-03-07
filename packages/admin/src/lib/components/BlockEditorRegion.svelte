@@ -8,6 +8,7 @@
   import RichTextEditor from './RichTextEditor.svelte';
   import MediaPicker from './MediaPicker.svelte';
   import RepeaterEditor from './RepeaterEditor.svelte';
+  import { focusTrap } from '$lib/focusTrap.js';
 
   const lucideMap: Record<string, any> = {
     'type': Type, 'list': List, 'mouse-pointer': MousePointer,
@@ -388,8 +389,8 @@
             <span class="region-name">{region.label}</span>
             <span class="region-count">{rBlocks.length}</span>
           </div>
-          <button class="region-add-btn" onclick={() => openAddBlock(region.name)} title="Add block to {region.label}">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <button class="region-add-btn" onclick={() => openAddBlock(region.name)} title="Add block to {region.label}" aria-label="Add block to {region.label}">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </button>
         </div>
 
@@ -455,18 +456,18 @@
                     <span class="expand-chevron" class:rotated={expandedBlocks.has(block.pb_id)}>&#9662;</span>
                   </button>
                   <div class="block-actions">
-                    <button class="block-action-btn" onclick={() => toggleExpanded(block.pb_id)} title="Edit">
+                    <button class="block-action-btn" onclick={() => toggleExpanded(block.pb_id)} title="Edit" aria-label="Edit block">
                       <Pencil size={13} />
                     </button>
-                    <button class="block-action-btn" onclick={() => duplicateBlock(block.pb_id, region.name)} title="Duplicate">
+                    <button class="block-action-btn" onclick={() => duplicateBlock(block.pb_id, region.name)} title="Duplicate" aria-label="Duplicate block">
                       <Copy size={13} />
                     </button>
                     {#if regions.length > 1}
-                      <button class="block-action-btn" onclick={() => moveRegionBlock = { pbId: block.pb_id, currentRegion: region.name }} title="Move to region">
+                      <button class="block-action-btn" onclick={() => moveRegionBlock = { pbId: block.pb_id, currentRegion: region.name }} title="Move to region" aria-label="Move block to another region">
                         <ArrowRightLeft size={13} />
                       </button>
                     {/if}
-                    <button class="block-action-btn block-action-danger" onclick={() => removeBlock(block.pb_id)} title="Remove">
+                    <button class="block-action-btn block-action-danger" onclick={() => removeBlock(block.pb_id)} title="Remove" aria-label="Remove block">
                       <Trash2 size={13} />
                     </button>
                   </div>
@@ -530,11 +531,11 @@
 {/if}
 
 {#if showAddBlock}
-  <div class="modal-overlay" onclick={() => showAddBlock = false} role="dialog">
-    <div class="modal" onclick={(e) => e.stopPropagation()} style="max-width: 600px;">
+  <div class="modal-overlay" onclick={() => showAddBlock = false} role="dialog" aria-modal="true" aria-labelledby="add-block-title">
+    <div class="modal" onclick={(e) => e.stopPropagation()} style="max-width: 600px;" use:focusTrap onescape={() => showAddBlock = false}>
       <div class="modal-header">
-        <h2>Add Block to "{activeRegion}"</h2>
-        <button class="btn-icon" onclick={() => showAddBlock = false}>&#10005;</button>
+        <h2 id="add-block-title">Add Block to "{activeRegion}"</h2>
+        <button class="btn-icon" onclick={() => showAddBlock = false} aria-label="Close">&#10005;</button>
       </div>
       <div class="modal-body">
         <div class="tabs" style="margin-bottom: 1rem;">
@@ -566,8 +567,8 @@
           </div>
         {:else}
           <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
-            <input class="form-control" placeholder="Search blocks..." bind:value={librarySearch} style="flex: 1;" />
-            <select class="form-control" bind:value={libraryFilter} style="width: auto;">
+            <input class="form-control" placeholder="Search blocks..." bind:value={librarySearch} style="flex: 1;" aria-label="Search shared blocks" />
+            <select class="form-control" bind:value={libraryFilter} style="width: auto;" aria-label="Filter by block type">
               <option value="">All types</option>
               {#each blockTypes as bt}
                 <option value={bt.slug}>{bt.name}</option>
@@ -599,11 +600,11 @@
 {/if}
 
 {#if moveRegionBlock}
-  <div class="modal-overlay" onclick={() => moveRegionBlock = null} role="dialog">
-    <div class="modal" onclick={(e) => e.stopPropagation()} style="max-width: 360px;">
+  <div class="modal-overlay" onclick={() => moveRegionBlock = null} role="dialog" aria-modal="true" aria-labelledby="move-region-title">
+    <div class="modal" onclick={(e) => e.stopPropagation()} style="max-width: 360px;" use:focusTrap onescape={() => moveRegionBlock = null}>
       <div class="modal-header">
-        <h2>Move to Region</h2>
-        <button class="btn-icon" onclick={() => moveRegionBlock = null}>&#10005;</button>
+        <h2 id="move-region-title">Move to Region</h2>
+        <button class="btn-icon" onclick={() => moveRegionBlock = null} aria-label="Close">&#10005;</button>
       </div>
       <div class="modal-body">
         <div class="move-region-list">

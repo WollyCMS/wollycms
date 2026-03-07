@@ -6,7 +6,7 @@
 </script>
 
 {#if toasts.length > 0}
-  <div class="toast-container">
+  <div class="toast-container" role="status" aria-live="polite">
     {#each toasts as t (t.id)}
       <div class="toast toast-{t.type}">
         <span class="toast-icon">
@@ -16,7 +16,7 @@
           {/if}
         </span>
         <span class="toast-message">{t.message}</span>
-        <button class="toast-dismiss" onclick={() => dismissToast(t.id)}>
+        <button class="toast-dismiss" onclick={() => dismissToast(t.id)} aria-label="Dismiss notification">
           <X size={14} />
         </button>
       </div>

@@ -6,9 +6,14 @@ import { redirects } from '../../db/schema/index.js';
 
 const app = new Hono();
 
+const pathPattern = /^\/[a-zA-Z0-9\-._~:/?#\[\]@!$&'()*+,;=%]*$/;
+
 const redirectSchema = z.object({
-  fromPath: z.string().min(1),
-  toPath: z.string().min(1),
+  fromPath: z.string().min(1).regex(pathPattern, 'Must be a relative path starting with /'),
+  toPath: z.string().min(1).refine(
+    (v) => pathPattern.test(v) || /^https?:\/\//.test(v),
+    'Must be a relative path or absolute URL',
+  ),
   statusCode: z.number().int().min(300).max(399).default(301),
   isActive: z.boolean().default(true),
 });

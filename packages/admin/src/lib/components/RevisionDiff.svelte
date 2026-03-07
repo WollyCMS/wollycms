@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { focusTrap } from '$lib/focusTrap.js';
+
   let {
     current,
     revision,
@@ -52,11 +54,11 @@
   let hasChanges = $derived(fieldDiffs.some((d) => d.changed) || blockSummary.current !== blockSummary.revision);
 </script>
 
-<div class="modal-overlay" onclick={onClose} role="dialog">
-  <div class="modal diff-modal" onclick={(e) => e.stopPropagation()}>
+<div class="modal-overlay" onclick={onClose} role="dialog" aria-modal="true" aria-labelledby="revision-diff-title">
+  <div class="modal diff-modal" onclick={(e) => e.stopPropagation()} use:focusTrap onescape={onClose}>
     <div class="modal-header">
-      <h2>Compare with Revision</h2>
-      <button class="btn-icon" onclick={onClose}>&#10005;</button>
+      <h2 id="revision-diff-title">Compare with Revision</h2>
+      <button class="btn-icon" onclick={onClose} aria-label="Close">&#10005;</button>
     </div>
     <div class="modal-body" style="max-height: 65vh; overflow-y: auto;">
       <p style="font-size: 0.8rem; color: var(--c-text-light); margin-bottom: 1rem;">

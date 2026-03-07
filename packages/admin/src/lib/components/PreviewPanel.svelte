@@ -73,21 +73,21 @@
     <div class="preview-toolbar">
       <span class="preview-label">Preview</span>
       <div class="device-toggle">
-        <button class="device-btn" class:active={deviceMode === 'mobile'} onclick={() => deviceMode = 'mobile'} title="Mobile (375px)">
+        <button class="device-btn" class:active={deviceMode === 'mobile'} onclick={() => deviceMode = 'mobile'} title="Mobile (375px)" aria-label="Mobile preview (375px)" aria-pressed={deviceMode === 'mobile'}>
           <Smartphone size={14} />
         </button>
-        <button class="device-btn" class:active={deviceMode === 'tablet'} onclick={() => deviceMode = 'tablet'} title="Tablet (768px)">
+        <button class="device-btn" class:active={deviceMode === 'tablet'} onclick={() => deviceMode = 'tablet'} title="Tablet (768px)" aria-label="Tablet preview (768px)" aria-pressed={deviceMode === 'tablet'}>
           <Tablet size={14} />
         </button>
-        <button class="device-btn" class:active={deviceMode === 'desktop'} onclick={() => deviceMode = 'desktop'} title="Desktop (full width)">
+        <button class="device-btn" class:active={deviceMode === 'desktop'} onclick={() => deviceMode = 'desktop'} title="Desktop (full width)" aria-label="Desktop preview (full width)" aria-pressed={deviceMode === 'desktop'}>
           <Monitor size={14} />
         </button>
       </div>
       <div class="preview-actions">
-        <button class="preview-action-btn" onclick={copyPreviewLink} title="Copy preview link">
+        <button class="preview-action-btn" onclick={copyPreviewLink} title="Copy preview link" aria-label="Copy preview link">
           <LinkIcon size={14} />
         </button>
-        <button class="preview-action-btn" onclick={refresh} title="Refresh preview">
+        <button class="preview-action-btn" onclick={refresh} title="Refresh preview" aria-label="Refresh preview">
           <RefreshCw size={14} />
         </button>
       </div>

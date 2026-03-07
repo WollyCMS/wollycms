@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { api } from '$lib/api.js';
+  import { focusTrap } from '$lib/focusTrap.js';
 
   let taxonomies = $state<any[]>([]);
   let selected = $state<any>(null);
@@ -119,9 +120,9 @@
 </div>
 
 {#if showCreate}
-  <div class="modal-overlay" onclick={() => showCreate = false} role="dialog">
-    <div class="modal" onclick={(e) => e.stopPropagation()}>
-      <div class="modal-header"><h2>New Taxonomy</h2><button class="btn-icon" onclick={() => showCreate = false}>✕</button></div>
+  <div class="modal-overlay" onclick={() => showCreate = false} role="dialog" aria-modal="true" aria-labelledby="new-taxonomy-title">
+    <div class="modal" onclick={(e) => e.stopPropagation()} use:focusTrap onescape={() => showCreate = false}>
+      <div class="modal-header"><h2 id="new-taxonomy-title">New Taxonomy</h2><button class="btn-icon" onclick={() => showCreate = false} aria-label="Close">✕</button></div>
       <form class="modal-body" onsubmit={(e) => { e.preventDefault(); createTaxonomy(); }}>
         <div class="form-group"><label>Name</label><input class="form-control" bind:value={newTax.name} required /></div>
         <div class="form-group"><label>Slug</label><input class="form-control" bind:value={newTax.slug} required /></div>
@@ -136,9 +137,9 @@
 {/if}
 
 {#if showAddTerm}
-  <div class="modal-overlay" onclick={() => showAddTerm = false} role="dialog">
-    <div class="modal" onclick={(e) => e.stopPropagation()}>
-      <div class="modal-header"><h2>Add Term</h2><button class="btn-icon" onclick={() => showAddTerm = false}>✕</button></div>
+  <div class="modal-overlay" onclick={() => showAddTerm = false} role="dialog" aria-modal="true" aria-labelledby="add-term-title">
+    <div class="modal" onclick={(e) => e.stopPropagation()} use:focusTrap onescape={() => showAddTerm = false}>
+      <div class="modal-header"><h2 id="add-term-title">Add Term</h2><button class="btn-icon" onclick={() => showAddTerm = false} aria-label="Close">✕</button></div>
       <form class="modal-body" onsubmit={(e) => { e.preventDefault(); addTerm(); }}>
         <div class="form-group"><label>Name</label><input class="form-control" bind:value={newTerm.name} required /></div>
         <div class="form-group"><label>Slug</label><input class="form-control" bind:value={newTerm.slug} required /></div>

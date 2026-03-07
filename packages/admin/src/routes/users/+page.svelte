@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { api } from '$lib/api.js';
+  import { focusTrap } from '$lib/focusTrap.js';
 
   let users = $state<any[]>([]);
   let error = $state('');
@@ -60,7 +61,7 @@
 
 {#if showCreate}
   <div class="modal-overlay" onclick={() => showCreate = false} role="dialog" aria-labelledby="new-user-title" aria-modal="true">
-    <div class="modal" onclick={(e) => e.stopPropagation()}>
+    <div class="modal" onclick={(e) => e.stopPropagation()} use:focusTrap onescape={() => showCreate = false}>
       <div class="modal-header"><h2 id="new-user-title">New User</h2><button class="btn-icon" onclick={() => showCreate = false} aria-label="Close">✕</button></div>
       <form class="modal-body" onsubmit={(e) => { e.preventDefault(); createUser(); }}>
         <div class="form-group"><label>Name</label><input class="form-control" bind:value={newUser.name} required /></div>

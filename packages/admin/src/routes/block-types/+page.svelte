@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { api } from '$lib/api.js';
+  import { focusTrap } from '$lib/focusTrap.js';
 
   let types = $state<any[]>([]);
   let error = $state('');
@@ -82,9 +83,9 @@
 {#if showCreate || editType}
   {@const isEdit = !!editType}
   {@const item = editType || newType}
-  <div class="modal-overlay" onclick={() => { showCreate = false; editType = null; }} role="dialog">
-    <div class="modal" style="max-width: 700px;" onclick={(e) => e.stopPropagation()}>
-      <div class="modal-header"><h2>{isEdit ? 'Edit' : 'New'} Block Type</h2><button class="btn-icon" onclick={() => { showCreate = false; editType = null; }}>✕</button></div>
+  <div class="modal-overlay" onclick={() => { showCreate = false; editType = null; }} role="dialog" aria-modal="true" aria-labelledby="block-type-modal-title">
+    <div class="modal" style="max-width: 700px;" onclick={(e) => e.stopPropagation()} use:focusTrap onescape={() => { showCreate = false; editType = null; }}>
+      <div class="modal-header"><h2 id="block-type-modal-title">{isEdit ? 'Edit' : 'New'} Block Type</h2><button class="btn-icon" onclick={() => { showCreate = false; editType = null; }} aria-label="Close">✕</button></div>
       <form class="modal-body" onsubmit={(e) => { e.preventDefault(); isEdit ? saveEdit() : createType(); }}>
         <div class="form-grid">
           <div class="form-group"><label>Name</label><input class="form-control" bind:value={item.name} required /></div>

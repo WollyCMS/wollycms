@@ -7,8 +7,10 @@ import { readFile, stat } from 'node:fs/promises';
 import { join, extname } from 'node:path';
 import contentRouter from './api/content/index.js';
 import adminRouter from './api/admin/index.js';
-import { env } from './env.js';
+import { env, isProduction } from './env.js';
 import { cacheSize } from './cache.js';
+import { bodyLimit } from 'hono/body-limit';
+import { HTTPException } from 'hono/http-exception';
 
 /** Map common file extensions to MIME types for static serving. */
 const MIME_TYPES: Record<string, string> = {
@@ -28,7 +30,18 @@ const MIME_TYPES: Record<string, string> = {
 
 const app = new Hono();
 
+app.onError((err, c) => {
+  if (err instanceof HTTPException) {
+    return err.getResponse();
+  }
+  console.error('Unhandled error:', err);
+  return c.json({
+    errors: [{ code: 'INTERNAL_ERROR', message: isProduction() ? 'Internal server error' : err.message }],
+  }, 500);
+});
+
 app.use('*', logger());
+app.use('*', bodyLimit({ maxSize: 50 * 1024 * 1024 })); // 50MB max request body
 app.use('*', cors({
   origin: env.CORS_ORIGINS === '*' ? '*' : env.CORS_ORIGINS.split(',').map((o) => o.trim()),
   allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
