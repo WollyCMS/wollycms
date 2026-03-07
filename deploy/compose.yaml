@@ -26,6 +26,8 @@ services:
       timeout: 5s
       start_period: 10s
       retries: 3
+    # Ensure volume dirs are writable by container user (UID 1000)
+    # Run on host: sudo chown -R 1000:1000 /tank/appdata/wollycms/
     restart: unless-stopped
     labels:
       - "com.centurylinklabs.watchtower.enable=true"

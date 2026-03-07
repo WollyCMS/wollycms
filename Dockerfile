@@ -33,8 +33,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Create non-root user
-RUN groupadd -r wolly && useradd -r -g wolly -m wolly
+# Create non-root user with fixed UID/GID for volume mount compatibility
+RUN groupadd -g 1000 wolly && useradd -u 1000 -g wolly -m wolly
 
 # Copy production node_modules (workspaces hoists to root)
 COPY --from=deps /app/node_modules ./node_modules

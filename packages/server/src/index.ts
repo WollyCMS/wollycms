@@ -13,7 +13,17 @@ async function autoMigrate() {
   const dialect = getDialect();
   if (dialect === 'sqlite') {
     const dbPath = getDatabasePath();
-    mkdirSync(dirname(dbPath), { recursive: true });
+    const dbDir = dirname(dbPath);
+    mkdirSync(dbDir, { recursive: true });
+    console.log(`SQLite path: ${resolve(dbPath)}, dir: ${resolve(dbDir)}`);
+    // Check directory is writable
+    const { accessSync, constants } = await import('node:fs');
+    try {
+      accessSync(dbDir, constants.W_OK);
+    } catch {
+      console.error(`ERROR: Directory ${resolve(dbDir)} is not writable. Check volume mount permissions.`);
+      process.exit(1);
+    }
   }
   const db = getDb();
   const migrationsFolder = resolve(__dirname, '../drizzle');
