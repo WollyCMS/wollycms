@@ -10,7 +10,7 @@
 | **ORM** | Drizzle | 0.38+ | Type-safe SQL, SQLite + Postgres, zero overhead |
 | **Database (dev)** | SQLite | via better-sqlite3 | Zero-config, single file, perfect for dev |
 | **Database (prod)** | PostgreSQL | 16+ | Concurrent writes, full-text search, production scale |
-| **Auth** | Custom JWT + bcrypt | — | Simple, no external dependency. Better Auth if needed. |
+| **Auth** | Custom JWT + scrypt | — | Simple, no external dependency. Better Auth if needed. |
 | **Validation** | Zod | 3.x | Schema validation for API inputs and field schemas |
 | **Media Processing** | Sharp | 0.33+ | Image resize, format conversion, EXIF extraction |
 | **Rich Text Storage** | TipTap JSON format | — | Structured, portable, renderable anywhere |
@@ -58,12 +58,18 @@ SpacelyCMS/
 ├── packages/
 │   ├── server/           # Hono API server + database
 │   │   ├── src/
-│   │   │   ├── db/       # Drizzle schema, migrations
+│   │   │   ├── db/
+│   │   │   │   ├── schema/      # SQLite Drizzle schema + smart barrel
+│   │   │   │   └── schema-pg/   # PostgreSQL Drizzle schema
 │   │   │   ├── api/      # Route handlers
 │   │   │   ├── services/ # Business logic
 │   │   │   ├── media/    # Media processing + storage
 │   │   │   └── auth/     # Authentication
 │   │   ├── tests/
+│   │   ├── drizzle/              # SQLite migrations
+│   │   ├── drizzle-pg/           # PostgreSQL migrations
+│   │   ├── drizzle.config.ts     # SQLite drizzle-kit config
+│   │   ├── drizzle-pg.config.ts  # PG drizzle-kit config
 │   │   └── package.json
 │   │
 │   ├── admin/            # Admin UI (SvelteKit SPA)

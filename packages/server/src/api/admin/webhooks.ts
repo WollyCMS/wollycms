@@ -17,9 +17,9 @@ const webhookSchema = z.object({
 });
 
 /** GET / - List all webhooks */
-app.get('/', (c) => {
+app.get('/', async (c) => {
   const db = getDb();
-  const rows = db.select().from(webhooks).all();
+  const rows = await db.select().from(webhooks);
   return c.json({
     data: rows.map((r) => ({
       ...r,
@@ -30,10 +30,10 @@ app.get('/', (c) => {
 });
 
 /** GET /:id - Get single webhook */
-app.get('/:id', (c) => {
+app.get('/:id', async (c) => {
   const db = getDb();
   const id = parseInt(c.req.param('id'), 10);
-  const [row] = db.select().from(webhooks).where(eq(webhooks.id, id)).limit(1).all();
+  const [row] = await db.select().from(webhooks).where(eq(webhooks.id, id)).limit(1);
   if (!row) return c.json({ errors: [{ code: 'NOT_FOUND', message: 'Webhook not found' }] }, 404);
   return c.json({ data: { ...row, events: JSON.parse(row.events), secret: row.secret ? '***' : null } });
 });
@@ -47,16 +47,16 @@ app.post('/', async (c) => {
     return c.json({ errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message })) }, 400);
   }
 
-  const [row] = db.insert(webhooks).values({
+  const [row] = await db.insert(webhooks).values({
     name: parsed.data.name,
     url: parsed.data.url,
     secret: parsed.data.secret || null,
     events: JSON.stringify(parsed.data.events),
     isActive: parsed.data.isActive,
     createdAt: new Date().toISOString(),
-  }).returning().all();
+  }).returning();
 
-  logAudit(c, { action: 'create', entity: 'webhook', entityId: row.id, details: { name: row.name } });
+  await logAudit(c, { action: 'create', entity: 'webhook', entityId: row.id, details: { name: row.name } });
   return c.json({ data: { ...row, events: JSON.parse(row.events) } }, 201);
 });
 
@@ -77,20 +77,20 @@ app.put('/:id', async (c) => {
   if (parsed.data.events !== undefined) updates.events = JSON.stringify(parsed.data.events);
   if (parsed.data.isActive !== undefined) updates.isActive = parsed.data.isActive;
 
-  db.update(webhooks).set(updates).where(eq(webhooks.id, id)).run();
-  const [row] = db.select().from(webhooks).where(eq(webhooks.id, id)).limit(1).all();
+  await db.update(webhooks).set(updates).where(eq(webhooks.id, id));
+  const [row] = await db.select().from(webhooks).where(eq(webhooks.id, id)).limit(1);
   if (!row) return c.json({ errors: [{ code: 'NOT_FOUND', message: 'Webhook not found' }] }, 404);
 
-  logAudit(c, { action: 'update', entity: 'webhook', entityId: id });
+  await logAudit(c, { action: 'update', entity: 'webhook', entityId: id });
   return c.json({ data: { ...row, events: JSON.parse(row.events), secret: row.secret ? '***' : null } });
 });
 
 /** DELETE /:id - Delete webhook */
-app.delete('/:id', (c) => {
+app.delete('/:id', async (c) => {
   const db = getDb();
   const id = parseInt(c.req.param('id'), 10);
-  db.delete(webhooks).where(eq(webhooks.id, id)).run();
-  logAudit(c, { action: 'delete', entity: 'webhook', entityId: id });
+  await db.delete(webhooks).where(eq(webhooks.id, id));
+  await logAudit(c, { action: 'delete', entity: 'webhook', entityId: id });
   return c.json({ success: true });
 });
 
@@ -98,7 +98,7 @@ app.delete('/:id', (c) => {
 app.post('/:id/test', rateLimiter({ max: 5, windowMs: 60_000 }), async (c) => {
   const db = getDb();
   const id = parseInt(c.req.param('id'), 10);
-  const [hook] = db.select().from(webhooks).where(eq(webhooks.id, id)).limit(1).all();
+  const [hook] = await db.select().from(webhooks).where(eq(webhooks.id, id)).limit(1);
   if (!hook) return c.json({ errors: [{ code: 'NOT_FOUND', message: 'Webhook not found' }] }, 404);
 
   const { fireWebhooks } = await import('../../webhooks.js');
@@ -120,7 +120,7 @@ app.post('/:id/test', rateLimiter({ max: 5, windowMs: 60_000 }), async (c) => {
     const timeout = setTimeout(() => controller.abort(), 10000);
     const res = await fetch(hook.url, { method: 'POST', headers, body: payload, signal: controller.signal });
     clearTimeout(timeout);
-    db.update(webhooks).set({ lastTriggeredAt: new Date().toISOString(), lastStatus: res.status }).where(eq(webhooks.id, id)).run();
+    await db.update(webhooks).set({ lastTriggeredAt: new Date().toISOString(), lastStatus: res.status }).where(eq(webhooks.id, id));
     return c.json({ data: { status: res.status, ok: res.ok } });
   } catch {
     return c.json({ errors: [{ code: 'DELIVERY_FAILED', message: 'Webhook delivery failed — check the URL and try again' }] }, 502);

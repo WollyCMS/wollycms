@@ -2,7 +2,7 @@ import type { AppDatabase } from '../index.js';
 import { contentTypes } from '../schema/index.js';
 import type { FieldDefinition, RegionDefinition } from '../schema/index.js';
 
-export function seedContentTypes(db: AppDatabase) {
+export async function seedContentTypes(db: AppDatabase) {
   const types: {
     name: string;
     slug: string;
@@ -52,7 +52,7 @@ export function seedContentTypes(db: AppDatabase) {
     },
   ];
 
-  const inserted = db.insert(contentTypes).values(types).returning().all();
+  const inserted = await db.insert(contentTypes).values(types).returning();
   console.log(`  Seeded ${inserted.length} content type(s)`);
   return inserted;
 }

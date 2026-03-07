@@ -80,8 +80,8 @@ async function main() {
       const { writeFileSync } = await import('fs');
       const db = getDb();
 
-      const ctRows = db.select().from(schema.contentTypes).all();
-      const btRows = db.select().from(schema.blockTypes).all();
+      const ctRows = await db.select().from(schema.contentTypes);
+      const btRows = await db.select().from(schema.blockTypes);
 
       function fieldToTs(field: { name: string; type: string; fields?: unknown[] }): string {
         switch (field.type) {

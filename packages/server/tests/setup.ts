@@ -17,7 +17,7 @@ process.env.DATABASE_URL = `sqlite:${TEST_DB_PATH}`;
 
 let initialized = false;
 
-export function setupTestDatabase() {
+export async function setupTestDatabase() {
   if (initialized) return;
   initialized = true;
 
@@ -30,31 +30,31 @@ export function setupTestDatabase() {
   migrate(db, { migrationsFolder: './drizzle' });
 
   // Seed data
-  const insertedUsers = seedUsers(db);
+  const insertedUsers = await seedUsers(db);
   const adminId = insertedUsers[0].id;
 
-  const insertedCT = seedContentTypes(db);
+  const insertedCT = await seedContentTypes(db);
   const contentTypeMap: Record<string, number> = {};
   for (const ct of insertedCT) contentTypeMap[ct.slug] = ct.id;
 
-  const insertedBT = seedBlockTypes(db);
+  const insertedBT = await seedBlockTypes(db);
   const blockTypeMap: Record<string, number> = {};
   for (const bt of insertedBT) blockTypeMap[bt.slug] = bt.id;
 
-  seedTestMedia(db, adminId);
-  seedTaxonomies(db);
-  const { pageMap } = seedPagesAndBlocks(db, contentTypeMap, blockTypeMap, adminId);
-  const { mainMenu } = seedMenus(db, pageMap);
-  seedMainMenuChildren(db, mainMenu.id, pageMap);
-  seedRedirects(db);
+  await seedTestMedia(db, adminId);
+  await seedTaxonomies(db);
+  const { pageMap } = await seedPagesAndBlocks(db, contentTypeMap, blockTypeMap, adminId);
+  const { mainMenu } = await seedMenus(db, pageMap);
+  await seedMainMenuChildren(db, mainMenu.id, pageMap);
+  await seedRedirects(db);
 
   return db;
 }
 
 /** Seed minimal media records for testing (no real files on disk). */
-function seedTestMedia(db: ReturnType<typeof resetDb>, adminId: number) {
+async function seedTestMedia(db: ReturnType<typeof resetDb>, adminId: number) {
   const now = new Date().toISOString();
-  db.insert(media).values([
+  await db.insert(media).values([
     {
       filename: 'test-image.jpg', originalName: 'test-image.jpg',
       mimeType: 'image/jpeg', size: 1024, width: 800, height: 600,
@@ -71,5 +71,5 @@ function seedTestMedia(db: ReturnType<typeof resetDb>, adminId: number) {
       variants: {},
       metadata: {}, createdAt: now, createdBy: adminId,
     },
-  ]).returning().all();
+  ]).returning();
 }

@@ -1,7 +1,7 @@
 import type { AppDatabase } from '../index.js';
 import { pages, blocks, pageBlocks } from '../schema/index.js';
 
-export function seedPagesAndBlocks(
+export async function seedPagesAndBlocks(
   db: AppDatabase,
   contentTypeMap: Record<string, number>,
   blockTypeMap: Record<string, number>,
@@ -10,7 +10,7 @@ export function seedPagesAndBlocks(
   const now = new Date().toISOString();
 
   // --- Reusable / shared blocks ---
-  const campusLocation = db.insert(blocks).values({
+  const [campusLocation] = await db.insert(blocks).values({
     typeId: blockTypeMap.location,
     title: 'Main Campus',
     fields: {
@@ -27,9 +27,9 @@ export function seedPagesAndBlocks(
     createdAt: now,
     updatedAt: now,
     createdBy: adminId,
-  }).returning().get();
+  }).returning();
 
-  const admissionsContacts = db.insert(blocks).values({
+  const [admissionsContacts] = await db.insert(blocks).values({
     typeId: blockTypeMap.contact_list,
     title: 'Admissions Office',
     fields: {
@@ -44,9 +44,9 @@ export function seedPagesAndBlocks(
     createdAt: now,
     updatedAt: now,
     createdBy: adminId,
-  }).returning().get();
+  }).returning();
 
-  const quickLinks = db.insert(blocks).values({
+  const [quickLinks] = await db.insert(blocks).values({
     typeId: blockTypeMap.link_list,
     title: 'Quick Links',
     fields: {
@@ -61,10 +61,10 @@ export function seedPagesAndBlocks(
     createdAt: now,
     updatedAt: now,
     createdBy: adminId,
-  }).returning().get();
+  }).returning();
 
   // --- Pages (no hero fields — hero content lives in hero region blocks) ---
-  const insertedPages = db.insert(pages).values([
+  const insertedPages = await db.insert(pages).values([
     { typeId: contentTypeMap.home_page, title: 'Home', slug: 'home', status: 'published' as const, fields: {}, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
     { typeId: contentTypeMap.secondary_page, title: 'About Us', slug: 'about-us', status: 'published' as const, fields: {}, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
     { typeId: contentTypeMap.landing_page, title: 'Admissions', slug: 'admissions', status: 'published' as const, fields: {}, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
@@ -73,7 +73,7 @@ export function seedPagesAndBlocks(
     { typeId: contentTypeMap.secondary_page, title: 'Contact', slug: 'contact', status: 'published' as const, fields: {}, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
     { typeId: contentTypeMap.landing_page, title: 'Apply Now', slug: 'apply-now', status: 'published' as const, fields: {}, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
     { typeId: contentTypeMap.secondary_page, title: 'CITE Program', slug: 'cite-program', status: 'published' as const, fields: {}, createdAt: now, updatedAt: now, publishedAt: now, createdBy: adminId },
-  ]).returning().all();
+  ]).returning();
 
   const pageMap: Record<string, number> = {};
   for (const p of insertedPages) {
@@ -81,14 +81,14 @@ export function seedPagesAndBlocks(
   }
 
   // --- Inline blocks + page-block assignments ---
-  const inlineBlocks = createInlineBlocks(db, blockTypeMap, adminId, now);
-  assignBlocksToPages(db, pageMap, inlineBlocks, campusLocation.id, admissionsContacts.id, quickLinks.id);
+  const inlineBlocks = await createInlineBlocks(db, blockTypeMap, adminId, now);
+  await assignBlocksToPages(db, pageMap, inlineBlocks, campusLocation.id, admissionsContacts.id, quickLinks.id);
 
   console.log(`  Seeded ${insertedPages.length} page(s), 3 shared block(s), inline blocks assigned`);
   return { pageMap, campusLocationId: campusLocation.id, admissionsContactsId: admissionsContacts.id };
 }
 
-function createInlineBlocks(
+async function createInlineBlocks(
   db: AppDatabase,
   bt: Record<string, number>,
   adminId: number,
@@ -122,10 +122,10 @@ function createInlineBlocks(
     { typeId: bt.link_list, title: 'CITE Resources', fields: { heading: 'CITE Resources', links: [{ title: 'Workforce Training Catalog', url: '/cite-program/catalog', description: 'Browse current course offerings' }, { title: 'Employer Partnerships', url: '/cite-program/partners', description: 'Learn about our industry partners' }, { title: 'Contact CITE', url: '/contact', description: 'Reach the CITE team' }] }, isReusable: false, createdAt: now, updatedAt: now, createdBy: adminId },
   ];
 
-  return db.insert(blocks).values(vals).returning().all();
+  return await db.insert(blocks).values(vals).returning();
 }
 
-function assignBlocksToPages(
+async function assignBlocksToPages(
   db: AppDatabase,
   pm: Record<string, number>,
   ib: { id: number; title: string | null }[],
@@ -177,5 +177,5 @@ function assignBlocksToPages(
     { pageId: pm['cite-program'], blockId: campusId, region: 'sidebar', position: 0, isShared: true },
   ];
 
-  db.insert(pageBlocks).values(assignments).returning().all();
+  await db.insert(pageBlocks).values(assignments).returning();
 }

@@ -15,9 +15,9 @@ const createSchema = z.object({
 });
 
 /** GET / - List all API keys (no secrets exposed) */
-app.get('/', (c) => {
+app.get('/', async (c) => {
   const db = getDb();
-  const rows = db.select().from(apiKeys).all();
+  const rows = await db.select().from(apiKeys);
   return c.json({
     data: rows.map((r) => ({
       id: r.id,
@@ -43,16 +43,16 @@ app.post('/', async (c) => {
   const { key, prefix } = generateApiKey();
   const hash = hashApiKey(key);
 
-  const [row] = db.insert(apiKeys).values({
+  const [row] = await db.insert(apiKeys).values({
     name: parsed.data.name,
     keyHash: hash,
     keyPrefix: prefix,
     permissions: parsed.data.permissions,
     expiresAt: parsed.data.expiresAt || null,
     createdAt: new Date().toISOString(),
-  }).returning().all();
+  }).returning();
 
-  logAudit(c, { action: 'create', entity: 'api_key', entityId: row.id, details: { name: row.name } });
+  await logAudit(c, { action: 'create', entity: 'api_key', entityId: row.id, details: { name: row.name } });
 
   // Return the full key only on creation
   return c.json({
@@ -88,17 +88,17 @@ app.put('/:id', async (c) => {
   if (parsed.data.permissions !== undefined) updates.permissions = parsed.data.permissions;
   if (parsed.data.expiresAt !== undefined) updates.expiresAt = parsed.data.expiresAt;
 
-  db.update(apiKeys).set(updates).where(eq(apiKeys.id, id)).run();
-  logAudit(c, { action: 'update', entity: 'api_key', entityId: id });
+  await db.update(apiKeys).set(updates).where(eq(apiKeys.id, id));
+  await logAudit(c, { action: 'update', entity: 'api_key', entityId: id });
   return c.json({ success: true });
 });
 
 /** DELETE /:id - Revoke API key */
-app.delete('/:id', (c) => {
+app.delete('/:id', async (c) => {
   const db = getDb();
   const id = parseInt(c.req.param('id'), 10);
-  db.delete(apiKeys).where(eq(apiKeys.id, id)).run();
-  logAudit(c, { action: 'delete', entity: 'api_key', entityId: id });
+  await db.delete(apiKeys).where(eq(apiKeys.id, id));
+  await logAudit(c, { action: 'delete', entity: 'api_key', entityId: id });
   return c.json({ success: true });
 });
 

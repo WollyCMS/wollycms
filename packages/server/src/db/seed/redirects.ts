@@ -1,7 +1,7 @@
 import type { AppDatabase } from '../index.js';
 import { redirects } from '../schema/index.js';
 
-export function seedRedirects(db: AppDatabase) {
+export async function seedRedirects(db: AppDatabase) {
   const records = [
     {
       fromPath: '/old-admissions',
@@ -29,7 +29,7 @@ export function seedRedirects(db: AppDatabase) {
     },
   ];
 
-  const inserted = db.insert(redirects).values(records).returning().all();
+  const inserted = await db.insert(redirects).values(records).returning();
   console.log(`  Seeded ${inserted.length} redirect(s)`);
   return inserted;
 }

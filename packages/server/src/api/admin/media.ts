@@ -170,7 +170,7 @@ app.post('/', async (c) => {
     createdBy: payload.sub,
   }).returning();
 
-  logAudit(c, { action: 'create', entity: 'media', entityId: row.id, details: { filename: originalName } });
+  await logAudit(c, { action: 'create', entity: 'media', entityId: row.id, details: { filename: originalName } });
   fireWebhooks('media.uploaded', { id: row.id, filename: originalName, mimeType: file.type });
 
   return c.json({ data: row }, 201);
@@ -222,7 +222,7 @@ app.delete('/:id', async (c) => {
   }
 
   await db.delete(media).where(eq(media.id, id));
-  logAudit(c, { action: 'delete', entity: 'media', entityId: id, details: { filename: row.originalName } });
+  await logAudit(c, { action: 'delete', entity: 'media', entityId: id, details: { filename: row.originalName } });
   fireWebhooks('media.deleted', { id, filename: row.originalName });
   return c.json({ data: { deleted: true } });
 });

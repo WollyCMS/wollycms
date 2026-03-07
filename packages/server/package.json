@@ -17,6 +17,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "db:generate": "drizzle-kit generate",
+    "db:generate:pg": "drizzle-kit generate --config drizzle-pg.config.ts",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:seed": "tsx src/db/seed.ts"
   },
@@ -26,12 +27,14 @@
     "dotenv": "^16.4.0",
     "drizzle-orm": "^0.38.0",
     "hono": "^4.6.0",
+    "pg": "^8.20.0",
     "sharp": "^0.33.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.0",
     "@types/node": "^22.0.0",
+    "@types/pg": "^8.18.0",
     "drizzle-kit": "^0.30.0",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0",

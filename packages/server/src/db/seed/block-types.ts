@@ -11,7 +11,7 @@ interface BlockTypeSeed {
   settings: Record<string, unknown>;
 }
 
-export function seedBlockTypes(db: AppDatabase) {
+export async function seedBlockTypes(db: AppDatabase) {
   const types: BlockTypeSeed[] = [
     {
       name: 'Rich Text',
@@ -247,7 +247,7 @@ export function seedBlockTypes(db: AppDatabase) {
     },
   ];
 
-  const inserted = db.insert(blockTypes).values(types).returning().all();
+  const inserted = await db.insert(blockTypes).values(types).returning();
   console.log(`  Seeded ${inserted.length} block type(s)`);
   return inserted;
 }

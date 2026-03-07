@@ -6,7 +6,7 @@ import { auditLogs } from '../../db/schema/index.js';
 const app = new Hono();
 
 /** GET / - List audit logs with filtering */
-app.get('/', (c) => {
+app.get('/', async (c) => {
   const db = getDb();
   const entity = c.req.query('entity');
   const action = c.req.query('action');
@@ -21,14 +21,13 @@ app.get('/', (c) => {
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
 
-  const rows = db.select().from(auditLogs)
+  const rows = await db.select().from(auditLogs)
     .where(where)
     .orderBy(desc(auditLogs.createdAt))
     .limit(limit)
-    .offset(offset)
-    .all();
+    .offset(offset);
 
-  const [{ count }] = db.select({ count: sql<number>`count(*)` }).from(auditLogs).where(where).all();
+  const [{ count }] = await db.select({ count: sql<number>`count(*)` }).from(auditLogs).where(where);
 
   return c.json({
     data: rows.map((r) => ({

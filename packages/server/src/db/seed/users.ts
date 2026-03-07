@@ -2,16 +2,16 @@ import type { AppDatabase } from '../index.js';
 import { users } from '../schema/index.js';
 import { hashPassword } from '../../auth/password.js';
 
-export function seedUsers(db: AppDatabase) {
+export async function seedUsers(db: AppDatabase) {
   const now = new Date().toISOString();
 
-  const inserted = db.insert(users).values({
+  const inserted = await db.insert(users).values({
     email: 'admin@spacelycms.local',
     name: 'Admin',
     passwordHash: hashPassword('admin123'),
     role: 'admin',
     createdAt: now,
-  }).returning().all();
+  }).returning();
 
   console.log(`  Seeded ${inserted.length} user(s)`);
   return inserted;

@@ -8,7 +8,8 @@ The data model has four layers:
    types, taxonomies)
 2. **Content Layer** — Actual content instances (pages, blocks, terms, media)
 3. **Composition Layer** — How content is assembled (page regions, menu trees)
-4. **System Layer** — URLs, redirects, users, settings
+4. **System Layer** — URLs, redirects, users, page revisions
+5. **Operations Layer** — Webhooks, API keys, audit logs
 
 ---
 
@@ -109,6 +110,7 @@ The data model has four layers:
 │ height       │
 │ alt_text     │
 │ title        │
+│ folder       │
 │ path         │
 │ variants JSON│
 │ metadata JSON│
@@ -126,6 +128,61 @@ The data model has four layers:
 │ is_active    │     │ role         │
 └──────────────┘     │ created_at   │
                      └──────────────┘
+
+┌──────────────────┐
+│ page_revisions   │
+│                  │
+│ id               │
+│ page_id ─────────┤ → pages
+│ title            │
+│ slug             │
+│ status           │
+│ fields (JSON)    │
+│ blocks (JSON)    │
+│ created_at       │
+│ created_by       │
+└──────────────────┘
+
+┌──────────────────┐
+│ webhooks         │
+│                  │
+│ id               │
+│ name             │
+│ url              │
+│ secret           │
+│ events           │
+│ is_active        │
+│ last_triggered_at│
+│ last_status      │
+│ created_at       │
+└──────────────────┘
+
+┌──────────────────┐
+│ api_keys         │
+│                  │
+│ id               │
+│ name             │
+│ key_hash         │
+│ key_prefix       │
+│ permissions      │
+│ expires_at       │
+│ last_used_at     │
+│ created_at       │
+└──────────────────┘
+
+┌──────────────────┐
+│ audit_logs       │
+│                  │
+│ id               │
+│ user_id          │
+│ user_name        │
+│ action           │
+│ entity           │
+│ entity_id        │
+│ details          │
+│ ip_address       │
+│ created_at       │
+└──────────────────┘
 ```
 
 ---
@@ -325,6 +382,10 @@ CREATE UNIQUE INDEX idx_redirects_from ON redirects(from_path);
 
 -- Media
 CREATE INDEX idx_media_mime ON media(mime_type);
+CREATE INDEX idx_media_folder ON media(folder);
+
+-- Page revisions
+CREATE INDEX idx_revisions_page ON page_revisions(page_id);
 ```
 
 ---
@@ -349,3 +410,7 @@ The data model is designed so that Drupal content can be mapped directly:
 | File / Media | media |
 | Path Alias | pages.slug |
 | Redirect | redirects |
+| Node Revision | page_revisions |
+| — | webhooks |
+| — | api_keys |
+| — | audit_logs |

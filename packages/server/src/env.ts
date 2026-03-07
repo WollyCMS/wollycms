@@ -24,6 +24,12 @@ export const env = {
   SITE_URL: process.env.SITE_URL || 'http://localhost:4322',
 } as const;
 
+export function getDialect(): 'sqlite' | 'postgresql' {
+  const url = env.DATABASE_URL;
+  if (url.startsWith('postgres://') || url.startsWith('postgresql://')) return 'postgresql';
+  return 'sqlite';
+}
+
 export function getDatabasePath(): string {
   return env.DATABASE_URL.replace('sqlite:', '');
 }

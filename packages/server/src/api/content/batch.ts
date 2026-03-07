@@ -32,7 +32,7 @@ app.post('/', async (c) => {
   // Fetch pages
   if (parsed.data.pages && parsed.data.pages.length > 0) {
     const slugs = parsed.data.pages.slice(0, 50); // Max 50 pages per batch
-    const pageRows = db
+    const pageRows = await db
       .select({
         id: pages.id,
         typeSlug: contentTypes.slug,
@@ -50,12 +50,11 @@ app.post('/', async (c) => {
         inArray(pages.slug, slugs),
         eq(pages.status, 'published'),
         sql`(${pages.scheduledAt} IS NULL OR ${pages.scheduledAt} <= ${now})`,
-      ))
-      .all();
+      ));
 
     const pagesResult: Record<string, unknown> = {};
     for (const page of pageRows) {
-      const pbRows = db
+      const pbRows = await db
         .select({
           pbId: pageBlocks.id,
           region: pageBlocks.region,
@@ -70,8 +69,7 @@ app.post('/', async (c) => {
         .innerJoin(blocks, eq(pageBlocks.blockId, blocks.id))
         .innerJoin(blockTypes, eq(blocks.typeId, blockTypes.id))
         .where(eq(pageBlocks.pageId, page.id))
-        .orderBy(asc(pageBlocks.region), asc(pageBlocks.position))
-        .all();
+        .orderBy(asc(pageBlocks.region), asc(pageBlocks.position));
 
       const regions: Record<string, unknown[]> = {};
       for (const pb of pbRows) {
@@ -109,12 +107,11 @@ app.post('/', async (c) => {
     const slugList = parsed.data.menus.slice(0, 10);
     const menusResult: Record<string, unknown> = {};
     for (const menuSlug of slugList) {
-      const [menu] = db.select().from(menus).where(eq(menus.slug, menuSlug)).limit(1).all();
+      const [menu] = await db.select().from(menus).where(eq(menus.slug, menuSlug)).limit(1);
       if (!menu) continue;
-      const items = db.select().from(menuItems)
+      const items = await db.select().from(menuItems)
         .where(eq(menuItems.menuId, menu.id))
-        .orderBy(asc(menuItems.position))
-        .all();
+        .orderBy(asc(menuItems.position));
       menusResult[menuSlug] = { ...menu, items };
     }
     result.menus = menusResult;

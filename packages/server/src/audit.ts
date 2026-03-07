@@ -9,11 +9,11 @@ interface AuditEntry {
   details?: Record<string, unknown>;
 }
 
-export function logAudit(c: Context, entry: AuditEntry) {
+export async function logAudit(c: Context, entry: AuditEntry) {
   const db = getDb();
   const payload = c.get('jwtPayload') as { sub: number; email: string } | undefined;
 
-  db.insert(auditLogs).values({
+  await db.insert(auditLogs).values({
     userId: payload?.sub || null,
     userName: payload?.email || 'system',
     action: entry.action,
@@ -22,5 +22,5 @@ export function logAudit(c: Context, entry: AuditEntry) {
     details: entry.details ? JSON.stringify(entry.details) : null,
     ipAddress: c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || null,
     createdAt: new Date().toISOString(),
-  }).run();
+  });
 }

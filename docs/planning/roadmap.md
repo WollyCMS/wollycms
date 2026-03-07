@@ -316,8 +316,8 @@ missing alt text — everything feels snappy and intentional.
 - [x] Cache-Control headers on content API (production: 60s max-age,
       10min s-maxage, 1hr stale-while-revalidate)
 - [x] Admin UI pages for webhooks, API keys, audit logs with sidebar nav
-- [ ] PostgreSQL support (deferred — Drizzle adapter swap, connection
-      pooling, env-based database selection)
+- [x] PostgreSQL support (dual-dialect Drizzle schemas, auto-detection
+      via DATABASE_URL, PG migrations, async query compatibility)
 - [ ] S3-compatible media storage (deferred — env vars ready, needs
       storage backend implementation)
 
@@ -561,10 +561,10 @@ new block type.
 **Phase 8** = Make it scalable (teams, multi-site, migrations, plugins)
 
 Recommended priority: **6 → 7 → 8**.
-Phases 1-5 complete. PostgreSQL and S3 support deferred to when needed
-(env vars ready, architecture supports swap). CDN integration deferred
-(webhooks already enable cache invalidation). Next: packaging for
-distribution.
+Phases 1-5 complete. PostgreSQL support complete (dual SQLite/PG with
+auto-detection). S3 media storage deferred to when needed (env vars
+ready, architecture supports swap). CDN integration deferred (webhooks
+already enable cache invalidation). Next: packaging for distribution.
 
 ---
 

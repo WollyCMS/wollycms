@@ -207,7 +207,7 @@ app.post('/', async (c) => {
     createdBy: payload.sub,
   }).returning();
 
-  logAudit(c, { action: 'create', entity: 'page', entityId: row.id, details: { title: row.title, slug } });
+  await logAudit(c, { action: 'create', entity: 'page', entityId: row.id, details: { title: row.title, slug } });
   fireWebhooks('page.created', { id: row.id, title: row.title, slug });
   if (row.status === 'published') {
     fireWebhooks('page.published', { id: row.id, title: row.title, slug });
@@ -273,7 +273,7 @@ app.put('/:id', async (c) => {
   await db.update(pages).set(updates).where(eq(pages.id, id));
   const [updated] = await db.select().from(pages).where(eq(pages.id, id)).limit(1);
 
-  logAudit(c, { action: 'update', entity: 'page', entityId: id, details: { title: updated.title } });
+  await logAudit(c, { action: 'update', entity: 'page', entityId: id, details: { title: updated.title } });
   fireWebhooks('page.updated', { id, title: updated.title, slug: updated.slug });
 
   // Detect publish/unpublish transitions
@@ -295,7 +295,7 @@ app.delete('/:id', async (c) => {
   if (!existing) return c.json({ errors: [{ code: 'NOT_FOUND', message: 'Page not found' }] }, 404);
   await db.delete(pageBlocks).where(eq(pageBlocks.pageId, id));
   await db.delete(pages).where(eq(pages.id, id));
-  logAudit(c, { action: 'delete', entity: 'page', entityId: id, details: { title: existing.title } });
+  await logAudit(c, { action: 'delete', entity: 'page', entityId: id, details: { title: existing.title } });
   fireWebhooks('page.deleted', { id, title: existing.title, slug: existing.slug });
   cacheInvalidate('pages:');
   return c.json({ data: { deleted: true } });

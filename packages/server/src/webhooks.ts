@@ -20,11 +20,10 @@ interface WebhookPayload {
 
 export async function fireWebhooks(event: WebhookEvent, data: Record<string, unknown>) {
   const db = getDb();
-  const allHooks = db
+  const allHooks = await db
     .select()
     .from(webhooks)
-    .where(eq(webhooks.isActive, true))
-    .all();
+    .where(eq(webhooks.isActive, true));
 
   const matching = allHooks.filter((h) => {
     const events: string[] = JSON.parse(h.events);
@@ -74,10 +73,9 @@ async function deliverWebhook(
     });
 
     const db = getDb();
-    db.update(webhooks)
+    await db.update(webhooks)
       .set({ lastTriggeredAt: new Date().toISOString(), lastStatus: res.status })
-      .where(eq(webhooks.id, hook.id))
-      .run();
+      .where(eq(webhooks.id, hook.id));
   } finally {
     clearTimeout(timeout);
   }

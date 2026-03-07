@@ -47,14 +47,51 @@ docker compose -f docker-compose.prod.yml up -d
 
 Caddy automatically provisions Let's Encrypt certificates.
 
-### 3. Initialize the database
+### 3. Choose a database
+
+**SQLite (default — zero config):**
+```bash
+# .env
+DATABASE_URL=sqlite:./data/spacely.db
+```
+
+**PostgreSQL (production scale):**
+```bash
+# .env
+DATABASE_URL=postgresql://spacely:secretpassword@db:5432/spacely
+```
+
+When using PostgreSQL with Docker Compose, add a Postgres service to your compose file:
+```yaml
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: spacely
+      POSTGRES_PASSWORD: secretpassword
+      POSTGRES_DB: spacely
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U spacely"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+```
+
+### 4. Initialize the database
 
 ```bash
 docker compose exec spacelycms node packages/server/dist/cli.js migrate
 docker compose exec spacelycms node packages/server/dist/cli.js seed
 ```
 
-### 4. Access the admin
+Migrations and seeds auto-detect the dialect from `DATABASE_URL`.
+
+### 5. Access the admin
 
 Open `https://cms.yoursite.com/admin`
 
@@ -70,6 +107,7 @@ Default credentials: `admin@spacelycms.local` / `admin123`
 
 - Node.js 22 LTS
 - npm 10+
+- PostgreSQL 16+ (optional — SQLite works out of the box)
 
 ### Steps
 
@@ -81,8 +119,9 @@ npm run build
 # Configure
 cp .env.example .env
 # Edit .env with production values
+# For PostgreSQL: DATABASE_URL=postgresql://user:pass@localhost:5432/spacely
 
-# Initialize database
+# Initialize database (auto-detects SQLite or PostgreSQL from DATABASE_URL)
 node packages/server/dist/cli.js migrate
 node packages/server/dist/cli.js seed
 
@@ -217,7 +256,7 @@ tar -czf media-backup.tar.gz uploads/
 
 | Variable | Default | Description |
 |---|---|---|
-| `DATABASE_URL` | `sqlite:./data/spacely.db` | Database connection |
+| `DATABASE_URL` | `sqlite:./data/spacely.db` | Database connection (`sqlite:` or `postgresql://`) |
 | `PORT` | `4321` | Server port |
 | `HOST` | `localhost` | Server bind address |
 | `JWT_SECRET` | — | **Required.** Secret for JWT signing |

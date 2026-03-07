@@ -5,7 +5,7 @@ let app: typeof import('../src/app.js').default;
 let authToken: string;
 
 beforeAll(async () => {
-  setupTestDatabase();
+  await setupTestDatabase();
   const mod = await import('../src/app.js');
   app = mod.default;
 

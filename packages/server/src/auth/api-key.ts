@@ -33,7 +33,7 @@ export function apiKeyAuth(requiredPermission: string) {
 
     const db = getDb();
     const hash = hashApiKey(token);
-    const [key] = db.select().from(apiKeys).where(eq(apiKeys.keyHash, hash)).limit(1).all();
+    const [key] = await db.select().from(apiKeys).where(eq(apiKeys.keyHash, hash)).limit(1);
 
     if (!key) {
       return c.json({ errors: [{ code: 'UNAUTHORIZED', message: 'Invalid API key' }] }, 401);
@@ -49,10 +49,9 @@ export function apiKeyAuth(requiredPermission: string) {
     }
 
     // Update last used
-    db.update(apiKeys)
+    await db.update(apiKeys)
       .set({ lastUsedAt: new Date().toISOString() })
-      .where(eq(apiKeys.id, key.id))
-      .run();
+      .where(eq(apiKeys.id, key.id));
 
     // Set a minimal JWT-like payload for downstream handlers
     c.set('jwtPayload', { sub: 0, email: `apikey:${key.name}`, role: 'admin', exp: 0 });

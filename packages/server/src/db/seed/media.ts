@@ -1,6 +1,6 @@
 import type { AppDatabase } from '../index.js';
 
-export function seedMedia(_db: AppDatabase, _adminId: number) {
+export async function seedMedia(_db: AppDatabase, _adminId: number) {
   // Media records are not seeded — they should be created by uploading
   // real files through the admin UI. Seeding fake records with non-existent
   // file paths causes broken thumbnails and confusing behavior.

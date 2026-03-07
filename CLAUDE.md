@@ -35,9 +35,10 @@ npm install               # Install all workspace dependencies
 npm run dev               # Start server with hot reload (tsx watch)
 npm run build             # Build all packages
 npm run test              # Run Vitest tests
-npm run db:generate       # Generate Drizzle migration from schema changes
-npm run db:migrate        # Run pending migrations
-npm run db:seed           # Populate database with sample data
+npm run db:generate       # Generate SQLite Drizzle migration from schema changes
+npm run db:generate:pg    # Generate PostgreSQL Drizzle migration from schema changes
+npm run db:migrate        # Run pending migrations (auto-detects dialect from DATABASE_URL)
+npm run db:seed           # Populate database with sample data (auto-detects dialect)
 ```
 
 ## Test Commands
@@ -55,10 +56,12 @@ npm run test --workspace=packages/server       # Server tests only
 - **Phase 6**: In progress (CLI, build pipeline, Docker, type generation)
 - **Phase 7**: In progress (SEO fields, sitemap, admin search, JSON-LD helpers)
 - Monorepo: npm workspaces (packages/server, packages/admin, packages/astro, examples/college-site)
-- Database: 13 tables with full Drizzle schema + indexes + migrations
+- Database: 17 tables with dual SQLite/PostgreSQL Drizzle schemas + indexes + migrations
 - Seed data: 8 pages, 10 block types (incl. hero), 3 content types, 3 menus, 2 taxonomies
 - Content API: 11 endpoints including preview, search, sitemap (108 tests passing: 34 content + 74 admin)
 - Schema files use `.ts` imports (drizzle-kit requires this); `rewriteRelativeImportExtensions` in tsconfig converts to `.js` on build
+- Dual database: SQLite schemas in `schema/`, PG schemas in `schema-pg/`; smart barrel in `schema/index.ts` auto-selects based on `DATABASE_URL`
+- SQLite drizzle config: `drizzle.config.ts` → `drizzle/`; PG config: `drizzle-pg.config.ts` → `drizzle-pg/`
 - App factory: `src/app.ts` (testable), `src/index.ts` (server entry)
 
 ## Architecture Key Points
