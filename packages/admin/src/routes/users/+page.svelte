@@ -64,12 +64,12 @@
     <div class="modal" onclick={(e) => e.stopPropagation()} use:focusTrap onescape={() => showCreate = false}>
       <div class="modal-header"><h2 id="new-user-title">New User</h2><button class="btn-icon" onclick={() => showCreate = false} aria-label="Close">✕</button></div>
       <form class="modal-body" onsubmit={(e) => { e.preventDefault(); createUser(); }}>
-        <div class="form-group"><label>Name</label><input class="form-control" bind:value={newUser.name} required /></div>
-        <div class="form-group"><label>Email</label><input class="form-control" type="email" bind:value={newUser.email} required /></div>
-        <div class="form-group"><label>Password</label><input class="form-control" type="password" bind:value={newUser.password} required minlength="8" /></div>
+        <div class="form-group"><label for="new-user-name">Name</label><input id="new-user-name" class="form-control" bind:value={newUser.name} required /></div>
+        <div class="form-group"><label for="new-user-email">Email</label><input id="new-user-email" class="form-control" type="email" bind:value={newUser.email} required /></div>
+        <div class="form-group"><label for="new-user-password">Password</label><input id="new-user-password" class="form-control" type="password" bind:value={newUser.password} required minlength="8" /></div>
         <div class="form-group">
-          <label>Role</label>
-          <select class="form-control" bind:value={newUser.role}>
+          <label for="new-user-role">Role</label>
+          <select id="new-user-role" class="form-control" bind:value={newUser.role}>
             <option value="admin">Admin</option>
             <option value="editor">Editor</option>
             <option value="viewer">Viewer</option>

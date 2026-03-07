@@ -247,17 +247,17 @@
       <div class="modal-header"><h2 id="edit-media-title">Edit Media</h2><button class="btn-icon" onclick={() => editItem = null} aria-label="Close">&#10005;</button></div>
       <form class="modal-body" onsubmit={(e) => { e.preventDefault(); saveEdit(); }}>
         <div class="form-group">
-          <label>Title</label>
-          <input class="form-control" bind:value={editItem.title} />
+          <label for="edit-media-title-input">Title</label>
+          <input id="edit-media-title-input" class="form-control" bind:value={editItem.title} />
         </div>
         <div class="form-group">
-          <label>Alt Text</label>
-          <input class="form-control" bind:value={editItem.altText} />
+          <label for="edit-media-alt-input">Alt Text</label>
+          <input id="edit-media-alt-input" class="form-control" bind:value={editItem.altText} />
         </div>
         <div class="form-group">
-          <label>Folder</label>
+          <label for="edit-media-folder-input">Folder</label>
           <div style="display: flex; gap: 0.5rem;">
-            <select class="form-control" bind:value={editItem.folder}>
+            <select id="edit-media-folder-input" class="form-control" bind:value={editItem.folder}>
               <option value="">None</option>
               {#each folders as f}
                 <option value={f}>{f}</option>

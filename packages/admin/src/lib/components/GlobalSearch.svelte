@@ -8,17 +8,25 @@
   let results = $state<Record<string, any[]>>({ pages: [], blocks: [], media: [], menus: [] });
   let open = $state(false);
   let loading = $state(false);
+  let activeIndex = $state(-1);
   let debounceTimer: ReturnType<typeof setTimeout>;
   let inputEl: HTMLInputElement;
 
   const totalResults = $derived(
     results.pages.length + results.blocks.length + results.media.length + results.menus.length
   );
+  const flattenedResults = $derived([
+    ...results.pages.map((item) => ({ kind: 'page' as const, item })),
+    ...results.blocks.map((item) => ({ kind: 'block' as const, item })),
+    ...results.media.map((item) => ({ kind: 'media' as const, item })),
+    ...results.menus.map((item) => ({ kind: 'menu' as const, item })),
+  ]);
 
   function handleInput() {
     clearTimeout(debounceTimer);
     if (query.trim().length < 2) {
       results = { pages: [], blocks: [], media: [], menus: [] };
+      activeIndex = -1;
       return;
     }
     debounceTimer = setTimeout(doSearch, 250);
@@ -30,8 +38,10 @@
       const res = await api.get<{ data: typeof results }>(`/search?q=${encodeURIComponent(query)}`);
       results = res.data;
       open = true;
+      activeIndex = -1;
     } catch {
       results = { pages: [], blocks: [], media: [], menus: [] };
+      activeIndex = -1;
     }
     loading = false;
   }
@@ -40,10 +50,30 @@
     open = false;
     query = '';
     results = { pages: [], blocks: [], media: [], menus: [] };
+    activeIndex = -1;
     goto(`${base}${path}`);
   }
 
   function handleKeydown(e: KeyboardEvent) {
+    if (e.key === 'ArrowDown' && open && flattenedResults.length > 0) {
+      e.preventDefault();
+      activeIndex = Math.min(flattenedResults.length - 1, activeIndex + 1);
+      return;
+    }
+    if (e.key === 'ArrowUp' && open && flattenedResults.length > 0) {
+      e.preventDefault();
+      activeIndex = Math.max(0, activeIndex - 1);
+      return;
+    }
+    if (e.key === 'Enter' && open && activeIndex >= 0 && flattenedResults[activeIndex]) {
+      e.preventDefault();
+      const selected = flattenedResults[activeIndex];
+      if (selected.kind === 'page') navigate(`/pages/${selected.item.id}`);
+      if (selected.kind === 'block') navigate('/blocks');
+      if (selected.kind === 'media') navigate('/media');
+      if (selected.kind === 'menu') navigate('/menus');
+      return;
+    }
     if (e.key === 'Escape') {
       open = false;
       inputEl?.blur();
@@ -79,6 +109,10 @@
       placeholder="Search... (Ctrl+K)"
       type="search"
       aria-label="Search pages, blocks, and media"
+      role="combobox"
+      aria-expanded={open}
+      aria-controls="global-search-results"
+      aria-activedescendant={activeIndex >= 0 ? `search-result-${activeIndex}` : undefined}
     />
     {#if query}
       <button class="clear-btn" onclick={() => { query = ''; results = { pages: [], blocks: [], media: [], menus: [] }; open = false; }} aria-label="Clear search">
@@ -88,14 +122,21 @@
   </div>
 
   {#if open && (totalResults > 0 || (query.length >= 2 && !loading))}
-    <div class="search-dropdown" role="listbox">
+    <div class="search-dropdown" id="global-search-results" role="listbox">
       {#if totalResults === 0}
         <div class="search-empty">No results for "{query}"</div>
       {:else}
         {#if results.pages.length > 0}
           <div class="search-section-label">Pages</div>
           {#each results.pages as page}
-            <button class="search-result" role="option" onclick={() => navigate(`/pages/${page.id}`)}>
+            <button
+              class="search-result"
+              class:active={flattenedResults[activeIndex]?.kind === 'page' && flattenedResults[activeIndex]?.item?.id === page.id}
+              id={"search-result-" + (results.pages.indexOf(page))}
+              role="option"
+              aria-selected={flattenedResults[activeIndex]?.kind === 'page' && flattenedResults[activeIndex]?.item?.id === page.id}
+              onclick={() => navigate(`/pages/${page.id}`)}
+            >
               <FileText size={14} />
               <span class="result-title">{page.title}</span>
               <span class="result-meta">{page.typeName} &middot; {page.status}</span>
@@ -105,7 +146,14 @@
         {#if results.blocks.length > 0}
           <div class="search-section-label">Blocks</div>
           {#each results.blocks as block}
-            <button class="search-result" role="option" onclick={() => navigate('/blocks')}>
+            <button
+              class="search-result"
+              class:active={flattenedResults[activeIndex]?.kind === 'block' && flattenedResults[activeIndex]?.item?.id === block.id}
+              id={"search-result-" + (results.pages.length + results.blocks.indexOf(block))}
+              role="option"
+              aria-selected={flattenedResults[activeIndex]?.kind === 'block' && flattenedResults[activeIndex]?.item?.id === block.id}
+              onclick={() => navigate('/blocks')}
+            >
               <Blocks size={14} />
               <span class="result-title">{block.title}</span>
               <span class="result-meta">{block.typeName}</span>
@@ -115,7 +163,14 @@
         {#if results.media.length > 0}
           <div class="search-section-label">Media</div>
           {#each results.media as m}
-            <button class="search-result" role="option" onclick={() => navigate('/media')}>
+            <button
+              class="search-result"
+              class:active={flattenedResults[activeIndex]?.kind === 'media' && flattenedResults[activeIndex]?.item?.id === m.id}
+              id={"search-result-" + (results.pages.length + results.blocks.length + results.media.indexOf(m))}
+              role="option"
+              aria-selected={flattenedResults[activeIndex]?.kind === 'media' && flattenedResults[activeIndex]?.item?.id === m.id}
+              onclick={() => navigate('/media')}
+            >
               <Image size={14} />
               <span class="result-title">{m.title || m.originalName}</span>
               <span class="result-meta">{m.mimeType}</span>
@@ -125,7 +180,14 @@
         {#if results.menus.length > 0}
           <div class="search-section-label">Menus</div>
           {#each results.menus as menu}
-            <button class="search-result" role="option" onclick={() => navigate('/menus')}>
+            <button
+              class="search-result"
+              class:active={flattenedResults[activeIndex]?.kind === 'menu' && flattenedResults[activeIndex]?.item?.id === menu.id}
+              id={"search-result-" + (results.pages.length + results.blocks.length + results.media.length + results.menus.indexOf(menu))}
+              role="option"
+              aria-selected={flattenedResults[activeIndex]?.kind === 'menu' && flattenedResults[activeIndex]?.item?.id === menu.id}
+              onclick={() => navigate('/menus')}
+            >
               <Menu size={14} />
               <span class="result-title">{menu.name}</span>
               <span class="result-meta">/{menu.slug}</span>
@@ -236,6 +298,10 @@
 
   .search-result:hover {
     background: var(--c-bg-subtle, #f7fafc);
+  }
+
+  .search-result.active {
+    background: var(--c-bg-subtle, #f1f5f9);
   }
 
   .result-title {

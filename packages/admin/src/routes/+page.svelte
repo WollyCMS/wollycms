@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { base } from '$app/paths';
   import { api } from '$lib/api.js';
   import { FilePlus, Upload, ExternalLink } from 'lucide-svelte';
 
@@ -27,11 +28,11 @@
 {/if}
 
 <div class="quick-actions">
-  <a href="/pages" class="quick-action-card" style="--qa-color: var(--c-accent, #3182ce);">
+  <a href="{base}/pages" class="quick-action-card" style="--qa-color: var(--c-accent, #3182ce);">
     <span class="qa-icon"><FilePlus size={22} /></span>
     <span class="qa-label">New Page</span>
   </a>
-  <a href="/media" class="quick-action-card" style="--qa-color: var(--c-success, #38a169);">
+  <a href="{base}/media" class="quick-action-card" style="--qa-color: var(--c-success, #38a169);">
     <span class="qa-icon"><Upload size={22} /></span>
     <span class="qa-label">Upload Media</span>
   </a>
@@ -91,11 +92,11 @@
         <tbody>
           {#each recentPages as page}
             <tr>
-              <td><a href="/pages/{page.id}"><strong>{page.title}</strong></a></td>
+              <td><a href="{base}/pages/{page.id}"><strong>{page.title}</strong></a></td>
               <td>{page.typeName}</td>
               <td><span class="badge badge-{page.status}">{page.status}</span></td>
               <td>{new Date(page.updatedAt).toLocaleDateString()}</td>
-              <td><a href="/pages/{page.id}" class="btn btn-sm btn-outline">Edit</a></td>
+              <td><a href="{base}/pages/{page.id}" class="btn btn-sm btn-outline">Edit</a></td>
             </tr>
           {/each}
         </tbody>

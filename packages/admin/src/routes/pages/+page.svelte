@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { base } from '$app/paths';
   import { api } from '$lib/api.js';
   import { toast } from '$lib/toast.svelte.js';
   import { focusTrap } from '$lib/focusTrap.js';
@@ -31,6 +32,9 @@
   let allSelected = $derived(pages.length > 0 && pages.every((p) => selected.has(p.id)));
   let currentPage = $derived(Math.floor(offset / pageSize) + 1);
   let totalPages = $derived(Math.ceil(total / pageSize));
+  let updatedSortDirection = $derived(
+    sortBy === 'updated_at:asc' ? 'ascending' : sortBy === 'updated_at:desc' ? 'descending' : 'none',
+  );
 
   async function load() {
     try {
@@ -169,10 +173,17 @@
   <table>
     <thead>
       <tr>
-        <th style="width: 32px;"><input type="checkbox" checked={allSelected} onchange={toggleAll} /></th>
+        <th style="width: 32px;"><input type="checkbox" checked={allSelected} onchange={toggleAll} aria-label="Select all pages" /></th>
         <th>Title</th><th>Slug</th><th>Type</th><th>Status</th>
-        <th style="cursor: pointer; user-select: none;" onclick={() => { sortBy = sortBy === 'updated_at:desc' ? 'updated_at:asc' : 'updated_at:desc'; load(); }}>
-          Updated {sortBy === 'updated_at:desc' ? '↓' : sortBy === 'updated_at:asc' ? '↑' : ''}
+        <th aria-sort={updatedSortDirection}>
+          <button
+            type="button"
+            class="table-sort-btn"
+            onclick={() => { sortBy = sortBy === 'updated_at:desc' ? 'updated_at:asc' : 'updated_at:desc'; load(); }}
+            aria-label="Sort by updated date"
+          >
+            Updated {sortBy === 'updated_at:desc' ? '↓' : sortBy === 'updated_at:asc' ? '↑' : ''}
+          </button>
         </th>
         <th></th>
       </tr>
@@ -180,14 +191,14 @@
     <tbody>
       {#each pages as page}
         <tr style="--type-color: {getTypeColor(page.type || '')};">
-          <td><input type="checkbox" checked={selected.has(page.id)} onchange={() => toggleSelect(page.id)} /></td>
-          <td class="td-title"><span class="type-bar"></span><a href="/pages/{page.id}"><strong>{page.title}</strong></a></td>
+          <td><input type="checkbox" checked={selected.has(page.id)} onchange={() => toggleSelect(page.id)} aria-label={"Select page " + page.title} /></td>
+          <td class="td-title"><span class="type-bar"></span><a href="{base}/pages/{page.id}"><strong>{page.title}</strong></a></td>
           <td class="mono" style="color: var(--c-text-light);">/{page.slug}</td>
           <td>{page.typeName}</td>
           <td><span class="badge badge-{page.status}">{page.status}</span></td>
           <td>{new Date(page.meta.updated_at).toLocaleDateString()}</td>
           <td style="text-align: right;">
-            <a href="/pages/{page.id}" class="btn btn-sm btn-outline">Edit</a>
+            <a href="{base}/pages/{page.id}" class="btn btn-sm btn-outline">Edit</a>
             <button class="btn btn-sm btn-outline" onclick={() => duplicatePage(page.id)}>Duplicate</button>
             <button class="btn btn-sm btn-danger" onclick={() => deletePage(page.id)}>Delete</button>
           </td>
@@ -261,5 +272,14 @@
     width: 3px;
     border-radius: 2px;
     background: var(--type-color);
+  }
+
+  .table-sort-btn {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    padding: 0;
   }
 </style>

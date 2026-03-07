@@ -23,3 +23,16 @@
   - Menu items are now fetched in one query for all requested menu IDs.
 - Updated `/uploads/*` local file serving to stream files instead of reading whole files into memory.
 - Reduced ETag overhead in content cache middleware by hashing only JSON responses and skipping large payloads.
+
+### Accessibility and admin UX sprint (batch 3)
+
+- Fixed admin base-path navigation bugs by switching hardcoded root links to `${base}`-aware links on dashboard and pages screens.
+- Improved form accessibility by adding explicit `for`/`id` associations for user and media edit forms.
+- Improved table interaction semantics on the pages list:
+  - Sort control is now a button within the header cell.
+  - Added `aria-sort` state for updated-date column.
+  - Added `aria-label`s for selection checkboxes.
+- Enhanced global search accessibility/keyboard support:
+  - Added combobox ARIA wiring (`aria-expanded`, `aria-controls`, `aria-activedescendant`).
+  - Added arrow-key navigation and Enter-to-open for search results.
+  - Added active/selected visual + semantic state for result options.
