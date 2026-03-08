@@ -1,11 +1,6 @@
 import './types.js';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { serveStatic } from '@hono/node-server/serve-static';
-import { createReadStream } from 'node:fs';
-import { stat } from 'node:fs/promises';
-import type { Stats } from 'node:fs';
-import { join, extname, resolve } from 'node:path';
 import contentRouter from './api/content/index.js';
 import adminRouter from './api/admin/index.js';
 import { env, isProduction } from './env.js';
@@ -101,13 +96,17 @@ app.get('/', (c) => c.redirect('/admin'));
 // Convenience redirect for /sitemap.xml
 app.get('/sitemap.xml', (c) => c.redirect('/api/content/sitemap'));
 
-app.get('/api/health', (c) => c.json({
-  status: 'ok',
-  version: '0.1.0',
-  uptime: Math.floor(process.uptime()),
-  timestamp: new Date().toISOString(),
-  cache: { entries: cacheSize() },
-}));
+app.get('/api/health', (c) => {
+  const uptime = typeof process !== 'undefined' && typeof process.uptime === 'function'
+    ? Math.floor(process.uptime()) : 0;
+  return c.json({
+    status: 'ok',
+    version: '0.1.0',
+    uptime,
+    timestamp: new Date().toISOString(),
+    cache: { entries: cacheSize() },
+  });
+});
 
 /**
  * GET /uploads/* - Serve uploaded files from MEDIA_DIR with correct content
@@ -122,6 +121,10 @@ if (!getStorage().isExternal) {
       return c.json({ errors: [{ code: 'FORBIDDEN', message: 'Invalid path' }] }, 403);
     }
 
+    const { resolve, join, extname } = await import('node:path');
+    const { createReadStream } = await import('node:fs');
+    const { stat } = await import('node:fs/promises');
+
     const mediaRoot = resolve(env.MEDIA_DIR);
     const filePath = resolve(join(env.MEDIA_DIR, requestedPath));
 
@@ -129,7 +132,7 @@ if (!getStorage().isExternal) {
       return c.json({ errors: [{ code: 'FORBIDDEN', message: 'Invalid path' }] }, 403);
     }
 
-    let fileStat: Stats;
+    let fileStat: import('node:fs').Stats;
     try {
       fileStat = await stat(filePath);
       if (!fileStat.isFile()) {
@@ -155,8 +158,10 @@ if (!getStorage().isExternal) {
   });
 }
 
-// Serve admin SPA (production: built static files)
-if (env.NODE_ENV === 'production') {
+// Serve admin SPA (production: built static files, Node.js only)
+// On Workers, admin assets are served via wrangler [assets] config.
+if (env.NODE_ENV === 'production' && typeof process !== 'undefined' && process.release?.name === 'node') {
+  const { serveStatic } = await import('@hono/node-server/serve-static');
   app.use('/admin/*', serveStatic({ root: './packages/admin/build', rewriteRequestPath: (p) => p.replace('/admin', '') }));
   app.get('/admin/*', serveStatic({ root: './packages/admin/build', path: '/index.html' }));
   app.get('/admin', serveStatic({ root: './packages/admin/build', path: '/index.html' }));

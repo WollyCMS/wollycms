@@ -43,7 +43,7 @@ app.post('/', async (c) => {
   }
 
   const { key, prefix } = generateApiKey();
-  const hash = hashApiKey(key);
+  const hash = await hashApiKey(key);
 
   const [row] = await db.insert(apiKeys).values({
     name: parsed.data.name,

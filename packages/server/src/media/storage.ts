@@ -1,18 +1,16 @@
 import { env } from '../env.js';
-import { mkdir, writeFile, unlink, readFile } from 'node:fs/promises';
-import { join } from 'node:path';
 
 export interface StorageBackend {
   /** Upload a file buffer to storage, return its public-facing path/URL. */
-  upload(key: string, buffer: Buffer, contentType: string): Promise<string>;
+  upload(key: string, buffer: Buffer | Uint8Array, contentType: string): Promise<string>;
   /** Upload a variant buffer, return its public-facing path/URL. */
-  uploadVariant(key: string, buffer: Buffer, contentType: string): Promise<string>;
+  uploadVariant(key: string, buffer: Buffer | Uint8Array, contentType: string): Promise<string>;
   /** Delete a file by its stored path/key. */
   delete(path: string): Promise<void>;
   /** Get the public URL for a stored file path/key. */
   getUrl(path: string): string;
   /** Read a file from storage (for local serving). Returns null if not applicable. */
-  read(path: string): Promise<Buffer | null>;
+  read(path: string): Promise<Buffer | Uint8Array | null>;
   /** Whether files are served externally (S3/R2) or locally. */
   readonly isExternal: boolean;
 }
@@ -26,6 +24,8 @@ class LocalStorage implements StorageBackend {
   }
 
   async upload(key: string, buffer: Buffer): Promise<string> {
+    const { mkdir, writeFile } = await import('node:fs/promises');
+    const { join } = await import('node:path');
     await mkdir(this.dir, { recursive: true });
     const filePath = join(this.dir, key);
     await writeFile(filePath, buffer);
@@ -33,6 +33,8 @@ class LocalStorage implements StorageBackend {
   }
 
   async uploadVariant(key: string, buffer: Buffer): Promise<string> {
+    const { mkdir, writeFile } = await import('node:fs/promises');
+    const { join } = await import('node:path');
     const variantsDir = join(this.dir, 'variants');
     await mkdir(variantsDir, { recursive: true });
     const filePath = join(variantsDir, key);
@@ -41,6 +43,7 @@ class LocalStorage implements StorageBackend {
   }
 
   async delete(path: string): Promise<void> {
+    const { unlink } = await import('node:fs/promises');
     try {
       await unlink(path);
     } catch {
@@ -55,6 +58,7 @@ class LocalStorage implements StorageBackend {
   }
 
   async read(path: string): Promise<Buffer | null> {
+    const { readFile } = await import('node:fs/promises');
     try {
       return await readFile(path);
     } catch {
@@ -146,6 +150,61 @@ class S3Storage implements StorageBackend {
 // Re-export the S3Client type for use in the class
 type S3Client = import('@aws-sdk/client-s3').S3Client;
 
+/**
+ * R2Storage uses Cloudflare R2 bindings directly (no S3 SDK needed).
+ * The R2 bucket binding must be passed via initR2Storage().
+ */
+class R2Storage implements StorageBackend {
+  readonly isExternal = true;
+  private bucket: R2Bucket;
+  private publicUrl: string;
+
+  constructor(bucket: R2Bucket, publicUrl?: string) {
+    this.bucket = bucket;
+    this.publicUrl = (publicUrl || '').replace(/\/$/, '');
+  }
+
+  async upload(key: string, buffer: Buffer | Uint8Array, contentType: string): Promise<string> {
+    const r2Key = `media/${key}`;
+    await this.bucket.put(r2Key, buffer, { httpMetadata: { contentType } });
+    return r2Key;
+  }
+
+  async uploadVariant(key: string, buffer: Buffer | Uint8Array, contentType: string): Promise<string> {
+    const r2Key = `media/variants/${key}`;
+    await this.bucket.put(r2Key, buffer, { httpMetadata: { contentType } });
+    return r2Key;
+  }
+
+  async delete(path: string): Promise<void> {
+    try {
+      await this.bucket.delete(path);
+    } catch {
+      // Object may already be gone
+    }
+  }
+
+  getUrl(path: string): string {
+    if (this.publicUrl) {
+      return `${this.publicUrl}/${path}`;
+    }
+    return `/media/${path}`;
+  }
+
+  async read(path: string): Promise<Uint8Array | null> {
+    const obj = await this.bucket.get(path);
+    if (!obj) return null;
+    return new Uint8Array(await obj.arrayBuffer());
+  }
+}
+
+// R2Bucket type from Workers runtime
+type R2Bucket = {
+  put(key: string, value: ArrayBuffer | Uint8Array | ReadableStream | string | Blob | null, options?: Record<string, unknown>): Promise<unknown>;
+  get(key: string): Promise<{ arrayBuffer(): Promise<ArrayBuffer> } | null>;
+  delete(key: string | string[]): Promise<void>;
+};
+
 let storage: StorageBackend | null = null;
 
 export function getStorage(): StorageBackend {
@@ -155,6 +214,11 @@ export function getStorage(): StorageBackend {
       : new LocalStorage(env.MEDIA_DIR);
   }
   return storage;
+}
+
+/** Initialize R2 storage from a Workers R2 bucket binding. */
+export function initR2Storage(bucket: unknown, publicUrl?: string): void {
+  storage = new R2Storage(bucket as R2Bucket, publicUrl);
 }
 
 /** Reset storage instance (for testing). */

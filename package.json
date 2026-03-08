@@ -17,6 +17,7 @@
     "build": "npm run build --workspace=packages/server && npm run build --workspace=packages/admin",
     "build:server": "npm run build --workspace=packages/server",
     "build:admin": "npm run build --workspace=packages/admin",
+    "build:worker": "npm run build:worker --workspace=packages/server",
     "build:site": "npm run build --workspace=examples/college-site",
     "test": "npm run test --workspace=packages/server",
     "db:migrate": "npm run db:migrate --workspace=packages/server",

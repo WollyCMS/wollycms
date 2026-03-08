@@ -19,7 +19,8 @@
     "db:generate": "drizzle-kit generate",
     "db:generate:pg": "drizzle-kit generate --config drizzle-pg.config.ts",
     "db:migrate": "tsx src/db/migrate.ts",
-    "db:seed": "tsx src/db/seed.ts"
+    "db:seed": "tsx src/db/seed.ts",
+    "build:worker": "node ../../scripts/build-worker.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1004.0",
@@ -34,6 +35,7 @@
     "zod": "^3.24.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260307.1",
     "@types/better-sqlite3": "^7.6.0",
     "@types/node": "^22.0.0",
     "@types/pg": "^8.18.0",

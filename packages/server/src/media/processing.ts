@@ -1,5 +1,3 @@
-import sharp from 'sharp';
-
 export type VariantPaths = Record<string, string>;
 
 export interface ProcessedImage {
@@ -19,7 +17,7 @@ interface VariantConfig {
   name: string;
   width: number;
   height: number;
-  fit: keyof sharp.FitEnum;
+  fit: string;
 }
 
 const VARIANT_CONFIGS: VariantConfig[] = [
@@ -27,6 +25,17 @@ const VARIANT_CONFIGS: VariantConfig[] = [
   { name: 'medium', width: 600, height: 600, fit: 'inside' },
   { name: 'large', width: 1200, height: 1200, fit: 'inside' },
 ];
+
+/** Try to load sharp. Returns null if not available (e.g. Workers). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function loadSharp(): Promise<any | null> {
+  try {
+    const mod = await import('sharp');
+    return mod.default ?? mod;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Check if a MIME type is a processable image.
@@ -40,13 +49,21 @@ export function isProcessableImage(mimeType: string): boolean {
  *
  * Returns the image metadata and variant buffers. The caller is responsible
  * for persisting the variants to the appropriate storage backend.
+ *
+ * Returns null if sharp is unavailable (e.g. on Workers) or if processing fails.
  */
 export async function processImage(
   inputBuffer: Buffer,
   baseFilename: string,
 ): Promise<ProcessedImage | null> {
+  const sharp = await loadSharp();
+  if (!sharp) {
+    console.warn('sharp not available — skipping image variant generation');
+    return null;
+  }
+
   const sharpInstance = sharp(inputBuffer);
-  let sharpMeta: sharp.Metadata;
+  let sharpMeta: Record<string, unknown>;
 
   try {
     sharpMeta = await sharpInstance.metadata();
@@ -55,8 +72,8 @@ export async function processImage(
     return null;
   }
 
-  const width = sharpMeta.width ?? 0;
-  const height = sharpMeta.height ?? 0;
+  const width = (sharpMeta.width as number) ?? 0;
+  const height = (sharpMeta.height as number) ?? 0;
 
   if (width === 0 || height === 0) {
     console.error('Image has zero dimensions, skipping variant generation');

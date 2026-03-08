@@ -3,16 +3,26 @@ import { eq, and } from 'drizzle-orm';
 import { getDb } from '../../db/index.js';
 import { pages } from '../../db/schema/index.js';
 import { env } from '../../env.js';
-import sharp from 'sharp';
 
 const app = new Hono();
 
 /** Cache generated OG images in memory (slug → PNG buffer). */
-const ogCache = new Map<string, { buffer: Buffer; generatedAt: number }>();
+const ogCache = new Map<string, { buffer: Uint8Array; generatedAt: number }>();
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 /** Default site name for branding */
 const SITE_NAME = 'WollyCMS';
+
+/** Try to load sharp. Returns null if not available (e.g. Workers). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function loadSharp(): Promise<any | null> {
+  try {
+    const mod = await import('sharp');
+    return mod.default ?? mod;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Generate an OG image SVG using raw SVG markup.
@@ -82,6 +92,7 @@ function escapeXml(str: string): string {
 /**
  * GET /og/:slug - Generate an Open Graph image for a page.
  * Returns a 1200x630 PNG suitable for social sharing.
+ * On Workers (no sharp), returns the SVG directly.
  */
 app.get('/:slug', async (c) => {
   const slug = c.req.param('slug');
@@ -90,7 +101,9 @@ app.get('/:slug', async (c) => {
   // Check cache first
   const cached = ogCache.get(slug);
   if (cached && Date.now() - cached.generatedAt < CACHE_TTL_MS) {
-    c.header('Content-Type', 'image/png');
+    const sharp = await loadSharp();
+    const contentType = sharp ? 'image/png' : 'image/svg+xml';
+    c.header('Content-Type', contentType);
     c.header('Cache-Control', 'public, max-age=3600, s-maxage=86400');
     c.header('X-OG-Cache', 'hit');
     return c.body(cached.buffer as unknown as ArrayBuffer);
@@ -118,18 +131,31 @@ app.get('/:slug', async (c) => {
     page.metaDescription,
   );
 
-  const pngBuffer = await sharp(Buffer.from(svg))
-    .resize(1200, 630)
-    .png({ quality: 90 })
-    .toBuffer();
+  const sharp = await loadSharp();
+  let resultBuffer: Uint8Array;
+  let contentType: string;
+
+  if (sharp) {
+    // Node.js: convert SVG to PNG via sharp
+    const pngBuffer = await sharp(Buffer.from(svg))
+      .resize(1200, 630)
+      .png({ quality: 90 })
+      .toBuffer();
+    resultBuffer = new Uint8Array(pngBuffer);
+    contentType = 'image/png';
+  } else {
+    // Workers: serve SVG directly (still valid for OG images)
+    resultBuffer = new TextEncoder().encode(svg);
+    contentType = 'image/svg+xml';
+  }
 
   // Cache the result
-  ogCache.set(slug, { buffer: pngBuffer, generatedAt: Date.now() });
+  ogCache.set(slug, { buffer: resultBuffer, generatedAt: Date.now() });
 
-  c.header('Content-Type', 'image/png');
+  c.header('Content-Type', contentType);
   c.header('Cache-Control', 'public, max-age=3600, s-maxage=86400');
   c.header('X-OG-Cache', 'miss');
-  return c.body(pngBuffer as unknown as ArrayBuffer);
+  return c.body(resultBuffer as unknown as ArrayBuffer);
 });
 
 /** Invalidate cached OG image for a slug. Called when a page is updated. */

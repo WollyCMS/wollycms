@@ -1,5 +1,4 @@
 import { eq } from 'drizzle-orm';
-import { createHmac } from 'node:crypto';
 import { getDb } from './db/index.js';
 import { webhooks } from './db/schema/index.js';
 import { isSafeWebhookUrl } from './security/url.js';
@@ -17,6 +16,22 @@ interface WebhookPayload {
   event: WebhookEvent;
   timestamp: string;
   data: Record<string, unknown>;
+}
+
+/** Compute HMAC-SHA256 hex digest. Uses Web Crypto on Workers, Node crypto otherwise. */
+async function hmacSha256(secret: string, data: string): Promise<string> {
+  try {
+    const { createHmac } = await import('node:crypto');
+    return createHmac('sha256', secret).update(data).digest('hex');
+  } catch {
+    // Web Crypto fallback (Workers)
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'],
+    );
+    const sig = await crypto.subtle.sign('HMAC', key, enc.encode(data));
+    return Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, '0')).join('');
+  }
 }
 
 export async function fireWebhooks(event: WebhookEvent, data: Record<string, unknown>) {
@@ -62,7 +77,7 @@ async function deliverWebhook(
   };
 
   if (hook.secret) {
-    const signature = createHmac('sha256', hook.secret).update(body).digest('hex');
+    const signature = await hmacSha256(hook.secret, body);
     headers['X-Wolly-Signature'] = `sha256=${signature}`;
   }
 

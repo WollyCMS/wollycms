@@ -17,6 +17,7 @@ venv/
 
 # Build outputs
 dist/
+dist-worker/
 build/
 .next/
 out/
