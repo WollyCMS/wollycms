@@ -25,6 +25,7 @@
     error = $bindable(''),
     onReload,
     onBlockExpand,
+    onBlockDirty,
   }: {
     pageData: any;
     pageId: string;
@@ -34,6 +35,7 @@
     error: string;
     onReload: () => void;
     onBlockExpand?: (pbId: string) => void;
+    onBlockDirty?: () => void;
   } = $props();
 
   let showAddBlock = $state(false);
@@ -42,6 +44,9 @@
   let librarySearch = $state('');
   let libraryFilter = $state('');
   let expandedBlocks = $state(new Set<number>());
+
+  // Track blocks with unsaved field changes
+  let dirtyBlockPbIds = $state(new Set<number>());
 
   // Drag state
   let dragPbId = $state<number | null>(null);
@@ -293,23 +298,46 @@
     catch (err: any) { error = err.message; }
   }
 
-  async function updateBlockField(pbId: number, blockId: number, fieldName: string, value: unknown) {
+  function updateBlockField(pbId: number, blockId: number, fieldName: string, value: unknown) {
     for (const r of regions) {
       const regionBlocks = pageData.regions[r.name] || [];
       const block = regionBlocks.find((b: any) => b.pb_id === pbId);
       if (!block) continue;
       block.fields[fieldName] = value;
-      try {
-        if (block.is_shared) {
-          await api.put(`/pages/${pageId}/blocks/${pbId}`, { overrides: { [fieldName]: value } });
-        } else {
-          await api.put(`/blocks/${blockId}`, { fields: block.fields });
-        }
-        toast.success('Block saved.');
-      } catch (err: any) {
-        toast.error(err.message);
-      }
+      dirtyBlockPbIds.add(pbId);
+      dirtyBlockPbIds = dirtyBlockPbIds; // trigger reactivity
+      onBlockDirty?.();
       return;
+    }
+  }
+
+  export function hasUnsavedBlocks(): boolean {
+    return dirtyBlockPbIds.size > 0;
+  }
+
+  export async function saveDirtyBlocks(): Promise<void> {
+    const errors: string[] = [];
+    for (const pbId of dirtyBlockPbIds) {
+      for (const r of regions) {
+        const regionBlocks = pageData.regions[r.name] || [];
+        const block = regionBlocks.find((b: any) => b.pb_id === pbId);
+        if (!block) continue;
+        try {
+          if (block.is_shared) {
+            await api.put(`/pages/${pageId}/blocks/${pbId}`, { overrides: block.fields });
+          } else {
+            await api.put(`/blocks/${block.block_id}`, { fields: block.fields });
+          }
+        } catch (err: any) {
+          errors.push(err.message);
+        }
+        break;
+      }
+    }
+    dirtyBlockPbIds.clear();
+    dirtyBlockPbIds = dirtyBlockPbIds; // trigger reactivity
+    if (errors.length > 0) {
+      throw new Error(`Block save errors: ${errors.join(', ')}`);
     }
   }
 

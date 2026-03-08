@@ -166,6 +166,10 @@
         canonicalUrl: pageData.canonicalUrl || null,
         robots: pageData.robots || null,
       });
+      // Save any pending block field changes
+      if (blockEditor?.hasUnsavedBlocks()) {
+        await blockEditor.saveDirtyBlocks();
+      }
       toast.success('Page saved.');
       takeSnapshot();
       dirty = false;
@@ -288,7 +292,8 @@
 
           <BlockEditorRegion bind:this={blockEditor} {pageData} pageId={id} {contentType} {blockTypes}
             bind:activeRegion bind:error onReload={load}
-            onBlockExpand={(pbId) => { if (showPreview) previewPanel?.highlightBlock(pbId); }} />
+            onBlockExpand={(pbId) => { if (showPreview) previewPanel?.highlightBlock(pbId); }}
+            onBlockDirty={() => { dirty = true; }} />
         </div>
 
         <PageEditorSidebar
