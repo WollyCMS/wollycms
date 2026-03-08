@@ -13,9 +13,15 @@ import {
  * Preview auth middleware: accepts JWT from Authorization header
  * or the short-lived preview session cookie.
  */
+/**
+ * Preview auth: accepts JWT from Authorization header, preview cookie,
+ * or `token` query param (needed for cross-origin iframe preview where
+ * cookies can't be shared). Query-param tokens are short-lived (10 min).
+ */
 const previewAuth = createMiddleware(async (c, next) => {
   const token = c.req.header('Authorization')?.replace('Bearer ', '')
-    || getCookie(c, 'wolly_preview');
+    || getCookie(c, 'wolly_preview')
+    || c.req.query('token');
   if (!token) {
     return c.json({ errors: [{ code: 'UNAUTHORIZED', message: 'Preview requires authentication' }] }, 401);
   }

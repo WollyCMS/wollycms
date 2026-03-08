@@ -37,10 +37,16 @@ async function saveConfig(config: typeof defaultConfig): Promise<void> {
   await writeFile(CONFIG_PATH, JSON.stringify(config, null, 2));
 }
 
-/** GET / - Get site config */
+/** GET / - Get site config (includes runtime server settings) */
 app.get('/', async (c) => {
+  const { env: serverEnv } = await import('../../env.js');
   const config = await loadConfig();
-  return c.json({ data: config });
+  return c.json({
+    data: {
+      ...config,
+      siteUrl: serverEnv.SITE_URL,
+    },
+  });
 });
 
 /** PUT / - Update site config */

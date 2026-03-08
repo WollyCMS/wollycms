@@ -319,9 +319,11 @@ describe('GET /api/content/preview/pages/:slug', () => {
     expect(res.status).toBe(401);
   });
 
-  it('rejects query-param token auth', async () => {
+  it('returns page data with valid query-param token', async () => {
     const res = await get(`/api/content/preview/pages/home?token=${authToken}`);
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.data.slug).toBe('home');
   });
 
   it('returns page data with valid token (Authorization header)', async () => {

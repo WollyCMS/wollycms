@@ -73,7 +73,10 @@ app.use('*', bodyLimit({ maxSize: 50 * 1024 * 1024 })); // 50MB max request body
 app.use('*', async (c, next) => {
   await next();
   c.header('X-Content-Type-Options', 'nosniff');
-  c.header('X-Frame-Options', 'DENY');
+  // Allow framing from the configured SITE_URL (for admin preview iframe).
+  // All other origins are blocked via Content-Security-Policy frame-ancestors.
+  const siteOrigin = new URL(env.SITE_URL).origin;
+  c.header('Content-Security-Policy', `frame-ancestors 'self' ${siteOrigin}`);
   c.header('X-XSS-Protection', '0');
   c.header('Referrer-Policy', 'strict-origin-when-cross-origin');
   if (isProduction()) {

@@ -80,7 +80,9 @@ app.post('/preview-session', authMiddleware, async (c) => {
     secure: env.NODE_ENV === 'production',
     sameSite: 'Lax',
   });
-  return c.json({ data: { ok: true, expiresIn: 600 } });
+  // Return token in response so admin UI can pass it as query param
+  // for cross-origin iframe preview (cookie won't work cross-domain).
+  return c.json({ data: { ok: true, token, expiresIn: 600 } });
 });
 
 export default app;

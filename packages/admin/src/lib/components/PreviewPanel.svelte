@@ -18,22 +18,36 @@
   let loading = $state(true);
   let deviceMode = $state<'mobile' | 'tablet' | 'desktop'>('desktop');
   let sessionReady = $state(false);
+  let previewToken = $state<string | null>(null);
+  let siteUrl = $state<string | null>(null);
 
   const deviceWidths = { mobile: 375, tablet: 768, desktop: 0 } as const;
 
-  const PREVIEW_BASE = 'http://localhost:4322/preview';
-  const PREVIEW_ORIGIN = new URL(PREVIEW_BASE).origin;
+  let previewOrigin = $derived(siteUrl ? new URL(siteUrl).origin : null);
 
   function buildPreviewUrl(s: string): string {
-    return `${PREVIEW_BASE}/${s}`;
+    if (!siteUrl || !previewToken) return 'about:blank';
+    return `${siteUrl}/preview/${s}?token=${previewToken}`;
   }
 
-  let previewUrl = $state(buildPreviewUrl(slug));
+  let previewUrl = $state('about:blank');
+
+  async function fetchSiteUrl() {
+    if (siteUrl) return;
+    try {
+      const res = await api.get('/config');
+      siteUrl = res.data.siteUrl;
+    } catch {
+      toast.error('Unable to fetch site config for preview.');
+    }
+  }
 
   async function ensurePreviewSession() {
     if (sessionReady) return true;
     try {
-      await api.post('/auth/preview-session');
+      await fetchSiteUrl();
+      const res = await api.post('/auth/preview-session');
+      previewToken = res.data.token;
       sessionReady = true;
       return true;
     } catch {
@@ -67,7 +81,7 @@
   }
 
   function handleMessage(e: MessageEvent) {
-    if (e.origin !== PREVIEW_ORIGIN) return;
+    if (previewOrigin && e.origin !== previewOrigin) return;
     if (!e.data || !e.data.type) return;
     if (e.data.type === 'wolly:select-block') {
       onBlockSelect?.(e.data.pbId, e.data.region);
@@ -85,8 +99,9 @@
   $effect(() => {
     if (!visible || !slug) return;
     loading = true;
-    previewUrl = buildPreviewUrl(slug);
-    ensurePreviewSession();
+    ensurePreviewSession().then((ready) => {
+      if (ready) previewUrl = buildPreviewUrl(slug);
+    });
   });
 </script>
 
@@ -120,7 +135,7 @@
       {/if}
       <iframe
         bind:this={iframeEl}
-        src={sessionReady ? previewUrl : 'about:blank'}
+        src={previewUrl}
         title="Page preview"
         onload={onLoad}
         style={deviceMode !== 'desktop' ? `width: ${deviceWidths[deviceMode]}px; margin: 0 auto;` : ''}
