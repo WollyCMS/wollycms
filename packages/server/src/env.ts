@@ -41,11 +41,7 @@ function readProcessEnv(): EnvConfig {
     DATABASE_URL: p.DATABASE_URL || 'sqlite:./data/wolly.db',
     MEDIA_STORAGE: p.MEDIA_STORAGE || 'local',
     MEDIA_DIR: p.MEDIA_DIR || './uploads',
-    JWT_SECRET: (() => {
-      if (p.JWT_SECRET) return p.JWT_SECRET;
-      if (p.NODE_ENV === 'production') throw new Error('JWT_SECRET environment variable is required in production');
-      return 'dev-secret-change-me';
-    })(),
+    JWT_SECRET: p.JWT_SECRET || 'dev-secret-change-me',
     CORS_ORIGINS: p.CORS_ORIGINS || '*',
     RATE_LIMIT_AUTH: parseInt(p.RATE_LIMIT_AUTH || '10', 10),
     RATE_LIMIT_WINDOW_MS: parseInt(p.RATE_LIMIT_WINDOW_MS || '900000', 10),

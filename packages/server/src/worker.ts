@@ -1,16 +1,13 @@
 /**
  * Cloudflare Workers entry point for WollyCMS.
  *
- * Serves the Hono API and admin UI static assets.
- * Requires D1 database binding (DB) and R2 bucket binding (R2_BUCKET).
+ * Only handles API routes (/api/*). Admin UI static assets and SPA
+ * routing are handled by the Cloudflare asset layer automatically
+ * (configured via run_worker_first = ["/api/*"] in wrangler.toml).
+ *
+ * All module imports are dynamic (inside fetch handler) to ensure
+ * Workers bindings are available before any module initialization runs.
  */
-import { initEnvFromBindings } from './env.js';
-import { initD1 } from './db/index.js';
-import { initR2Storage } from './media/storage.js';
-
-// Re-export the Hono app as a Workers module
-// We import app lazily after env is initialized
-let appModule: typeof import('./app.js') | null = null;
 
 interface WorkerEnv {
   DB?: unknown;
@@ -19,27 +16,39 @@ interface WorkerEnv {
   [key: string]: unknown;
 }
 
+let initialized = false;
+
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async fetch(request: Request, workerEnv: WorkerEnv, ctx: any): Promise<Response> {
-    // Initialize env from Workers bindings on first request
-    initEnvFromBindings(workerEnv);
+    try {
+      if (!initialized) {
+        // Initialize env FIRST from Workers bindings, before any other module loads
+        const { initEnvFromBindings } = await import('./env.js');
+        initEnvFromBindings(workerEnv);
 
-    // Initialize D1 if binding exists
-    if (workerEnv.DB) {
-      await initD1(workerEnv.DB);
+        // Now initialize D1 (env.DATABASE_URL is set, so getDialect() returns 'd1')
+        if (workerEnv.DB) {
+          const { initD1 } = await import('./db/index.js');
+          await initD1(workerEnv.DB);
+        }
+
+        // Initialize R2 storage
+        if (workerEnv.R2_BUCKET) {
+          const { initR2Storage } = await import('./media/storage.js');
+          initR2Storage(workerEnv.R2_BUCKET, workerEnv.R2_PUBLIC_URL);
+        }
+
+        initialized = true;
+      }
+
+      // All requests reaching the Worker are API routes (run_worker_first = ["/api/*"])
+      const appModule = await import('./app.js');
+      return appModule.default.fetch(request, workerEnv, ctx);
+    } catch (err: any) {
+      return new Response(
+        JSON.stringify({ error: err.message, stack: err.stack }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
     }
-
-    // Initialize R2 storage if binding exists
-    if (workerEnv.R2_BUCKET) {
-      initR2Storage(workerEnv.R2_BUCKET, workerEnv.R2_PUBLIC_URL);
-    }
-
-    // Lazy-load app after env is ready
-    if (!appModule) {
-      appModule = await import('./app.js');
-    }
-
-    return appModule.default.fetch(request, workerEnv, ctx);
   },
 };
