@@ -88,18 +88,16 @@ app.get('/:id/:variant', async (c) => {
     });
   }
 
-  // Resolve the file path/key for the requested variant
-  const filePath =
+  // Resolve the file path/key for the requested variant.
+  // Fall back to the original when the variant hasn't been generated
+  // (e.g. Workers environments where sharp is unavailable).
+  const variantPath =
     variant === 'original'
       ? record.path
       : (record.variants as Record<string, string> | null)?.[variant] || null;
 
-  if (!filePath) {
-    return c.json(
-      { errors: [{ code: 'VARIANT_NOT_FOUND', message: `Variant "${variant}" not available for this media` }] },
-      404,
-    );
-  }
+  const filePath = variantPath || record.path;
+  const effectiveVariant = variantPath ? variant : 'original';
 
   // For external storage (S3/R2), redirect to the public CDN URL
   if (storage.isExternal) {
@@ -116,7 +114,7 @@ app.get('/:id/:variant', async (c) => {
     );
   }
 
-  const contentType = getContentType(variant, record.mimeType);
+  const contentType = getContentType(effectiveVariant, record.mimeType);
 
   c.header('Content-Type', contentType);
   c.header('Content-Length', String(fileBuffer.length));
