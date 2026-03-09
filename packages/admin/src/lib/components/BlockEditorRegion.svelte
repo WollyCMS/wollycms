@@ -533,6 +533,9 @@
                           {:else if field.type === 'url'}
                             <input type="url" class="form-control" value={f(block)[field.name] || ''} placeholder="https://..."
                               oninput={(e) => updateBlockField(block.pb_id, block.block_id || block.pb_id, field.name, (e.target as HTMLInputElement).value)} />
+                          {:else if field.type === 'textarea'}
+                            <textarea class="form-control" rows="4"
+                              oninput={(e) => updateBlockField(block.pb_id, block.block_id || block.pb_id, field.name, (e.target as HTMLTextAreaElement).value)}>{f(block)[field.name] || ''}</textarea>
                           {:else}
                             <input class="form-control" value={f(block)[field.name] || ''}
                               oninput={(e) => updateBlockField(block.pb_id, block.block_id || block.pb_id, field.name, (e.target as HTMLInputElement).value)} />
