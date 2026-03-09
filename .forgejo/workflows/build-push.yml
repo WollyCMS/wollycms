@@ -20,6 +20,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Prepare SvelteKit types
+        run: npx --workspace=packages/admin svelte-kit sync
+
       - name: Run tests
         run: npm test
 
