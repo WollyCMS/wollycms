@@ -1,0 +1,87 @@
+name: Deploy to Cloudflare Workers
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare SvelteKit types
+        run: npx --workspace=packages/admin svelte-kit sync
+
+      - name: Run tests
+        run: npm test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    # Only run if Cloudflare secrets are configured (skips on forks)
+    if: vars.WORKER_NAME != ''
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build admin UI
+        run: npm run build:admin
+
+      - name: Build worker
+        run: npm run build:worker
+
+      - name: Generate wrangler.toml
+        run: |
+          cat > wrangler.toml << 'TOML'
+          name = "${{ vars.WORKER_NAME }}"
+          main = "packages/server/dist-worker/worker.js"
+          compatibility_date = "2024-12-01"
+          compatibility_flags = ["nodejs_compat"]
+
+          [assets]
+          directory = "packages/admin/build-assets"
+          not_found_handling = "single-page-application"
+          run_worker_first = ["/api/*", "/media/*"]
+
+          [[d1_databases]]
+          binding = "DB"
+          database_name = "${{ vars.D1_DATABASE_NAME }}"
+          database_id = "${{ secrets.D1_DATABASE_ID }}"
+
+          [[r2_buckets]]
+          binding = "R2_BUCKET"
+          bucket_name = "${{ vars.R2_BUCKET_NAME }}"
+
+          [vars]
+          NODE_ENV = "production"
+          DATABASE_URL = "d1:DB"
+          MEDIA_STORAGE = "r2"
+          CORS_ORIGINS = "${{ vars.CORS_ORIGINS }}"
+          SITE_URL = "${{ vars.SITE_URL }}"
+          TOML
+
+      - name: Deploy to Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
