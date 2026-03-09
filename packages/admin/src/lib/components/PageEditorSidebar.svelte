@@ -1,6 +1,8 @@
 <script lang="ts">
   import { api } from '$lib/api.js';
+  import type { A11yIssue } from '$lib/a11y.js';
   import RevisionDiff from './RevisionDiff.svelte';
+  import AccessibilityPanel from './AccessibilityPanel.svelte';
   import { focusTrap } from '$lib/focusTrap.js';
 
   let {
@@ -9,22 +11,26 @@
     allMenus,
     menuDetails,
     revisions,
+    a11yIssues = [],
     success = $bindable(''),
     error = $bindable(''),
     onMenuDetailsReload,
     onRevisionsReload,
     onPageReload,
+    onA11yNavigate,
   }: {
     pageData: any;
     id: string;
     allMenus: any[];
     menuDetails: Record<number, any>;
     revisions: any[];
+    a11yIssues?: A11yIssue[];
     success: string;
     error: string;
     onMenuDetailsReload: () => Promise<void>;
     onRevisionsReload: () => Promise<void>;
     onPageReload: () => void;
+    onA11yNavigate?: (pbId: number) => void;
   } = $props();
 
   let showMenuAdd = $state(false);
@@ -142,6 +148,8 @@
     } catch (err: any) { error = err.message; }
   }
 </script>
+
+<AccessibilityPanel issues={a11yIssues} onNavigate={onA11yNavigate} />
 
 <div class="card" style="margin-bottom: 1rem;">
   <h3 style="font-size: 0.95rem; margin-bottom: 0.75rem;">Page Info</h3>

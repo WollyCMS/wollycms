@@ -4,6 +4,7 @@
   import { beforeNavigate } from '$app/navigation';
   import { api } from '$lib/api.js';
   import { toast } from '$lib/toast.svelte.js';
+  import { auditPageAccessibility, type A11yIssue } from '$lib/a11y.js';
   import { Circle, CheckCircle, Archive } from 'lucide-svelte';
   import Breadcrumb from '$lib/components/Breadcrumb.svelte';
   import MediaPicker from '$lib/components/MediaPicker.svelte';
@@ -32,8 +33,16 @@
   let blockEditor = $state<BlockEditorRegion | null>(null);
 
   let cleanSnapshot = $state('');
+  let mediaCache = $state(new Map<number, { altText?: string }>());
 
   const id = $derived(routePage.params.id ?? '');
+
+  const a11yRegions = $derived<{ name: string; label: string }[]>(contentType?.regions || []);
+  const a11yIssues = $derived<A11yIssue[]>(
+    pageData?.regions
+      ? auditPageAccessibility(a11yRegions, pageData.regions, mediaCache)
+      : []
+  );
 
   const breadcrumbs = $derived([
     { label: 'Dashboard', href: '/' },
@@ -126,6 +135,7 @@
         if (contentType.regions?.length > 0) activeRegion = contentType.regions[0].name;
       }
       await loadMenuDetails();
+      await loadMediaCache();
       takeSnapshot();
       dirty = false;
     } catch (err: any) { error = err.message; }
@@ -146,6 +156,31 @@
       const res = await api.get<{ data: any[] }>(`/pages/${id}/revisions`);
       revisions = res.data;
     } catch { revisions = []; }
+  }
+
+  /** Load media metadata for alt-text checks */
+  async function loadMediaCache() {
+    if (!pageData?.regions) return;
+    const mediaIds = new Set<number>();
+    for (const blocks of Object.values(pageData.regions) as any[][]) {
+      for (const block of blocks) {
+        for (const val of Object.values(block.fields || {})) {
+          if (typeof val === 'number') mediaIds.add(val);
+        }
+      }
+    }
+    const cache = new Map<number, { altText?: string }>();
+    for (const mid of mediaIds) {
+      try {
+        const res = await api.get<{ data: any }>(`/media/${mid}`);
+        cache.set(mid, { altText: res.data.altText });
+      } catch { /* skip */ }
+    }
+    mediaCache = cache;
+  }
+
+  function handleA11yNavigate(pbId: number) {
+    blockEditor?.scrollToBlock(`pb_${pbId}`);
   }
 
   onMount(load);
@@ -170,7 +205,11 @@
       if (blockEditor?.hasUnsavedBlocks()) {
         await blockEditor.saveDirtyBlocks();
       }
-      toast.success('Page saved.');
+      if (a11yIssues.length > 0) {
+        toast.info(`Page saved with ${a11yIssues.length} accessibility warning${a11yIssues.length > 1 ? 's' : ''}.`);
+      } else {
+        toast.success('Page saved.');
+      }
       takeSnapshot();
       dirty = false;
       if (showPreview) previewPanel?.refresh();
@@ -298,10 +337,12 @@
 
         <PageEditorSidebar
           {pageData} {id} {allMenus} {menuDetails} {revisions}
+          {a11yIssues}
           bind:success bind:error
           onMenuDetailsReload={loadMenuDetails}
           onRevisionsReload={loadRevisions}
           onPageReload={load}
+          onA11yNavigate={handleA11yNavigate}
         />
       </div>
     </div>

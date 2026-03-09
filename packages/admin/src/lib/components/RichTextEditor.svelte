@@ -19,6 +19,7 @@
 
   let editorEl: HTMLDivElement | undefined = $state();
   let editor: Editor | undefined = $state();
+  let headingWarnings = $state<string[]>([]);
   let showImagePicker = $state(false);
   let showSlashMenu = $state(false);
   let slashMenuPos = $state({ top: 0, left: 0 });
@@ -45,6 +46,23 @@
       ? slashCommands.filter(c => c.label.toLowerCase().includes(slashFilter.toLowerCase()))
       : slashCommands
   );
+
+  /** Check heading order within this editor instance */
+  function checkHeadings(doc: any) {
+    const warnings: string[] = [];
+    if (!doc?.content) { headingWarnings = warnings; return; }
+    let prev = 1; // assume page title is H1
+    for (const node of doc.content) {
+      if (node.type === 'heading' && node.attrs?.level) {
+        const lvl = node.attrs.level;
+        if (lvl > prev + 1) {
+          warnings.push(`H${lvl} follows H${prev} — skips H${prev + 1}`);
+        }
+        prev = lvl;
+      }
+    }
+    headingWarnings = warnings;
+  }
 
   // Paste cleanup: strip Word/Google Docs cruft
   const PasteCleanup = Extension.create({
@@ -91,6 +109,8 @@
         editor = editor;
         // Track if cursor is in a table
         isInTable = !!editor?.isActive('table');
+        // Check heading hierarchy
+        if (editor) checkHeadings(editor.getJSON());
       },
       onBlur: () => {
         if (editor) {
@@ -295,6 +315,14 @@
     </div>
   {/if}
 
+  {#if headingWarnings.length > 0}
+    <div class="rte-heading-warn" role="status">
+      {#each headingWarnings as warn}
+        <span class="rte-heading-warn-item">{warn}</span>
+      {/each}
+    </div>
+  {/if}
+
   <div class="rte-editor-wrap">
     <div class="rte-editor" bind:this={editorEl}></div>
 
@@ -426,6 +454,21 @@
     height: 20px;
     background: var(--c-border, #e2e8f0);
     margin: 0 4px;
+  }
+
+  .rte-heading-warn {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 4px 10px;
+    background: #fef3c7;
+    border-bottom: 1px solid #fcd34d;
+    font-size: 0.72rem;
+    color: #92400e;
+  }
+
+  .rte-heading-warn-item::before {
+    content: '\26A0\FE0F ';
   }
 
   .rte-editor-wrap {
