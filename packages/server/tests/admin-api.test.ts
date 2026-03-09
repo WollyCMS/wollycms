@@ -424,6 +424,91 @@ describe('Admin Taxonomies', () => {
   });
 });
 
+// --- Page Terms ---
+describe('Page Terms', () => {
+  let pageId: number;
+  let taxId: number;
+  let termId1: number;
+  let termId2: number;
+
+  beforeAll(async () => {
+    // Create a page to assign terms to
+    const pageRes = await json('/pages', 'POST', {
+      title: 'Terms Test Page', typeId: 1, status: 'draft',
+    });
+    const pageBody = await pageRes.json();
+    pageId = pageBody.data.id;
+
+    // Create a taxonomy with two terms
+    const taxRes = await json('/taxonomies', 'POST', {
+      name: 'Page Terms Tax', slug: 'page-terms-tax',
+    });
+    const taxBody = await taxRes.json();
+    taxId = taxBody.data.id;
+
+    const t1 = await json(`/taxonomies/${taxId}/terms`, 'POST', {
+      name: 'Term A', slug: 'term-a',
+    });
+    termId1 = (await t1.json()).data.id;
+
+    const t2 = await json(`/taxonomies/${taxId}/terms`, 'POST', {
+      name: 'Term B', slug: 'term-b',
+    });
+    termId2 = (await t2.json()).data.id;
+  });
+
+  it('GET /:id/terms returns empty list initially', async () => {
+    const res = await authed(`/pages/${pageId}/terms`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.data).toEqual([]);
+  });
+
+  it('PUT /:id/terms assigns terms to page', async () => {
+    const res = await json(`/pages/${pageId}/terms`, 'PUT', {
+      termIds: [termId1, termId2],
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.data.length).toBe(2);
+    expect(body.data.map((t: any) => t.termId).sort()).toEqual([termId1, termId2].sort());
+  });
+
+  it('GET /:id/terms returns assigned terms', async () => {
+    const res = await authed(`/pages/${pageId}/terms`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.data.length).toBe(2);
+    expect(body.data[0].taxonomyName).toBe('Page Terms Tax');
+  });
+
+  it('PUT /:id/terms replaces existing terms', async () => {
+    const res = await json(`/pages/${pageId}/terms`, 'PUT', {
+      termIds: [termId2],
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.data.length).toBe(1);
+    expect(body.data[0].termId).toBe(termId2);
+  });
+
+  it('PUT /:id/terms with empty array clears all terms', async () => {
+    const res = await json(`/pages/${pageId}/terms`, 'PUT', {
+      termIds: [],
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.data).toEqual([]);
+  });
+
+  it('PUT /:id/terms rejects invalid input', async () => {
+    const res = await json(`/pages/${pageId}/terms`, 'PUT', {
+      termIds: 'not-an-array',
+    });
+    expect(res.status).toBe(400);
+  });
+});
+
 // --- Redirects CRUD ---
 describe('Admin Redirects', () => {
   let testRedirectId: number;

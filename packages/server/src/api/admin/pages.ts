@@ -10,6 +10,7 @@ import { logAudit } from '../../audit.js';
 import { cacheInvalidate } from '../../cache.js';
 import { clearOgCache } from '../content/og-image.js';
 import pageBlocksRouter from './page-blocks.js';
+import pageTermsRouter from './page-terms.js';
 import { requireRole } from '../../auth/rbac.js';
 
 const app = new Hono();
@@ -326,5 +327,8 @@ app.delete('/:id', async (c) => {
 
 // Mount page-block sub-routes (add/update/delete blocks, duplicate, reorder)
 app.route('/', pageBlocksRouter);
+
+// Mount page-terms sub-routes (get/set taxonomy terms for a page)
+app.route('/', pageTermsRouter);
 
 export default app;

@@ -5,6 +5,7 @@
   import type { SeoCheck } from '$lib/seo.js';
   import RevisionDiff from './RevisionDiff.svelte';
   import AccessibilityPanel from './AccessibilityPanel.svelte';
+  import TaxonomyPicker from './TaxonomyPicker.svelte';
   import SerpPreview from './SerpPreview.svelte';
   import SocialPreview from './SocialPreview.svelte';
   import SeoScorePanel from './SeoScorePanel.svelte';
@@ -356,6 +357,8 @@
     </div>
   {/if}
 </div>
+
+<TaxonomyPicker pageId={id} />
 
 <div class="card" style="margin-bottom: 1rem;">
   <h3 style="font-size: 0.95rem; margin-bottom: 0.75rem;">Revision History</h3>
