@@ -458,6 +458,9 @@ that make teams choose WollyCMS over Strapi, Directus, or Storyblok.
 - [x] Structured data / JSON-LD helpers in @wollycms/astro:
       articleJsonLd, webPageJsonLd, breadcrumbJsonLd, organizationJsonLd,
       getPageSeo, jsonLdScript
+- [x] SEO editor tools — Google SERP preview, social share preview,
+      SEO score checklist (title/desc length, slug quality, content length,
+      heading presence), color-coded character counts on meta fields
 - [ ] OG image generation (deferred — auto-generate social sharing images
       from page title + hero image)
 
@@ -545,7 +548,7 @@ new block type.
 | Phase 4.5 | Admin UI Polish | Complete (a-e) |
 | Phase 5 | Production Hardening | Complete (5a-5c) |
 | Phase 6 | Packaging & DX | In progress (build, CLI, Docker dev) |
-| Phase 7 | Content Features | In progress (SEO, search, JSON-LD) |
+| Phase 7 | Content Features | In progress (SEO complete, search partial) |
 | Phase 8 | Scale & Ecosystem | Partial (scheduled publishing) |
 
 **Phases 1-4** = The engine (done)

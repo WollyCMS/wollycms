@@ -54,16 +54,18 @@ npm run test --workspace=packages/server       # Server tests only
 - **Phase 4.5**: Complete (all sub-phases a-e)
 - **Phase 5**: Complete (webhooks, API keys, audit logging, rate limiting, CORS, cache headers, batch API, health check, security hardening, accessibility, query caching, ETag, S3/R2 media storage)
 - **Phase 6**: In progress (CLI, build pipeline, Docker, type generation)
-- **Phase 7**: In progress (SEO fields, sitemap, admin search, JSON-LD helpers)
+- **Phase 7**: In progress (SEO complete incl. editor tools, search partial, form builder + i18n pending)
 - Monorepo: npm workspaces (packages/server, packages/admin, packages/astro, examples/college-site)
 - Database: 17 tables with dual SQLite/PostgreSQL Drizzle schemas + indexes + migrations
 - Seed data: 8 pages, 11 block types (incl. hero, embed), 3 content types, 3 menus, 2 taxonomies
-- Content API: 11 endpoints including preview, search, sitemap (123 tests passing: 35 content + 77 admin + 11 a11y)
+- Content API: 11 endpoints including preview, search, sitemap (141 tests passing: 35 content + 77 admin + 11 a11y + 18 seo)
 - Schema files use `.ts` imports (drizzle-kit requires this); `rewriteRelativeImportExtensions` in tsconfig converts to `.js` on build
 - Dual database: SQLite schemas in `schema/`, PG schemas in `schema-pg/`; smart barrel in `schema/index.ts` auto-selects based on `DATABASE_URL`
 - SQLite drizzle config: `drizzle.config.ts` → `drizzle/`; PG config: `drizzle-pg.config.ts` → `drizzle-pg/`
 - App factory: `src/app.ts` (testable), `src/index.ts` (server entry)
 - Media storage: pluggable backend — local filesystem (dev) or S3-compatible/R2 (prod), set via `MEDIA_STORAGE` env var
+- Media API: supports pagination (limit/offset), sorting (createdAt/title/size, asc/desc), search, folder/type filters
+- User deletion: prevents deleting the last admin account (not just self-deletion)
 
 ## Architecture Key Points
 
@@ -98,3 +100,5 @@ Read these before making structural changes:
 - `docs/planning/requirements.md` — Feature requirements
 - `docs/planning/roadmap.md` — Implementation phases
 - `docs/planning/tech-stack.md` — Technology choices
+- `docs/architecture/accessibility-checks.md` — WCAG AA content checks
+- `docs/architecture/seo-editor-tools.md` — SEO previews and scoring

@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { eq, asc } from 'drizzle-orm';
+import { eq, asc, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { getDb } from '../../db/index.js';
 import { users } from '../../db/schema/index.js';
@@ -101,6 +101,19 @@ app.delete('/:id', async (c) => {
   if (payload.sub === id) {
     return c.json({ errors: [{ code: 'FORBIDDEN', message: 'Cannot delete yourself' }] }, 403);
   }
+
+  // Check the target user exists and is an admin
+  const [target] = await db.select({ role: users.role }).from(users).where(eq(users.id, id)).limit(1);
+  if (!target) return c.json({ errors: [{ code: 'NOT_FOUND', message: 'User not found' }] }, 404);
+
+  // If deleting an admin, ensure at least one admin remains
+  if (target.role === 'admin') {
+    const [{ count }] = await db.select({ count: sql<number>`count(*)` }).from(users).where(eq(users.role, 'admin'));
+    if (count <= 1) {
+      return c.json({ errors: [{ code: 'FORBIDDEN', message: 'Cannot delete the last admin account' }] }, 403);
+    }
+  }
+
   await db.delete(users).where(eq(users.id, id));
   return c.json({ data: { deleted: true } });
 });

@@ -5,6 +5,7 @@
   import { api } from '$lib/api.js';
   import { toast } from '$lib/toast.svelte.js';
   import { auditPageAccessibility, type A11yIssue } from '$lib/a11y.js';
+  import { scorePage, type SeoCheck } from '$lib/seo.js';
   import { Circle, CheckCircle, Archive } from 'lucide-svelte';
   import Breadcrumb from '$lib/components/Breadcrumb.svelte';
   import MediaPicker from '$lib/components/MediaPicker.svelte';
@@ -43,6 +44,12 @@
       ? auditPageAccessibility(a11yRegions, pageData.regions, mediaCache)
       : []
   );
+  const seoChecks = $derived<SeoCheck[]>(
+    pageData
+      ? scorePage(pageData, a11yRegions, pageData.regions || {})
+      : []
+  );
+  const siteUrl = $derived(window.location.origin);
 
   const breadcrumbs = $derived([
     { label: 'Dashboard', href: '/' },
@@ -337,7 +344,7 @@
 
         <PageEditorSidebar
           {pageData} {id} {allMenus} {menuDetails} {revisions}
-          {a11yIssues}
+          {a11yIssues} {seoChecks} {siteUrl}
           bind:success bind:error
           onMenuDetailsReload={loadMenuDetails}
           onRevisionsReload={loadRevisions}

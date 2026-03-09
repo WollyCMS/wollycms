@@ -1,8 +1,12 @@
 <script lang="ts">
   import { api } from '$lib/api.js';
   import type { A11yIssue } from '$lib/a11y.js';
+  import type { SeoCheck } from '$lib/seo.js';
   import RevisionDiff from './RevisionDiff.svelte';
   import AccessibilityPanel from './AccessibilityPanel.svelte';
+  import SerpPreview from './SerpPreview.svelte';
+  import SocialPreview from './SocialPreview.svelte';
+  import SeoScorePanel from './SeoScorePanel.svelte';
   import { focusTrap } from '$lib/focusTrap.js';
 
   let {
@@ -12,6 +16,8 @@
     menuDetails,
     revisions,
     a11yIssues = [],
+    seoChecks = [],
+    siteUrl = '',
     success = $bindable(''),
     error = $bindable(''),
     onMenuDetailsReload,
@@ -25,6 +31,8 @@
     menuDetails: Record<number, any>;
     revisions: any[];
     a11yIssues?: A11yIssue[];
+    seoChecks?: SeoCheck[];
+    siteUrl?: string;
     success: string;
     error: string;
     onMenuDetailsReload: () => Promise<void>;
@@ -32,6 +40,12 @@
     onPageReload: () => void;
     onA11yNavigate?: (pbId: number) => void;
   } = $props();
+
+  let showSerpPreview = $state(false);
+  let showSocialPreview = $state(false);
+
+  const titleLen = $derived((pageData.metaTitle || '').length);
+  const descLen = $derived((pageData.metaDescription || '').length);
 
   let showMenuAdd = $state(false);
   let menuAddTarget = $state<number | null>(null);
@@ -183,8 +197,8 @@
     <input class="form-control" style="font-size: 0.85rem;" placeholder={pageData.title}
       value={pageData.metaTitle || ''}
       oninput={(e) => { pageData.metaTitle = (e.target as HTMLInputElement).value || null; }} />
-    <p style="font-size: 0.7rem; color: var(--c-text-light); margin-top: 0.15rem;">
-      {(pageData.metaTitle || pageData.title || '').length}/60 characters
+    <p class="char-count" class:char-good={titleLen >= 30 && titleLen <= 60} class:char-warn={titleLen > 0 && (titleLen < 30 || (titleLen > 60 && titleLen <= 70))} class:char-bad={titleLen > 70}>
+      {titleLen}/60 characters
     </p>
   </div>
   <div class="form-group" style="margin-bottom: 0.5rem;">
@@ -192,8 +206,8 @@
     <textarea class="form-control" style="font-size: 0.85rem; min-height: 60px;" placeholder="Page description for search engines..."
       value={pageData.metaDescription || ''}
       oninput={(e) => { pageData.metaDescription = (e.target as HTMLTextAreaElement).value || null; }}></textarea>
-    <p style="font-size: 0.7rem; color: var(--c-text-light); margin-top: 0.15rem;">
-      {(pageData.metaDescription || '').length}/160 characters
+    <p class="char-count" class:char-good={descLen >= 120 && descLen <= 160} class:char-warn={descLen > 0 && (descLen < 120 || (descLen > 160 && descLen <= 200))} class:char-bad={descLen > 200}>
+      {descLen}/160 characters
     </p>
   </div>
   <div class="form-group" style="margin-bottom: 0.5rem;">
@@ -208,7 +222,7 @@
       value={pageData.canonicalUrl || ''}
       oninput={(e) => { pageData.canonicalUrl = (e.target as HTMLInputElement).value || null; }} />
   </div>
-  <div class="form-group" style="margin-bottom: 0;">
+  <div class="form-group" style="margin-bottom: 0.5rem;">
     <label style="font-size: 0.8rem; font-weight: 600;">Robots</label>
     <select class="form-control" style="font-size: 0.85rem;"
       value={pageData.robots || ''}
@@ -219,6 +233,39 @@
       <option value="noindex, nofollow">noindex, nofollow</option>
     </select>
   </div>
+
+  <div class="seo-previews">
+    <button class="seo-preview-toggle" onclick={() => showSerpPreview = !showSerpPreview}>
+      {showSerpPreview ? 'Hide' : 'Show'} Google Preview
+    </button>
+    <button class="seo-preview-toggle" onclick={() => showSocialPreview = !showSocialPreview}>
+      {showSocialPreview ? 'Hide' : 'Show'} Social Preview
+    </button>
+  </div>
+
+  {#if showSerpPreview}
+    <div style="margin-top: 0.5rem;">
+      <SerpPreview
+        title={pageData.metaTitle || pageData.title || ''}
+        slug={pageData.slug || ''}
+        metaDescription={pageData.metaDescription || ''}
+        {siteUrl}
+      />
+    </div>
+  {/if}
+
+  {#if showSocialPreview}
+    <div style="margin-top: 0.5rem;">
+      <SocialPreview
+        title={pageData.metaTitle || pageData.title || ''}
+        metaDescription={pageData.metaDescription || ''}
+        ogImage={pageData.ogImage || ''}
+        {siteUrl}
+      />
+    </div>
+  {/if}
+
+  <SeoScorePanel checks={seoChecks} />
 </div>
 
 <div class="card" style="margin-bottom: 1rem;">
@@ -347,3 +394,50 @@
   <RevisionDiff current={getCurrentForDiff()} revision={diffRevision}
     onClose={() => diffRevision = null} onRestore={restoreRevision} />
 {/if}
+
+<style>
+  .char-count {
+    font-size: 0.7rem;
+    margin-top: 0.15rem;
+    color: var(--c-text-light, #94a3b8);
+  }
+
+  .char-good {
+    color: #16a34a;
+  }
+
+  .char-warn {
+    color: #d97706;
+  }
+
+  .char-bad {
+    color: #dc2626;
+  }
+
+  .seo-previews {
+    display: flex;
+    gap: 0.35rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--c-border, #e2e8f0);
+  }
+
+  .seo-preview-toggle {
+    flex: 1;
+    padding: 0.3rem 0.4rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    font-family: inherit;
+    color: var(--c-accent, #3182ce);
+    background: none;
+    border: 1px solid var(--c-border, #e2e8f0);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+  }
+
+  .seo-preview-toggle:hover {
+    background: rgba(49, 130, 206, 0.04);
+    border-color: var(--c-accent, #3182ce);
+  }
+</style>

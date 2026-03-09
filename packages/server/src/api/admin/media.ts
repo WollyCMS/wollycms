@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { eq, desc, sql, and, like, or, isNull } from 'drizzle-orm';
+import { eq, desc, asc, sql, and, like, or, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 import { getDb } from '../../db/index.js';
 import { media } from '../../db/schema/index.js';
@@ -64,6 +64,17 @@ app.get('/', async (c) => {
   const folder = c.req.query('folder');
   const limit = Math.min(parseInt(c.req.query('limit') || '50', 10), 100);
   const offset = parseInt(c.req.query('offset') || '0', 10);
+  const sort = c.req.query('sort') || 'createdAt';
+  const order = c.req.query('order') || 'desc';
+
+  const sortColumns: Record<string, any> = {
+    createdAt: media.createdAt,
+    title: media.title,
+    size: media.size,
+    originalName: media.originalName,
+  };
+  const sortCol = sortColumns[sort] || media.createdAt;
+  const orderFn = order === 'asc' ? asc : desc;
 
   const conditions = [];
   if (mimeFilter) conditions.push(like(media.mimeType, `%${escapeLike(mimeFilter)}%`));
@@ -76,7 +87,7 @@ app.get('/', async (c) => {
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
 
-  const rows = await db.select().from(media).where(where).orderBy(desc(media.createdAt)).limit(limit).offset(offset);
+  const rows = await db.select().from(media).where(where).orderBy(orderFn(sortCol)).limit(limit).offset(offset);
   const countResult = await db.select({ count: sql<number>`count(*)` }).from(media).where(where);
 
   // Add public URLs to each row

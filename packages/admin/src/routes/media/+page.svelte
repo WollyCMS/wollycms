@@ -15,6 +15,12 @@
   let newFolderName = $state('');
   let showNewFolder = $state(false);
   let total = $state(0);
+  let pageSize = $state(50);
+  let currentPage = $state(1);
+  let sortBy = $state('createdAt');
+  let sortOrder = $state<'asc' | 'desc'>('desc');
+
+  const totalPages = $derived(Math.max(1, Math.ceil(total / pageSize)));
 
   async function load() {
     try {
@@ -22,11 +28,31 @@
       if (searchQuery) params.set('search', searchQuery);
       if (activeFolder !== null) params.set('folder', activeFolder);
       if (activeType) params.set('type', activeType);
+      params.set('limit', String(pageSize));
+      params.set('offset', String((currentPage - 1) * pageSize));
+      params.set('sort', sortBy);
+      params.set('order', sortOrder);
       const qs = params.toString();
       const res = await api.get<{ data: any[]; meta: { total: number } }>(`/media${qs ? '?' + qs : ''}`);
       items = res.data;
       total = res.meta.total;
     } catch (err: any) { error = err.message; }
+  }
+
+  function goToPage(page: number) {
+    currentPage = Math.max(1, Math.min(page, totalPages));
+    load();
+  }
+
+  function changeSort(field: string) {
+    if (sortBy === field) {
+      sortOrder = sortOrder === 'desc' ? 'asc' : 'desc';
+    } else {
+      sortBy = field;
+      sortOrder = field === 'title' || field === 'originalName' ? 'asc' : 'desc';
+    }
+    currentPage = 1;
+    load();
   }
 
   async function loadFolders() {
@@ -40,17 +66,20 @@
 
   function onSearch(value: string) {
     searchQuery = value;
+    currentPage = 1;
     clearTimeout(searchDebounce);
     searchDebounce = setTimeout(load, 300);
   }
 
   function selectFolder(folder: string | null) {
     activeFolder = folder;
+    currentPage = 1;
     load();
   }
 
   function selectType(type: string | null) {
     activeType = type;
+    currentPage = 1;
     load();
   }
 
@@ -200,8 +229,27 @@
         value={searchQuery}
         oninput={(e) => onSearch((e.target as HTMLInputElement).value)}
         style="max-width: 320px;"
+        aria-label="Search media"
       />
-      <span class="media-count">{total} item{total !== 1 ? 's' : ''}</span>
+      <div class="media-toolbar-right">
+        <select class="form-control form-control-sm" value={`${sortBy}:${sortOrder}`}
+          aria-label="Sort media"
+          onchange={(e) => {
+            const [field, ord] = (e.target as HTMLSelectElement).value.split(':');
+            sortBy = field;
+            sortOrder = ord as 'asc' | 'desc';
+            currentPage = 1;
+            load();
+          }}>
+          <option value="createdAt:desc">Newest first</option>
+          <option value="createdAt:asc">Oldest first</option>
+          <option value="title:asc">Title A-Z</option>
+          <option value="title:desc">Title Z-A</option>
+          <option value="size:desc">Largest first</option>
+          <option value="size:asc">Smallest first</option>
+        </select>
+        <span class="media-count">{total} item{total !== 1 ? 's' : ''}</span>
+      </div>
     </div>
 
     <div class="media-grid">
@@ -238,6 +286,20 @@
         </div>
       {/if}
     </div>
+
+    {#if totalPages > 1}
+      <nav class="pagination" aria-label="Media pagination">
+        <button class="pagination-btn" disabled={currentPage <= 1} onclick={() => goToPage(currentPage - 1)} aria-label="Previous page">&lsaquo;</button>
+        {#each Array.from({ length: totalPages }, (_, i) => i + 1) as p}
+          {#if totalPages <= 7 || p === 1 || p === totalPages || (p >= currentPage - 1 && p <= currentPage + 1)}
+            <button class="pagination-btn" class:active={p === currentPage} onclick={() => goToPage(p)}>{p}</button>
+          {:else if p === currentPage - 2 || p === currentPage + 2}
+            <span class="pagination-ellipsis">&hellip;</span>
+          {/if}
+        {/each}
+        <button class="pagination-btn" disabled={currentPage >= totalPages} onclick={() => goToPage(currentPage + 1)} aria-label="Next page">&rsaquo;</button>
+      </nav>
+    {/if}
   </div>
 </div>
 
@@ -344,10 +406,73 @@
     margin-bottom: 1rem;
   }
 
+  .media-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-left: auto;
+  }
+
+  .media-toolbar-right .form-control-sm {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.82rem;
+    width: auto;
+  }
+
   .media-count {
     font-size: 0.85rem;
     color: var(--c-text-light);
     white-space: nowrap;
+  }
+
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--c-border, #e2e8f0);
+  }
+
+  .pagination-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 0.4rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    font-family: inherit;
+    border: 1px solid var(--c-border, #e2e8f0);
+    border-radius: var(--radius, 6px);
+    background: #fff;
+    color: var(--c-text, #2d3748);
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+
+  .pagination-btn:hover:not(:disabled) {
+    border-color: var(--c-accent, #3182ce);
+    color: var(--c-accent, #3182ce);
+  }
+
+  .pagination-btn.active {
+    background: var(--c-accent, #3182ce);
+    border-color: var(--c-accent, #3182ce);
+    color: #fff;
+  }
+
+  .pagination-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .pagination-ellipsis {
+    font-size: 0.82rem;
+    color: var(--c-text-light, #94a3b8);
+    padding: 0 0.2rem;
   }
 
   .media-grid {
