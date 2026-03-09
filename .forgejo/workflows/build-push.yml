@@ -36,7 +36,7 @@ jobs:
       - name: Login to Forgejo Container Registry
         uses: docker/login-action@v3
         with:
-          registry: forgejo.home.cwolly.com
+          registry: ${{ vars.REGISTRY_HOST }}
           username: ${{ github.repository_owner }}
           password: ${{ secrets.REGISTRY_TOKEN }}
 
@@ -44,7 +44,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: forgejo.home.cwolly.com/chad/wollycms
+          images: ${{ vars.REGISTRY_HOST }}/${{ github.repository_owner }}/wollycms
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha,prefix=

@@ -1,0 +1,41 @@
+# WollyCMS — Cloudflare Workers deployment configuration
+#
+# Copy to wrangler.toml and fill in your values.
+#
+# Prerequisites:
+#   1. Create D1 database:  wrangler d1 create wollycms-db
+#   2. Create R2 bucket:    wrangler r2 create wollycms-media
+#   3. Set secrets:         wrangler secret put JWT_SECRET
+#   4. Build:               npm run build:worker
+#   5. Deploy:              wrangler deploy
+
+name = "wollycms"
+main = "packages/server/dist-worker/worker.js"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Serve the admin UI as static assets
+# Asset layer handles SPA routing; Worker only runs for API routes.
+[assets]
+directory = "packages/admin/build-assets"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/*", "/media/*"]
+
+# D1 SQLite database
+[[d1_databases]]
+binding = "DB"
+database_name = "wollycms-db"
+database_id = "<your-d1-database-id>"
+
+# R2 object storage for media
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "wollycms-media"
+
+# Environment variables (non-secret)
+[vars]
+NODE_ENV = "production"
+DATABASE_URL = "d1:DB"
+MEDIA_STORAGE = "r2"
+CORS_ORIGINS = "https://your-site.example.com"
+SITE_URL = "https://your-site.example.com"

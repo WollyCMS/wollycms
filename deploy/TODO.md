@@ -1,75 +1,45 @@
-# WollyCMS Deployment TODO
+# WollyCMS Deployment Checklist
 
 ## Phase A: CI/CD Pipeline
-- [x] Add `REGISTRY_TOKEN` secret to WollyCms repo on Forgejo
-- [x] Push code to trigger first CI build
-- [x] Fix CI issues (lowercase image name, Dockerfile node_modules, TS strict errors)
-- [ ] Verify Docker image appears in Forgejo container registry (**check in morning — build was running at end of session**)
+- [ ] Add `REGISTRY_TOKEN` secret to your repo settings
+- [ ] Set `REGISTRY_HOST` variable in repo settings (your container registry hostname)
+- [ ] Push code to trigger first CI build
+- [ ] Verify Docker image appears in container registry
 - [ ] Verify tests pass in CI
 
-## Phase B: Mothership Deployment
-- [x] Create `/srv/compose/wollycms/` directory on mothership
-- [x] Copy `compose.yaml` to mothership
-- [x] Create `.env` with generated JWT_SECRET
-- [x] Create `/tank/appdata/wollycms/data/` and `uploads/` directories
-- [ ] Login to Forgejo registry on mothership (`docker login`) — may already be logged in
+## Phase B: Server Deployment
+- [ ] Create compose directory on server (e.g., `/srv/compose/wollycms/`)
+- [ ] Copy `compose.yaml` to server
+- [ ] Create `.env` with generated JWT_SECRET (see `.env.example`)
+- [ ] Create data and uploads directories
+- [ ] Login to container registry on server (`docker login`)
 - [ ] `docker compose up -d` and verify container starts
 - [ ] Verify health endpoint: `curl http://localhost:4321/api/health`
 
-## Phase C: Caddy + DNS
-- [ ] Add `wollycms.home.cwolly.com` block to Caddyfile (snippet in `deploy/caddy-snippet.txt`)
-- [ ] Reload Caddy
-- [ ] Add DNS record for `wollycms.home.cwolly.com` in Pi-hole/Cloudflare
-- [ ] Verify admin UI accessible at `https://wollycms.home.cwolly.com`
+## Phase C: Reverse Proxy + DNS
+- [ ] Add reverse proxy rule for WollyCMS (see `caddy-snippet.txt` for Caddy example)
+- [ ] Reload reverse proxy
+- [ ] Add DNS record pointing to your server
+- [ ] Verify admin UI accessible via HTTPS
 
 ## Phase D: Initial Content Setup
-- [ ] Visit admin URL → onboarding page creates first admin account
-- [ ] Set up content types for cwolly.com (blog posts, pages)
+- [ ] Visit admin URL — onboarding page creates first admin account
+- [ ] Set up content types
 - [ ] Create initial block types (hero, rich text, code block, etc.)
 - [ ] Create a few test pages/posts
 
-## Phase E: cwolly.com Astro Site (separate project)
-- [ ] Create new Astro project for cwolly.com
-- [ ] Design site theme (personal blog/portfolio)
+## Phase E: Astro Frontend Site (separate project)
+- [ ] Create new Astro project
 - [ ] Wire up WollyCMS content API fetching at build time
-- [ ] Deploy to Cloudflare Pages
-- [ ] Configure custom domain `cwolly.com` in Cloudflare Pages
-- [ ] Set `WOLLY_API_URL` environment variable in Cloudflare Pages
+- [ ] Deploy to your hosting provider
+- [ ] Set `WOLLY_API_URL` environment variable
 
 ## Phase F: Webhook Integration
-- [ ] Get Cloudflare Pages deploy hook URL
+- [ ] Get deploy hook URL from your hosting provider
 - [ ] Add webhook in WollyCMS admin pointing to deploy hook
-- [ ] Test: publish a page in WollyCMS, verify cwolly.com rebuilds
-- [ ] Verify full content pipeline: edit in admin -> publish -> site updates
+- [ ] Test: publish a page in WollyCMS, verify site rebuilds
 
 ## Phase G: Hardening
-- [ ] Add `/tank/appdata/wollycms/` to backup paths
-- [ ] Verify Watchtower picks up new images automatically
-- [ ] Update mothership environment.md with WollyCMS entry
+- [ ] Add data/uploads directories to backup paths
+- [ ] Verify Watchtower picks up new images automatically (if using Watchtower)
 - [ ] Test recovery: stop container, restart, verify data persists
-
-## Notes
-- WollyCMS port: 4321 (internal only, behind Caddy)
-- Admin UI: wollycms.home.cwolly.com (internal, home network + Tailscale)
-- Public site: cwolly.com (Cloudflare Pages, static Astro)
-- Database: SQLite at /tank/appdata/wollycms/data/wolly.db
-- Media: /tank/appdata/wollycms/uploads/
-
-## Session Notes (March 6, 2026)
-- Renamed project from SpacelyCMS → WollyCMS (420 occurrences, 74 files)
-- Purchased wollycms.com domain
-- Forgejo repo renamed to WollyCms
-- Fixed 25+ TypeScript strict mode errors that prevented Docker build
-- Fixed Dockerfile: removed non-existent packages/server/node_modules COPY
-- Fixed CI: hardcoded lowercase image name (Docker rejects mixed case)
-- Last CI build pushed at end of session — **check if image landed in registry**
-- If build failed again, check Forgejo Actions logs for the error
-- compose.yaml and .env already on mothership at /srv/compose/wollycms/
-- Next step: verify image in registry → `docker compose up -d` → Caddy → test admin UI
-
-## Session Notes (March 7, 2026)
-- CI build succeeded, container running on mothership
-- Caddy + DNS already working (wollycms.home.cwolly.com resolves)
-- **Fix: SvelteKit base path routing** — `goto()` and `<a href>` in admin SPA used absolute paths (`/login`) instead of `${base}/login` (`/admin/login`), causing 404s. Fixed in `+layout.svelte`, `login/+page.svelte`, `GlobalSearch.svelte`.
-- **Fix: First-run onboarding** — Server returned 500 on login because DB had no tables/users. Added auto-migration on startup + `/setup` onboarding page (no more hardcoded default creds).
-- Removed default admin credentials (admin@wollycms.local / admin123) — first admin is now created via onboarding UI

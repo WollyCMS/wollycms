@@ -50,3 +50,6 @@ npm-debug.log*
 
 # Uploads (managed by media system)
 uploads/
+
+# Cloudflare
+wrangler.toml

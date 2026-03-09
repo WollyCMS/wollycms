@@ -3,10 +3,10 @@
 ## Architecture
 
 ```
-Mothership (internal)                Cloudflare (public)
+Internal Server                      Public CDN / Hosting
 ──────────────────────               ──────────────────
-WollyCMS API (Docker)                Cloudflare Pages
-wollycms.home.cwolly.com:4321        cwolly.com
+WollyCMS API (Docker)                Static Site Host
+wollycms.internal:4321               your-site.example.com
   |                                    ^
   +-- webhook on content publish ----->+ triggers rebuild
                                        |
@@ -14,41 +14,45 @@ wollycms.home.cwolly.com:4321        cwolly.com
                                   fetches from WollyCMS API
 ```
 
-- WollyCMS server runs on mothership as a Docker container (internal only)
-- Admin UI served by the same container at wollycms.home.cwolly.com
-- Astro site (cwolly.com) deployed as static HTML to Cloudflare Pages
-- Content changes trigger a Cloudflare Pages deploy hook via WollyCMS webhooks
+- WollyCMS server runs as a Docker container (internal only)
+- Admin UI served by the same container
+- Astro site deployed as static HTML to your hosting provider
+- Content changes trigger a deploy hook via WollyCMS webhooks
 
 ## Prerequisites
 
-- Forgejo repo: `chad/WollyCms`
-- Forgejo runner operational
-- `REGISTRY_TOKEN` secret set in Forgejo repo settings
-- Docker + Docker Compose on mothership
+- Git repo hosting (Forgejo, Gitea, GitHub, etc.)
+- CI runner operational
+- `REGISTRY_TOKEN` secret set in repo settings
+- Docker + Docker Compose on your server
 
-## Step 1: Set Up Forgejo CI
+## Step 1: Set Up CI
 
 The workflow at `.forgejo/workflows/build-push.yml` handles this automatically.
 On push to `main`:
 1. Runs tests (npm test)
 2. Builds Docker image from Dockerfile
-3. Pushes to `forgejo.home.cwolly.com/chad/wollycms:latest`
+3. Pushes to your container registry
 
-### Required Forgejo Secret
+### Required CI Secrets
 
-Go to WollyCms repo > Settings > Actions > Secrets and add:
-- `REGISTRY_TOKEN`: Your Forgejo access token with `package:write` scope
+In your repo settings, add:
+- `REGISTRY_TOKEN`: Access token with `package:write` scope
 
-## Step 2: Deploy on Mothership
+### Required CI Variables
+
+- `REGISTRY_HOST`: Your container registry hostname (e.g., `registry.example.com`)
+
+## Step 2: Deploy on Server
 
 ```bash
-# SSH into mothership
-ssh mothership
+# SSH into your server
+ssh your-server
 
 # Create compose directory
 sudo mkdir -p /srv/compose/wollycms
-sudo mkdir -p /tank/appdata/wollycms/data
-sudo mkdir -p /tank/appdata/wollycms/uploads
+sudo mkdir -p /path/to/appdata/wollycms/data
+sudo mkdir -p /path/to/appdata/wollycms/uploads
 
 # Copy compose.yaml (from this repo's deploy/ folder, or create manually)
 sudo cp compose.yaml /srv/compose/wollycms/compose.yaml
@@ -56,12 +60,12 @@ sudo cp compose.yaml /srv/compose/wollycms/compose.yaml
 # Create .env with production secrets
 sudo tee /srv/compose/wollycms/.env << 'EOF'
 JWT_SECRET=<generate with: openssl rand -base64 32>
-CORS_ORIGINS=https://cwolly.com
-SITE_URL=https://cwolly.com
+CORS_ORIGINS=https://your-site.example.com
+SITE_URL=https://your-site.example.com
 EOF
 
-# Login to Forgejo registry (first time only)
-docker login forgejo.home.cwolly.com
+# Login to your container registry (first time only)
+docker login your-registry.example.com
 
 # Start the service
 cd /srv/compose/wollycms
@@ -72,51 +76,44 @@ docker logs wollycms-wollycms-1 --follow
 curl http://localhost:4321/api/health
 ```
 
-## Step 3: Add Caddy Route
+## Step 3: Add Reverse Proxy Route
 
-Edit `/srv/compose/caddy/Caddyfile` and add:
+Example using Caddy:
 
 ```
-wollycms.home.cwolly.com {
-    import home_tls
+wollycms.internal {
     reverse_proxy host.docker.internal:4321
 }
 ```
 
-Then reload Caddy:
+Then reload:
 ```bash
 docker exec caddy caddy reload --config /etc/caddy/Caddyfile
 ```
 
 ## Step 4: Initial Setup
 
-1. Open `https://wollycms.home.cwolly.com` in browser
+1. Open your WollyCMS admin URL in browser
 2. Log in with default credentials: `admin@wollycms.local` / `admin123`
 3. **Immediately change the password** via the admin UI
-4. Create your content types, blocks, and pages for cwolly.com
+4. Create your content types, blocks, and pages
 
-## Step 5: Cloudflare Pages (cwolly.com Astro site)
+## Step 5: Astro Frontend Site
 
-This is a separate repo/project. See the cwolly.com project for details.
+This is a separate repo/project:
 
-1. Create Astro site repo on Forgejo
-2. Connect Cloudflare Pages to the repo (or use Wrangler CLI to deploy)
-3. Set environment variable `WOLLY_API_URL=https://wollycms.home.cwolly.com`
+1. Create Astro site repo
+2. Deploy to your hosting provider (Cloudflare Pages, Vercel, Netlify, etc.)
+3. Set environment variable `WOLLY_API_URL=https://wollycms.internal`
 4. In WollyCMS admin, add a webhook:
-   - URL: Cloudflare Pages deploy hook URL
+   - URL: Your hosting provider's deploy hook URL
    - Events: `page.published`, `page.updated`, `page.deleted`
    - This triggers a site rebuild when content changes
-
-## Step 6: DNS (Cloudflare)
-
-In Cloudflare dashboard for cwolly.com:
-- Cloudflare Pages deployment handles DNS automatically
-- No A record needed — Pages provides its own domain routing
 
 ## Watchtower Auto-Updates
 
 The compose.yaml includes the watchtower label. When you push to main:
-1. Forgejo CI builds and pushes new image
+1. CI builds and pushes new image
 2. Watchtower detects the update (hourly check)
 3. Container is automatically restarted with the new image
 
@@ -130,20 +127,19 @@ docker compose pull && docker compose up -d
 
 | Service | Port | Access |
 |---------|------|--------|
-| WollyCMS API + Admin | 4321 | wollycms.home.cwolly.com (internal) |
+| WollyCMS API + Admin | 4321 | Internal only (behind reverse proxy) |
 
 ## Data Locations
 
 | Path | Contents |
 |------|----------|
-| `/tank/appdata/wollycms/data/` | SQLite database (wolly.db) |
-| `/tank/appdata/wollycms/uploads/` | Uploaded media files |
+| `/path/to/appdata/wollycms/data/` | SQLite database (wolly.db) |
+| `/path/to/appdata/wollycms/uploads/` | Uploaded media files |
 
 ## Backup
 
-The SQLite database and uploads directory are under `/tank/appdata/wollycms/`.
-Add to existing backup strategy:
+The SQLite database and uploads directory should be included in your backup strategy:
 ```bash
-# Add to restic backup paths
-/tank/appdata/wollycms/
+# Example: add to restic/borg backup paths
+/path/to/appdata/wollycms/
 ```

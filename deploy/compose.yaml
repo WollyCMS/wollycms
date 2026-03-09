@@ -1,6 +1,6 @@
 services:
   wollycms:
-    image: forgejo.home.cwolly.com/chad/wollycms:latest
+    image: your-registry.example.com/your-user/wollycms:latest
     ports:
       - 4321:4321
     environment:
@@ -12,10 +12,10 @@ services:
       - MEDIA_DIR=./uploads
       - JWT_SECRET=${JWT_SECRET}
       - CORS_ORIGINS=${CORS_ORIGINS:-*}
-      - SITE_URL=${SITE_URL:-https://cwolly.com}
+      - SITE_URL=${SITE_URL:-https://your-site.example.com}
     volumes:
-      - /tank/appdata/wollycms/data:/app/data
-      - /tank/appdata/wollycms/uploads:/app/uploads
+      - ./data:/app/data
+      - ./uploads:/app/uploads
     healthcheck:
       test:
         - CMD
