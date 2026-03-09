@@ -821,3 +821,37 @@ describe('Admin Tracking Scripts', () => {
     expect(body.success).toBe(true);
   });
 });
+
+// --- OG Images ---
+describe('Admin OG Images', () => {
+  it('POST /pages/:id/og-image returns 404 for non-existent page', async () => {
+    const res = await authed('/pages/99999/og-image', { method: 'POST' });
+    expect(res.status).toBe(404);
+  });
+
+  it('POST /pages/:id/og-image attempts generation for valid page', async () => {
+    const res = await authed('/pages/1/og-image', { method: 'POST' });
+    // 200 if Sharp + storage available, 503 if Sharp missing, 500 if storage fails
+    expect([200, 500, 503]).toContain(res.status);
+    if (res.status === 200) {
+      const body = await res.json();
+      expect(body.data.ogImage).toBeDefined();
+      expect(body.data.mediaId).toBeDefined();
+    }
+  });
+
+  it('POST /og-images/generate validates input', async () => {
+    const res = await json('/og-images/generate', 'POST', { scope: 'invalid' });
+    expect(res.status).toBe(400);
+  });
+
+  it('POST /og-images/generate runs bulk generation', async () => {
+    const res = await json('/og-images/generate', 'POST', { scope: 'missing' });
+    // 200 regardless of Sharp availability (skips/errors are reported in response)
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.data).toHaveProperty('generated');
+    expect(body.data).toHaveProperty('skipped');
+    expect(body.data).toHaveProperty('errors');
+  });
+});

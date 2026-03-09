@@ -216,6 +216,37 @@ async function main() {
       break;
     }
 
+    case 'og:generate': {
+      const { getDb } = await import('./db/index.js');
+      const { bulkGenerateOgImages } = await import('./og/generate.js');
+      getDb(); // ensure DB is initialized
+
+      const args = process.argv.slice(3);
+      const force = args.includes('--force');
+      const dryRun = args.includes('--dry-run');
+      const typeIdx = args.indexOf('--type');
+      const contentTypeSlug = typeIdx > -1 ? args[typeIdx + 1] : undefined;
+
+      console.log(`OG Image Generation${dryRun ? ' (dry run)' : ''}`);
+      console.log(`  Mode: ${force ? 'regenerate all' : 'missing only'}`);
+      if (contentTypeSlug) console.log(`  Content type: ${contentTypeSlug}`);
+      console.log('');
+
+      const result = await bulkGenerateOgImages({
+        force,
+        dryRun,
+        contentTypeSlug,
+      });
+
+      console.log('');
+      console.log(`Done. Generated: ${result.generated}, Skipped: ${result.skipped}`);
+      if (result.errors.length > 0) {
+        console.log(`Errors: ${result.errors.length}`);
+        for (const err of result.errors) console.log(`  - ${err}`);
+      }
+      break;
+    }
+
     case 'health': {
       const { env } = await import('./env.js');
       const url = `http://${env.HOST === '0.0.0.0' ? 'localhost' : env.HOST}:${env.PORT}/api/health`;
@@ -242,6 +273,7 @@ Commands:
   export               Export all data as JSON to stdout
   import <file>        Import data from a JSON backup file
   types generate       Generate TypeScript types from CMS schemas
+  og:generate          Generate OG images for published pages
   health               Check server health status
 
 Examples:
@@ -249,7 +281,11 @@ Examples:
   wolly seed
   wolly export > backup.json
   wolly import backup.json
-  wolly types generate --output src/wolly-types.d.ts`);
+  wolly types generate --output src/wolly-types.d.ts
+  wolly og:generate                    # pages missing OG images
+  wolly og:generate --force            # regenerate all
+  wolly og:generate --type=blog        # specific content type
+  wolly og:generate --dry-run          # preview without generating`);
       if (command) {
         console.error(`\nUnknown command: ${command}`);
         process.exit(1);

@@ -287,6 +287,19 @@ app.put('/:id', async (c) => {
   // Detect publish/unpublish transitions
   if (parsed.data.status === 'published' && existing.status !== 'published') {
     fireWebhooks('page.published', { id, title: updated.title, slug: updated.slug });
+
+    // Auto-generate OG image on first publish if none exists
+    if (!updated.ogImage) {
+      const [ct] = await db.select({ name: contentTypes.name }).from(contentTypes).where(eq(contentTypes.id, updated.typeId)).limit(1);
+      import('../../og/generate.js').then(({ generateAndStoreOgImage }) => {
+        generateAndStoreOgImage(id, {
+          title: updated.metaTitle || updated.title,
+          description: updated.metaDescription,
+          siteName: 'WollyCMS',
+          contentType: ct?.name,
+        }, updated.slug).catch(() => { /* best-effort */ });
+      }).catch(() => {});
+    }
   } else if (parsed.data.status && parsed.data.status !== 'published' && existing.status === 'published') {
     fireWebhooks('page.unpublished', { id, title: updated.title, slug: updated.slug });
   }

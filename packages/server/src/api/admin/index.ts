@@ -21,6 +21,7 @@ import apiKeysRouter from './api-keys.js';
 import auditRouter from './audit.js';
 import searchRouter from './search.js';
 import trackingScriptsRouter from './tracking-scripts.js';
+import ogImagesRouter from './og-images.js';
 import setupRouter from './setup.js';
 
 const app = new Hono();
@@ -62,5 +63,6 @@ app.route('/api-keys', apiKeysRouter);
 app.route('/audit-logs', auditRouter);
 app.route('/search', searchRouter);
 app.route('/tracking-scripts', trackingScriptsRouter);
+app.route('/', ogImagesRouter);
 
 export default app;

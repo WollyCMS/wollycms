@@ -1,5 +1,6 @@
 <script lang="ts">
   import { api } from '$lib/api.js';
+  import { toast } from '$lib/toast.svelte.js';
   import type { A11yIssue } from '$lib/a11y.js';
   import type { SeoCheck } from '$lib/seo.js';
   import RevisionDiff from './RevisionDiff.svelte';
@@ -8,6 +9,21 @@
   import SocialPreview from './SocialPreview.svelte';
   import SeoScorePanel from './SeoScorePanel.svelte';
   import { focusTrap } from '$lib/focusTrap.js';
+
+  let ogGenerating = $state(false);
+
+  async function generateOgImage() {
+    ogGenerating = true;
+    try {
+      const res = await api.post<{ data: { ogImage: string } }>(`/pages/${id}/og-image`);
+      pageData.ogImage = res.data.ogImage;
+      toast.success('OG image generated.');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to generate OG image');
+    } finally {
+      ogGenerating = false;
+    }
+  }
 
   let {
     pageData,
@@ -211,8 +227,25 @@
     </p>
   </div>
   <div class="form-group" style="margin-bottom: 0.5rem;">
-    <label style="font-size: 0.8rem; font-weight: 600;">OG Image URL</label>
-    <input class="form-control mono" style="font-size: 0.8rem;" placeholder="https://..."
+    <label style="font-size: 0.8rem; font-weight: 600;">OG Image</label>
+    {#if pageData.ogImage}
+      <div class="og-preview">
+        <img src={pageData.ogImage} alt="OG preview" class="og-thumb" />
+        <div class="og-actions">
+          <button class="btn btn-sm btn-outline" onclick={generateOgImage} disabled={ogGenerating}>
+            {ogGenerating ? 'Generating...' : 'Regenerate'}
+          </button>
+          <button class="btn btn-sm btn-danger" style="padding: 0.2rem 0.5rem; font-size: 0.72rem;"
+            onclick={() => { pageData.ogImage = null; }}>Remove</button>
+        </div>
+      </div>
+    {:else}
+      <button class="btn btn-sm btn-outline" style="width: 100%; margin-bottom: 0.35rem;"
+        onclick={generateOgImage} disabled={ogGenerating}>
+        {ogGenerating ? 'Generating...' : 'Auto-generate OG Image'}
+      </button>
+    {/if}
+    <input class="form-control mono" style="font-size: 0.75rem;" placeholder="Or paste URL manually..."
       value={pageData.ogImage || ''}
       oninput={(e) => { pageData.ogImage = (e.target as HTMLInputElement).value || null; }} />
   </div>
@@ -439,5 +472,21 @@
   .seo-preview-toggle:hover {
     background: rgba(49, 130, 206, 0.04);
     border-color: var(--c-accent, #3182ce);
+  }
+
+  .og-preview {
+    margin-bottom: 0.35rem;
+  }
+
+  .og-thumb {
+    width: 100%;
+    border-radius: 4px;
+    border: 1px solid var(--c-border, #e2e8f0);
+    margin-bottom: 0.35rem;
+  }
+
+  .og-actions {
+    display: flex;
+    gap: 0.35rem;
   }
 </style>
