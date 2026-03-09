@@ -19,12 +19,12 @@ export interface SatoriNode {
   };
 }
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
 let fontsCache: Array<{ name: string; data: ArrayBuffer; weight: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900; style: 'normal' | 'italic' }> | null = null;
 
 function loadFonts() {
   if (fontsCache) return fontsCache;
+  // Resolve __dirname lazily — import.meta.url is undefined on Workers
+  const __dirname = dirname(fileURLToPath(import.meta.url));
   const regular = readFileSync(join(__dirname, 'fonts', 'Inter-Regular.woff2'));
   const bold = readFileSync(join(__dirname, 'fonts', 'Inter-Bold.woff2'));
   fontsCache = [
