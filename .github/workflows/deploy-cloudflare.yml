@@ -50,6 +50,7 @@ jobs:
         run: |
           mkdir -p packages/admin/build-assets/admin
           cp -r packages/admin/build/* packages/admin/build-assets/admin/
+          cp packages/admin/build/index.html packages/admin/build-assets/index.html
 
       - name: Build worker
         run: npm run build:worker
