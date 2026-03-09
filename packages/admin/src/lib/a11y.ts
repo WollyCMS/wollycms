@@ -9,13 +9,22 @@ export interface A11yIssue {
   field?: string;
 }
 
+/** Check if a TipTap node has any visible text content */
+function hasTextContent(node: any): boolean {
+  if (node.type === 'text' && node.text?.trim()) return true;
+  if (node.content) {
+    return node.content.some((child: any) => hasTextContent(child));
+  }
+  return false;
+}
+
 /** Extract heading nodes from a TipTap JSON document */
-function extractHeadings(doc: any): { level: number }[] {
-  const headings: { level: number }[] = [];
+function extractHeadings(doc: any): { level: number; empty: boolean }[] {
+  const headings: { level: number; empty: boolean }[] = [];
   if (!doc?.content) return headings;
   for (const node of doc.content) {
     if (node.type === 'heading' && node.attrs?.level) {
-      headings.push({ level: node.attrs.level });
+      headings.push({ level: node.attrs.level, empty: !hasTextContent(node) });
     }
   }
   return headings;
@@ -64,7 +73,7 @@ export function checkHeadingHierarchy(
   const issues: A11yIssue[] = [];
 
   // Collect all headings in page order (across regions)
-  const allHeadings: { level: number; region: string; pbId: number; field: string }[] = [];
+  const allHeadings: { level: number; empty: boolean; region: string; pbId: number; field: string }[] = [];
 
   for (const region of regions) {
     const blocks = pageRegions?.[region.name] || [];
@@ -75,6 +84,7 @@ export function checkHeadingHierarchy(
           for (const h of extractHeadings(value)) {
             allHeadings.push({
               level: h.level,
+              empty: h.empty,
               region: region.name,
               pbId: block.pb_id,
               field: fieldName,
@@ -85,9 +95,19 @@ export function checkHeadingHierarchy(
     }
   }
 
-  // Check for skipped levels
+  // Check for skipped levels and empty headings
   let prevLevel = 1; // page title is the implicit H1
   for (const h of allHeadings) {
+    if (h.empty) {
+      issues.push({
+        type: 'warning',
+        code: 'heading-empty',
+        message: `Empty H${h.level} — heading has no text content`,
+        region: h.region,
+        blockPbId: h.pbId,
+        field: h.field,
+      });
+    }
     if (h.level > prevLevel + 1) {
       issues.push({
         type: 'warning',

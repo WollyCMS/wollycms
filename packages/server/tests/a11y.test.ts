@@ -70,6 +70,53 @@ describe('checkHeadingHierarchy', () => {
     expect(issues[0].message).toContain('H3 follows H1');
   });
 
+  it('detects empty heading with no text content', () => {
+    const pageRegions = {
+      hero: [],
+      content: [{
+        pb_id: 1,
+        fields: {
+          body: makeDoc(heading(2)),
+        },
+      }],
+    };
+    const issues = checkHeadingHierarchy(regions, pageRegions);
+    expect(issues.some(i => i.code === 'heading-empty')).toBe(true);
+    expect(issues.find(i => i.code === 'heading-empty')!.message).toContain('Empty H2');
+  });
+
+  it('detects empty heading with whitespace-only text', () => {
+    const pageRegions = {
+      hero: [],
+      content: [{
+        pb_id: 1,
+        fields: {
+          body: makeDoc({
+            type: 'heading',
+            attrs: { level: 3 },
+            content: [{ type: 'text', text: '   ' }],
+          }),
+        },
+      }],
+    };
+    const issues = checkHeadingHierarchy(regions, pageRegions);
+    expect(issues.some(i => i.code === 'heading-empty')).toBe(true);
+  });
+
+  it('does not flag heading with text as empty', () => {
+    const pageRegions = {
+      hero: [],
+      content: [{
+        pb_id: 1,
+        fields: {
+          body: makeDoc(heading(2, 'Real Content')),
+        },
+      }],
+    };
+    const issues = checkHeadingHierarchy(regions, pageRegions);
+    expect(issues.some(i => i.code === 'heading-empty')).toBe(false);
+  });
+
   it('checks across multiple blocks and regions', () => {
     const pageRegions = {
       hero: [{
