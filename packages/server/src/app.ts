@@ -185,7 +185,9 @@ if (getStorage().isExternal) {
       c.header('Content-Disposition', 'attachment');
     }
 
-    return c.body(fileData);
+    const ab = new ArrayBuffer(fileData.byteLength);
+    new Uint8Array(ab).set(fileData);
+    return c.body(ab);
   });
 }
 

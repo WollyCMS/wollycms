@@ -3,6 +3,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
 import { defaultTemplate, type OgTemplateData } from './template.js';
+export type { OgTemplateData } from './template.js';
 import { getStorage } from '../media/storage.js';
 import { getDb } from '../db/index.js';
 import { media, pages } from '../db/schema/index.js';
@@ -20,15 +21,15 @@ export interface SatoriNode {
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-let fontsCache: Array<{ name: string; data: ArrayBuffer; weight: number; style: string }> | null = null;
+let fontsCache: Array<{ name: string; data: ArrayBuffer; weight: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900; style: 'normal' | 'italic' }> | null = null;
 
 function loadFonts() {
   if (fontsCache) return fontsCache;
   const regular = readFileSync(join(__dirname, 'fonts', 'Inter-Regular.woff2'));
   const bold = readFileSync(join(__dirname, 'fonts', 'Inter-Bold.woff2'));
   fontsCache = [
-    { name: 'Inter', data: regular.buffer.slice(regular.byteOffset, regular.byteOffset + regular.byteLength), weight: 400, style: 'normal' },
-    { name: 'Inter', data: bold.buffer.slice(bold.byteOffset, bold.byteOffset + bold.byteLength), weight: 700, style: 'normal' },
+    { name: 'Inter', data: regular.buffer.slice(regular.byteOffset, regular.byteOffset + regular.byteLength), weight: 400 as const, style: 'normal' as const },
+    { name: 'Inter', data: bold.buffer.slice(bold.byteOffset, bold.byteOffset + bold.byteLength), weight: 700 as const, style: 'normal' as const },
   ];
   return fontsCache;
 }

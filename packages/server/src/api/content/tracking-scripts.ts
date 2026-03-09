@@ -20,7 +20,7 @@ app.get('/', async (c) => {
     .where(eq(trackingScripts.isActive, true))
     .orderBy(trackingScripts.priority);
 
-  const filtered = rows.filter((row) => {
+  const filtered = rows.filter((row: typeof rows[0]) => {
     if (row.scope === 'global') return true;
     if (row.scope === 'targeted' && pageSlug && row.targetPages) {
       const targets: string[] = JSON.parse(row.targetPages);
@@ -30,12 +30,12 @@ app.get('/', async (c) => {
   });
 
   const head = filtered
-    .filter((r) => r.position === 'head')
-    .map((r) => ({ id: r.id, name: r.name, code: r.code }));
+    .filter((r: typeof rows[0]) => r.position === 'head')
+    .map((r: typeof rows[0]) => ({ id: r.id, name: r.name, code: r.code }));
 
   const body = filtered
-    .filter((r) => r.position === 'body')
-    .map((r) => ({ id: r.id, name: r.name, code: r.code }));
+    .filter((r: typeof rows[0]) => r.position === 'body')
+    .map((r: typeof rows[0]) => ({ id: r.id, name: r.name, code: r.code }));
 
   return c.json({ data: { head, body } });
 });
