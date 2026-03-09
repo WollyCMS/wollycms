@@ -385,6 +385,7 @@ A developer should go from zero to running CMS in under 5 minutes.
 - [x] `wolly export` — export all data as JSON
 - [x] `wolly import <file>` — import data from JSON backup
 - [x] `wolly health` — check server health
+- [x] `wolly og:generate` — bulk generate OG images (`--force`, `--type`, `--dry-run`)
 
 ### 6c. Docker & Deployment -- PARTIAL
 
@@ -461,8 +462,9 @@ that make teams choose WollyCMS over Strapi, Directus, or Storyblok.
 - [x] SEO editor tools — Google SERP preview, social share preview,
       SEO score checklist (title/desc length, slug quality, content length,
       heading presence), color-coded character counts on meta fields
-- [ ] OG image generation (deferred — auto-generate social sharing images
-      from page title + hero image)
+- [x] OG image auto-generation (Satori + Sharp → 1200×630 PNG; single page
+      via admin API, bulk backfill via API or CLI `wolly og:generate`, auto-
+      generates on first publish; admin UI preview/regenerate/remove in sidebar)
 
 ### 7c. Tracking Scripts -- COMPLETE
 
