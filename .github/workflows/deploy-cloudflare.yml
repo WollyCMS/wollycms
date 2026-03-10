@@ -72,6 +72,7 @@ jobs:
           binding = "DB"
           database_name = "${{ vars.D1_DATABASE_NAME }}"
           database_id = "${{ secrets.D1_DATABASE_ID }}"
+          migrations_dir = "packages/server/drizzle"
 
           [[r2_buckets]]
           binding = "R2_BUCKET"
@@ -84,6 +85,14 @@ jobs:
           CORS_ORIGINS = "${{ vars.CORS_ORIGINS }}"
           SITE_URL = "${{ vars.SITE_URL }}"
           TOML
+
+      - name: Apply D1 migrations
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.71.0'
+          command: d1 migrations apply ${{ vars.D1_DATABASE_NAME }} --remote
 
       - name: Deploy to Cloudflare
         uses: cloudflare/wrangler-action@v3
