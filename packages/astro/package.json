@@ -8,7 +8,8 @@
     "./components/BlockRenderer.astro": "./src/components/BlockRenderer.astro",
     "./components/WollyImage.astro": "./src/components/WollyImage.astro",
     "./components/RichText.astro": "./src/components/RichText.astro",
-    "./components/PreviewBlockRenderer.astro": "./src/components/PreviewBlockRenderer.astro"
+    "./components/PreviewBlockRenderer.astro": "./src/components/PreviewBlockRenderer.astro",
+    "./helpers/tracking.js": "./src/helpers/tracking.ts"
   },
   "files": [
     "src"
