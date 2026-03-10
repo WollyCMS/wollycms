@@ -77,7 +77,11 @@ app.get('/', async (c) => {
   const orderFn = order === 'asc' ? asc : desc;
 
   const conditions = [];
-  if (mimeFilter) conditions.push(like(media.mimeType, `%${escapeLike(mimeFilter)}%`));
+  if (mimeFilter === 'document') {
+    conditions.push(sql`${media.mimeType} NOT LIKE 'image/%' AND ${media.mimeType} NOT LIKE 'video/%'`);
+  } else if (mimeFilter) {
+    conditions.push(like(media.mimeType, `${escapeLike(mimeFilter)}%`));
+  }
   if (search) conditions.push(or(like(media.title, `%${escapeLike(search)}%`), like(media.originalName, `%${escapeLike(search)}%`)));
   if (folder === '') {
     conditions.push(or(isNull(media.folder), eq(media.folder, '')));
