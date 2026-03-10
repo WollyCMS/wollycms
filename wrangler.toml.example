@@ -19,7 +19,7 @@ compatibility_flags = ["nodejs_compat"]
 [assets]
 directory = "packages/admin/build-assets"
 not_found_handling = "single-page-application"
-run_worker_first = ["/api/*", "/media/*"]
+run_worker_first = ["/", "/sitemap.xml", "/api/*", "/media/*"]
 
 # D1 SQLite database
 [[d1_databases]]
