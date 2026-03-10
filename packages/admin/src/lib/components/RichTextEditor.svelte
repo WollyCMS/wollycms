@@ -27,6 +27,12 @@
   let slashSelectedIndex = $state(0);
   let isInTable = $state(false);
 
+  // Link dialog state
+  let showLinkDialog = $state(false);
+  let linkUrl = $state('');
+  let linkText = $state('');
+  let linkTab = $state<'url' | 'media'>('url');
+
   const slashCommands = [
     { label: 'Heading 2', description: 'Large section heading', command: 'h2' },
     { label: 'Heading 3', description: 'Medium section heading', command: 'h3' },
@@ -37,6 +43,7 @@
     { label: 'Code Block', description: 'Preformatted code', command: 'code' },
     { label: 'Horizontal Rule', description: 'Visual separator', command: 'hr' },
     { label: 'Image', description: 'Insert from media library', command: 'image' },
+    { label: 'Document', description: 'Link to a file or document', command: 'document' },
     { label: 'Table', description: '3x3 table', command: 'table' },
     { label: 'Link', description: 'Insert hyperlink', command: 'link' },
   ];
@@ -152,19 +159,15 @@
         showSlashMenu = false;
         return;
       }
-      // Update filter for any other key
-      // The filter is updated by the input handler below
       return;
     }
 
     if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      // Check if we're at the start of an empty block
       if (!editor) return;
       const { from } = editor.state.selection;
       const textBefore = editor.state.doc.textBetween(
         Math.max(0, from - 1), from, '\n'
       );
-      // Only trigger at the start of a line or on empty content
       if (textBefore === '' || textBefore === '\n') {
         e.preventDefault();
         openSlashMenu();
@@ -174,7 +177,6 @@
 
   function openSlashMenu() {
     if (!editor || !editorEl) return;
-    // Get cursor position for menu placement
     const { view } = editor;
     const coords = view.coordsAtPos(view.state.selection.from);
     const editorRect = editorEl.getBoundingClientRect();
@@ -209,23 +211,82 @@
       case 'code': editor.chain().focus().toggleCodeBlock().run(); break;
       case 'hr': editor.chain().focus().setHorizontalRule().run(); break;
       case 'image': showImagePicker = true; break;
+      case 'document': linkTab = 'media'; openLinkDialog(); break;
       case 'table': editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(); break;
-      case 'link': toggleLink(); break;
+      case 'link': openLinkDialog(); break;
     }
   }
 
-  function toggleLink() {
+  // ---- Link dialog ----
+  function openLinkDialog() {
     if (!editor) return;
+
     if (editor.isActive('link')) {
-      editor.chain().focus().unsetLink().run();
-      return;
+      const attrs = editor.getAttributes('link');
+      linkUrl = attrs.href || '';
+    } else {
+      linkUrl = '';
     }
-    const url = prompt('Enter URL:');
-    if (url) {
-      editor.chain().focus().setLink({ href: url }).run();
-    }
+
+    // Grab selected text for display text
+    const { from, to } = editor.state.selection;
+    linkText = from !== to ? editor.state.doc.textBetween(from, to, ' ') : '';
+
+    if (linkTab !== 'media') linkTab = 'url';
+    showLinkDialog = true;
   }
 
+  function insertLink() {
+    if (!editor || !linkUrl) return;
+
+    const { from, to } = editor.state.selection;
+    const hasSelection = from !== to;
+
+    if (hasSelection) {
+      // Apply link to selected text
+      editor.chain().focus().setLink({ href: linkUrl }).run();
+    } else if (linkText) {
+      // Insert new text with link
+      editor.chain().focus()
+        .insertContent({
+          type: 'text',
+          text: linkText,
+          marks: [{ type: 'link', attrs: { href: linkUrl } }],
+        })
+        .run();
+    } else {
+      // No selection, no text — insert URL as both text and href
+      editor.chain().focus()
+        .insertContent({
+          type: 'text',
+          text: linkUrl,
+          marks: [{ type: 'link', attrs: { href: linkUrl } }],
+        })
+        .run();
+    }
+
+    showLinkDialog = false;
+  }
+
+  function removeLink() {
+    if (!editor) return;
+    editor.chain().focus().unsetLink().run();
+    showLinkDialog = false;
+  }
+
+  function onLinkMediaSelect(mediaId: number | null) {
+    if (!mediaId) return;
+    linkUrl = `/api/content/media/${mediaId}/original`;
+  }
+
+  function onLinkMediaSelectItem(item: any) {
+    if (!linkText) {
+      linkText = item.title || item.originalName || '';
+    }
+    linkTab = 'url'; // Switch to URL tab to review before inserting
+  }
+
+  // ---- Image picker ----
   function insertImage() {
     showImagePicker = true;
   }
@@ -269,7 +330,7 @@
     { label: 'BQ', action: () => editor?.chain().focus().toggleBlockquote().run(), isActive: () => !!editor?.isActive('blockquote') },
     { label: 'HR', action: () => editor?.chain().focus().setHorizontalRule().run() },
     { divider: true },
-    { label: 'Link', action: toggleLink, isActive: () => !!editor?.isActive('link') },
+    { label: 'Link', action: () => openLinkDialog(), isActive: () => !!editor?.isActive('link') },
     { label: 'Img', action: insertImage },
     { label: 'Table', action: insertTable },
     { divider: true },
@@ -349,6 +410,7 @@
   </div>
 </div>
 
+<!-- Image picker modal -->
 {#if showImagePicker}
   <div class="modal-overlay" onclick={() => showImagePicker = false} role="dialog" aria-modal="true" aria-labelledby="insert-image-title">
     <div class="modal" onclick={(e) => e.stopPropagation()} style="max-width: 700px;" use:focusTrap onescape={() => showImagePicker = false}>
@@ -356,8 +418,53 @@
         <h2 id="insert-image-title">Insert Image</h2>
         <button class="btn-icon" onclick={() => showImagePicker = false} aria-label="Close">&#10005;</button>
       </div>
-      <div class="modal-body">
-        <MediaPicker value={null} onSelect={onImageSelect} />
+      <MediaPicker inline allowUpload initialTypeFilter="image" value={null} onSelect={onImageSelect} />
+    </div>
+  </div>
+{/if}
+
+<!-- Link dialog modal -->
+{#if showLinkDialog}
+  <div class="modal-overlay" onclick={() => showLinkDialog = false} role="dialog" aria-modal="true" aria-labelledby="link-dialog-title">
+    <div class="modal" onclick={(e) => e.stopPropagation()} style="max-width: 700px;" use:focusTrap onescape={() => showLinkDialog = false}>
+      <div class="modal-header">
+        <h2 id="link-dialog-title">{editor?.isActive('link') ? 'Edit Link' : 'Insert Link'}</h2>
+        <button class="btn-icon" onclick={() => showLinkDialog = false} aria-label="Close">&#10005;</button>
+      </div>
+
+      <div class="link-tabs">
+        <button class="link-tab" class:active={linkTab === 'url'} onclick={() => linkTab = 'url'}>URL</button>
+        <button class="link-tab" class:active={linkTab === 'media'} onclick={() => linkTab = 'media'}>Media Library</button>
+      </div>
+
+      {#if linkTab === 'url'}
+        <div class="link-form">
+          <label class="link-label" for="link-url-input">URL</label>
+          <input id="link-url-input" type="text" class="link-input" bind:value={linkUrl} placeholder="https://example.com or /page-slug" />
+
+          <label class="link-label link-label-spaced" for="link-text-input">Display Text</label>
+          <input id="link-text-input" type="text" class="link-input" bind:value={linkText} placeholder="Link text (uses URL if empty)" />
+        </div>
+      {:else}
+        <MediaPicker
+          inline
+          allowUpload
+          initialTypeFilter="document"
+          value={null}
+          onSelect={onLinkMediaSelect}
+          onSelectItem={onLinkMediaSelectItem}
+        />
+      {/if}
+
+      <div class="link-footer">
+        {#if editor?.isActive('link')}
+          <button class="btn btn-danger-outline" onclick={removeLink}>Remove Link</button>
+        {/if}
+        <div style="flex: 1;"></div>
+        <button class="btn btn-outline" onclick={() => showLinkDialog = false}>Cancel</button>
+        <button class="btn btn-primary" onclick={insertLink} disabled={!linkUrl}>
+          {editor?.isActive('link') ? 'Update Link' : 'Insert Link'}
+        </button>
       </div>
     </div>
   </div>
@@ -538,6 +645,77 @@
     font-size: 0.8rem;
     color: var(--c-text-light, #94a3b8);
     text-align: center;
+  }
+
+  /* Link dialog */
+  .link-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--c-border, #e2e8f0);
+  }
+
+  .link-tab {
+    flex: 1;
+    padding: 0.6rem 1rem;
+    border: none;
+    background: transparent;
+    font-size: 0.85rem;
+    font-weight: 500;
+    font-family: inherit;
+    color: var(--c-text-light, #64748b);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .link-tab:hover {
+    color: var(--c-text, #1e293b);
+  }
+
+  .link-tab.active {
+    color: var(--c-accent, #3182ce);
+    border-bottom-color: var(--c-accent, #3182ce);
+  }
+
+  .link-form {
+    padding: 1rem 1.25rem;
+  }
+
+  .link-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    color: var(--c-text, #1e293b);
+  }
+
+  .link-label-spaced {
+    margin-top: 0.75rem;
+  }
+
+  .link-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--c-border, #e2e8f0);
+    border-radius: var(--radius, 6px);
+    font-size: 0.85rem;
+    font-family: inherit;
+    color: var(--c-text, #1e293b);
+    background: var(--c-surface, #fff);
+    box-sizing: border-box;
+  }
+
+  .link-input:focus {
+    outline: none;
+    border-color: var(--c-accent, #3182ce);
+    box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.15);
+  }
+
+  .link-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border-top: 1px solid var(--c-border, #e2e8f0);
   }
 
   /* TipTap ProseMirror element styles */

@@ -1,9 +1,24 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { api } from '$lib/api.js';
-  import { AlertTriangle, Search } from 'lucide-svelte';
+  import { AlertTriangle, Search, Upload } from 'lucide-svelte';
   import { focusTrap } from '$lib/focusTrap.js';
 
-  let { value, onSelect }: { value: number | null; onSelect: (mediaId: number | null) => void } = $props();
+  let {
+    value,
+    onSelect,
+    inline = false,
+    allowUpload = false,
+    initialTypeFilter = 'all',
+    onSelectItem = undefined,
+  }: {
+    value: number | null;
+    onSelect: (mediaId: number | null) => void;
+    inline?: boolean;
+    allowUpload?: boolean;
+    initialTypeFilter?: 'all' | 'image' | 'video' | 'document';
+    onSelectItem?: ((item: any) => void) | undefined;
+  } = $props();
 
   let open = $state(false);
   let mediaList = $state<any[]>([]);
@@ -14,8 +29,13 @@
   let total = $state(0);
   let offset = $state(0);
   const PAGE_SIZE = 30;
-
   let searchDebounce: ReturnType<typeof setTimeout>;
+
+  // Upload state
+  let uploading = $state(false);
+  let uploadError = $state('');
+  let fileInputEl: HTMLInputElement | undefined = $state();
+  let dragOver = $state(false);
 
   const missingAlt = $derived(selected && selected.mimeType?.startsWith('image/') && !selected.altText);
 
@@ -42,19 +62,28 @@
     } catch { selected = null; }
   }
 
-  $effect(() => { loadSelected(); });
+  $effect(() => { if (!inline) loadSelected(); });
+
+  // Auto-load in inline mode
+  onMount(() => {
+    if (inline) {
+      typeFilter = initialTypeFilter;
+      loadMedia();
+    }
+  });
 
   function openPicker() {
     open = true;
     searchQuery = '';
-    typeFilter = 'all';
+    typeFilter = initialTypeFilter;
     offset = 0;
     loadMedia();
   }
 
   function pick(item: any) {
     onSelect(item.id);
-    open = false;
+    onSelectItem?.(item);
+    if (!inline) open = false;
   }
 
   function clear() {
@@ -88,106 +117,189 @@
     return `/api/content/media/${item.id}/thumbnail`;
   }
 
+  // Upload handlers
+  async function handleUpload(file: File) {
+    uploading = true;
+    uploadError = '';
+    try {
+      const title = file.name.replace(/\.[^.]+$/, '');
+      const res = await api.upload(file, title);
+      await loadMedia();
+      pick(res.data);
+    } catch (err: any) {
+      uploadError = err.message || 'Upload failed';
+    }
+    uploading = false;
+  }
+
+  function onFileDrop(e: DragEvent) {
+    e.preventDefault();
+    dragOver = false;
+    const file = e.dataTransfer?.files?.[0];
+    if (file) handleUpload(file);
+  }
+
+  function onFileSelect(e: Event) {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (file) handleUpload(file);
+  }
+
+  function onDragOver(e: DragEvent) {
+    e.preventDefault();
+    dragOver = true;
+  }
+
+  function onDragLeave() {
+    dragOver = false;
+  }
+
   const hasNextPage = $derived(offset + PAGE_SIZE < total);
   const hasPrevPage = $derived(offset > 0);
   const currentPage = $derived(Math.floor(offset / PAGE_SIZE) + 1);
   const totalPages = $derived(Math.max(1, Math.ceil(total / PAGE_SIZE)));
 </script>
 
-<div class="media-picker">
-  {#if selected}
-    <div class="media-preview">
-      {#if selected.mimeType?.startsWith('image/')}
-        <img src={thumbnailUrl(selected)} alt={selected.altText || selected.title} />
-      {:else if selected.mimeType?.startsWith('video/')}
-        <div class="media-file-thumb">🎬 {selected.originalName?.split('.').pop()?.toUpperCase()}</div>
-      {:else}
-        <div class="media-file-thumb">{selected.originalName?.split('.').pop()?.toUpperCase() || 'FILE'}</div>
-      {/if}
-      <div class="media-info">
-        <span class="media-name">{selected.title || selected.originalName}</span>
-        {#if missingAlt}
-          <span class="alt-warning" title="Missing alt text — add in Media library for accessibility">
-            <AlertTriangle size={12} /> No alt text
-          </span>
-        {/if}
-        <div class="media-actions">
-          <button type="button" class="btn btn-sm btn-outline" onclick={openPicker}>Change</button>
-          <button type="button" class="btn btn-sm btn-danger" onclick={clear}>Remove</button>
-        </div>
-      </div>
+{#snippet browserContent()}
+  <div class="picker-toolbar">
+    <div class="picker-search">
+      <Search size={14} />
+      <input
+        type="search"
+        placeholder="Search media..."
+        value={searchQuery}
+        oninput={(e) => onSearch((e.target as HTMLInputElement).value)}
+      />
     </div>
-  {:else}
-    <button type="button" class="media-select-btn" onclick={openPicker}>
-      Select Media
-    </button>
-  {/if}
-</div>
-
-{#if open}
-  <div class="modal-overlay" onclick={() => open = false} role="dialog" aria-modal="true" aria-labelledby="select-media-title">
-    <div class="modal" style="max-width: 760px;" onclick={(e) => e.stopPropagation()} use:focusTrap onescape={() => open = false}>
-      <div class="modal-header">
-        <h2 id="select-media-title">Select Media</h2>
-        <button class="btn-icon" onclick={() => open = false} aria-label="Close">&#10005;</button>
-      </div>
-      <div class="picker-toolbar">
-        <div class="picker-search">
-          <Search size={14} />
-          <input
-            type="search"
-            placeholder="Search media..."
-            value={searchQuery}
-            oninput={(e) => onSearch((e.target as HTMLInputElement).value)}
-          />
-        </div>
-        <div class="picker-filters">
-          <button class="filter-btn" class:active={typeFilter === 'all'} onclick={() => onTypeChange('all')}>All</button>
-          <button class="filter-btn" class:active={typeFilter === 'image'} onclick={() => onTypeChange('image')}>Images</button>
-          <button class="filter-btn" class:active={typeFilter === 'video'} onclick={() => onTypeChange('video')}>Videos</button>
-          <button class="filter-btn" class:active={typeFilter === 'document'} onclick={() => onTypeChange('document')}>Docs</button>
-        </div>
-      </div>
-      <div class="modal-body" style="max-height: 55vh; overflow-y: auto;">
-        {#if loading}
-          <p style="text-align: center; color: var(--c-text-light); padding: 2rem 0;">Loading...</p>
-        {:else if mediaList.length === 0}
-          <p style="text-align: center; color: var(--c-text-light); padding: 2rem 0;">
-            {searchQuery ? `No media matching "${searchQuery}"` : 'No media uploaded yet.'}
-          </p>
-        {:else}
-          <div class="media-grid">
-            {#each mediaList as item}
-              <button class="media-grid-item" class:selected={value === item.id} onclick={() => pick(item)}>
-                {#if item.mimeType?.startsWith('image/')}
-                  <img src={thumbnailUrl(item)} alt={item.altText || item.title} />
-                  {#if !item.altText}
-                    <span class="media-grid-alt-dot" title="Missing alt text"></span>
-                  {/if}
-                {:else if item.mimeType?.startsWith('video/')}
-                  <div class="media-file-icon">🎬 {item.originalName?.split('.').pop()?.toUpperCase()}</div>
-                {:else}
-                  <div class="media-file-icon">📄 {item.originalName?.split('.').pop()?.toUpperCase() || 'FILE'}</div>
-                {/if}
-                <span class="media-grid-label">{item.title || item.originalName}</span>
-              </button>
-            {/each}
-          </div>
-        {/if}
-      </div>
-      {#if total > PAGE_SIZE}
-        <div class="picker-pagination">
-          <button class="btn btn-sm btn-outline" disabled={!hasPrevPage} onclick={prevPage}>← Prev</button>
-          <span class="picker-page-info">{currentPage} / {totalPages} ({total} items)</span>
-          <button class="btn btn-sm btn-outline" disabled={!hasNextPage} onclick={nextPage}>Next →</button>
-        </div>
-      {/if}
+    <div class="picker-filters">
+      <button class="filter-btn" class:active={typeFilter === 'all'} onclick={() => onTypeChange('all')}>All</button>
+      <button class="filter-btn" class:active={typeFilter === 'image'} onclick={() => onTypeChange('image')}>Images</button>
+      <button class="filter-btn" class:active={typeFilter === 'video'} onclick={() => onTypeChange('video')}>Videos</button>
+      <button class="filter-btn" class:active={typeFilter === 'document'} onclick={() => onTypeChange('document')}>Docs</button>
     </div>
   </div>
+
+  {#if allowUpload}
+    <div
+      class="upload-zone"
+      class:drag-over={dragOver}
+      class:uploading
+      ondrop={onFileDrop}
+      ondragover={onDragOver}
+      ondragleave={onDragLeave}
+      onclick={() => fileInputEl?.click()}
+      onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') fileInputEl?.click(); }}
+      role="button"
+      tabindex="0"
+    >
+      <input
+        bind:this={fileInputEl}
+        type="file"
+        onchange={onFileSelect}
+        style="display: none;"
+      />
+      {#if uploading}
+        <span class="upload-text">Uploading...</span>
+      {:else}
+        <Upload size={16} />
+        <span class="upload-text">Drop file here or click to upload</span>
+      {/if}
+      {#if uploadError}
+        <span class="upload-error">{uploadError}</span>
+      {/if}
+    </div>
+  {/if}
+
+  <div class="picker-grid-wrap">
+    {#if loading}
+      <p style="text-align: center; color: var(--c-text-light); padding: 2rem 0;">Loading...</p>
+    {:else if mediaList.length === 0}
+      <p style="text-align: center; color: var(--c-text-light); padding: 2rem 0;">
+        {searchQuery ? `No media matching "${searchQuery}"` : 'No media uploaded yet.'}
+      </p>
+    {:else}
+      <div class="media-grid">
+        {#each mediaList as item}
+          <button class="media-grid-item" class:selected={value === item.id} onclick={() => pick(item)}>
+            {#if item.mimeType?.startsWith('image/')}
+              <img src={thumbnailUrl(item)} alt={item.altText || item.title} />
+              {#if !item.altText}
+                <span class="media-grid-alt-dot" title="Missing alt text"></span>
+              {/if}
+            {:else if item.mimeType?.startsWith('video/')}
+              <div class="media-file-icon">🎬 {item.originalName?.split('.').pop()?.toUpperCase()}</div>
+            {:else}
+              <div class="media-file-icon">📄 {item.originalName?.split('.').pop()?.toUpperCase() || 'FILE'}</div>
+            {/if}
+            <span class="media-grid-label">{item.title || item.originalName}</span>
+          </button>
+        {/each}
+      </div>
+    {/if}
+  </div>
+
+  {#if total > PAGE_SIZE}
+    <div class="picker-pagination">
+      <button class="btn btn-sm btn-outline" disabled={!hasPrevPage} onclick={prevPage}>&larr; Prev</button>
+      <span class="picker-page-info">{currentPage} / {totalPages} ({total} items)</span>
+      <button class="btn btn-sm btn-outline" disabled={!hasNextPage} onclick={nextPage}>Next &rarr;</button>
+    </div>
+  {/if}
+{/snippet}
+
+{#if inline}
+  <div class="media-picker-inline">
+    {@render browserContent()}
+  </div>
+{:else}
+  <div class="media-picker">
+    {#if selected}
+      <div class="media-preview">
+        {#if selected.mimeType?.startsWith('image/')}
+          <img src={thumbnailUrl(selected)} alt={selected.altText || selected.title} />
+        {:else if selected.mimeType?.startsWith('video/')}
+          <div class="media-file-thumb">🎬 {selected.originalName?.split('.').pop()?.toUpperCase()}</div>
+        {:else}
+          <div class="media-file-thumb">{selected.originalName?.split('.').pop()?.toUpperCase() || 'FILE'}</div>
+        {/if}
+        <div class="media-info">
+          <span class="media-name">{selected.title || selected.originalName}</span>
+          {#if missingAlt}
+            <span class="alt-warning" title="Missing alt text — add in Media library for accessibility">
+              <AlertTriangle size={12} /> No alt text
+            </span>
+          {/if}
+          <div class="media-actions">
+            <button type="button" class="btn btn-sm btn-outline" onclick={openPicker}>Change</button>
+            <button type="button" class="btn btn-sm btn-danger" onclick={clear}>Remove</button>
+          </div>
+        </div>
+      </div>
+    {:else}
+      <button type="button" class="media-select-btn" onclick={openPicker}>
+        Select Media
+      </button>
+    {/if}
+  </div>
+
+  {#if open}
+    <div class="modal-overlay" onclick={() => open = false} role="dialog" aria-modal="true" aria-labelledby="select-media-title">
+      <div class="modal" style="max-width: 760px;" onclick={(e) => e.stopPropagation()} use:focusTrap onescape={() => open = false}>
+        <div class="modal-header">
+          <h2 id="select-media-title">Select Media</h2>
+          <button class="btn-icon" onclick={() => open = false} aria-label="Close">&#10005;</button>
+        </div>
+        {@render browserContent()}
+      </div>
+    </div>
+  {/if}
 {/if}
 
 <style>
   .media-picker {
+    width: 100%;
+  }
+
+  .media-picker-inline {
     width: 100%;
   }
 
@@ -303,6 +415,56 @@
     background: var(--c-primary, #2563eb);
     color: #fff;
     border-color: var(--c-primary, #2563eb);
+  }
+
+  /* Upload zone */
+  .upload-zone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    margin: 0.75rem 1.25rem 0;
+    border: 2px dashed var(--c-border, #e2e8f0);
+    border-radius: var(--radius, 6px);
+    background: var(--c-bg-alt, #f8fafc);
+    color: var(--c-text-light, #64748b);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .upload-zone:hover {
+    border-color: var(--c-primary, #2563eb);
+    color: var(--c-primary, #2563eb);
+  }
+
+  .upload-zone.drag-over {
+    border-color: var(--c-primary, #2563eb);
+    background: #eff6ff;
+    color: var(--c-primary, #2563eb);
+  }
+
+  .upload-zone.uploading {
+    opacity: 0.6;
+    cursor: wait;
+  }
+
+  .upload-text {
+    font-size: 0.8rem;
+  }
+
+  .upload-error {
+    color: var(--c-danger, #dc2626);
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+  }
+
+  /* Grid container */
+  .picker-grid-wrap {
+    max-height: 45vh;
+    overflow-y: auto;
+    padding: 0 1.25rem;
   }
 
   .picker-pagination {
