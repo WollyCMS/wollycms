@@ -3,7 +3,7 @@ import { jwt } from 'hono/jwt';
 import { eq } from 'drizzle-orm';
 import { env } from '../env.js';
 import { getDb } from '../db/index.js';
-import { apiKeys } from '../db/schema/index.js';
+import { apiKeys, users } from '../db/schema/index.js';
 import { hashApiKey } from './api-key.js';
 
 export interface JwtPayload {
@@ -41,7 +41,13 @@ export async function authMiddleware(c: Context, next: Next) {
       .set({ lastUsedAt: new Date().toISOString() })
       .where(eq(apiKeys.id, key.id));
 
-    c.set('jwtPayload', { sub: 0, email: `apikey:${key.name}`, role: 'admin', exp: 0 });
+    // Look up first admin user for createdBy foreign key references
+    const [admin] = await db.select({ id: users.id, email: users.email })
+      .from(users).where(eq(users.role, 'admin')).limit(1);
+    const userId = admin?.id ?? 1;
+    const userEmail = admin?.email ?? `apikey:${key.name}`;
+
+    c.set('jwtPayload', { sub: userId, email: userEmail, role: 'admin', exp: 0 });
     return next();
   }
 
