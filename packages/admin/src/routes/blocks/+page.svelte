@@ -37,10 +37,14 @@
 
   async function createBlock() {
     try {
-      await api.post('/blocks', { ...newBlock, isReusable: true });
+      const res = await api.post<{ data: any }>('/blocks', { ...newBlock, isReusable: true });
       showCreate = false;
       newBlock = { title: '', typeId: blockTypes[0]?.id || 0, fields: {} };
-      load();
+      await load();
+      // Auto-open edit modal for the newly created block
+      const created = blocks.find((b: any) => b.id === res.data.id);
+      if (created) startEdit(created);
+      else toast.success('Block created.');
     } catch (err: any) { error = err.message; }
   }
 
@@ -177,6 +181,11 @@
                   catch { /* ignore */ }
                 }}
                 style="min-height: 100px; font-family: monospace; font-size: 0.8rem;"
+              ></textarea>
+            {:else if field.type === 'textarea'}
+              <textarea class="form-control" value={editBlock.fields[field.name] || ''}
+                oninput={(e) => { editBlock.fields[field.name] = (e.target as HTMLTextAreaElement).value; }}
+                rows="4"
               ></textarea>
             {:else if field.type === 'url'}
               <input type="url" class="form-control" value={editBlock.fields[field.name] || ''} placeholder="https://..."

@@ -3,26 +3,24 @@
   import { api } from '$lib/api.js';
   import { focusTrap } from '$lib/focusTrap.js';
   import SortableList from '$lib/components/SortableList.svelte';
+  import PageSearch from '$lib/components/PageSearch.svelte';
 
   let menus = $state<any[]>([]);
-  let allPages = $state<any[]>([]);
   let selectedMenu = $state<any>(null);
   let error = $state('');
   let showCreate = $state(false);
   let newMenu = $state({ name: '', slug: '' });
   let showAddItem = $state(false);
   let newItem = $state({ title: '', url: '', pageId: null as number | null, parentId: null as number | null });
+  let newItemPageTitle = $state('');
   let editingItemId = $state<number | null>(null);
   let editItem = $state<any>(null);
+  let editItemPageTitle = $state('');
 
   async function load() {
     try {
-      const [menuRes, pagesRes] = await Promise.all([
-        api.get<{ data: any[] }>('/menus'),
-        api.get<{ data: any[], meta: any }>('/pages?limit=100'),
-      ]);
+      const menuRes = await api.get<{ data: any[] }>('/menus');
       menus = menuRes.data;
-      allPages = pagesRes.data;
       if (menus.length > 0 && !selectedMenu) loadMenu(menus[0].id);
     } catch (err: any) { error = err.message; }
   }
@@ -67,6 +65,7 @@
       await api.post(`/menus/${selectedMenu.id}/items`, payload);
       showAddItem = false;
       newItem = { title: '', url: '', pageId: null, parentId: null };
+      newItemPageTitle = '';
       loadMenu(selectedMenu.id);
     } catch (err: any) { error = err.message; }
   }
@@ -74,6 +73,7 @@
   function startEdit(item: any) {
     editingItemId = item.id;
     editItem = { title: item.title, url: item.url || '', pageId: item.pageId || null, parentId: item.parentId || null };
+    editItemPageTitle = item.pageSlug ? item.title : '';
   }
 
   async function saveEdit() {
@@ -177,16 +177,14 @@
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
                   <label style="font-size: 0.75rem;">Link to Page</label>
-                  <select class="form-control" value={editItem.pageId ?? ''} onchange={(e) => {
-                    const val = (e.target as HTMLSelectElement).value;
-                    editItem.pageId = val ? parseInt(val, 10) : null;
-                    if (editItem.pageId) editItem.url = '';
-                  }}>
-                    <option value="">— Custom URL —</option>
-                    {#each allPages as pg}
-                      <option value={pg.id}>{pg.title} (/{pg.slug})</option>
-                    {/each}
-                  </select>
+                  <PageSearch
+                    bind:value={editItem.pageId}
+                    bind:selectedTitle={editItemPageTitle}
+                    placeholder="Search pages..."
+                    onselect={(pg) => {
+                      if (pg) editItem.url = '';
+                    }}
+                  />
                 </div>
               </div>
               {#if !editItem.pageId}
@@ -246,20 +244,17 @@
         <div class="form-group"><label>Title</label><input class="form-control" bind:value={newItem.title} required /></div>
         <div class="form-group">
           <label>Link to Page</label>
-          <select class="form-control" value={newItem.pageId ?? ''} onchange={(e) => {
-            const val = (e.target as HTMLSelectElement).value;
-            newItem.pageId = val ? parseInt(val, 10) : null;
-            if (newItem.pageId) {
-              const pg = allPages.find((p: any) => p.id === newItem.pageId);
-              if (pg && !newItem.title) newItem.title = pg.title;
-              newItem.url = '';
-            }
-          }}>
-            <option value="">— None (use custom URL) —</option>
-            {#each allPages as pg}
-              <option value={pg.id}>{pg.title} (/{pg.slug})</option>
-            {/each}
-          </select>
+          <PageSearch
+            bind:value={newItem.pageId}
+            bind:selectedTitle={newItemPageTitle}
+            placeholder="Search pages..."
+            onselect={(pg) => {
+              if (pg) {
+                if (!newItem.title) newItem.title = pg.title;
+                newItem.url = '';
+              }
+            }}
+          />
         </div>
         {#if !newItem.pageId}
           <div class="form-group"><label>Custom URL</label><input class="form-control" bind:value={newItem.url} placeholder="/path or https://..." /></div>

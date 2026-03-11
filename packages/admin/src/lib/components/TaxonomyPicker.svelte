@@ -175,8 +175,9 @@
     }
   }
 
+  // Auto-load on mount so tags are visible without expanding
   $effect(() => {
-    if (expanded && !loaded) load();
+    if (!loaded) load();
   });
 
   $effect(() => {
@@ -197,30 +198,30 @@
     <span class="chevron">{expanded ? '−' : '+'}</span>
   </button>
 
+  <!-- Always show tag chips (visible at a glance) -->
+  {#if loaded && assigned.length > 0}
+    <div class="tag-chips">
+      {#each assigned as term}
+        <span class="tag-chip">
+          {term.termName}
+          <button
+            class="tag-remove"
+            onclick={() => removeTerm(term.termId)}
+            disabled={saving}
+            title="Remove {term.termName}"
+          >&times;</button>
+        </span>
+      {/each}
+    </div>
+  {:else if loaded}
+    <p class="status-text">No tags assigned.</p>
+  {/if}
+
   {#if expanded}
     {#if !loaded}
       <p class="status-text">Loading...</p>
     {:else}
-      <!-- Flat chip list -->
-      {#if assigned.length > 0}
-        <div class="tag-chips">
-          {#each assigned as term}
-            <span class="tag-chip">
-              {term.termName}
-              <button
-                class="tag-remove"
-                onclick={() => removeTerm(term.termId)}
-                disabled={saving}
-                title="Remove {term.termName}"
-              >&times;</button>
-            </span>
-          {/each}
-        </div>
-      {:else}
-        <p class="status-text">No tags assigned.</p>
-      {/if}
-
-      <!-- Add tag input -->
+      <!-- Add tag input (shown when expanded) -->
       <div class="tag-input-wrap">
         <input
           type="text"

@@ -15,6 +15,7 @@ import sitemapRouter from './sitemap.js';
 import searchRouter from './search.js';
 import ogImageRouter from './og-image.js';
 import trackingScriptsRouter from './tracking-scripts.js';
+import alertsRouter from './alerts.js';
 
 const app = new Hono();
 
@@ -64,5 +65,6 @@ app.route('/sitemap', sitemapRouter);
 app.route('/search', searchRouter);
 app.route('/og', ogImageRouter);
 app.route('/tracking-scripts', trackingScriptsRouter);
+app.route('/alerts', alertsRouter);
 
 export default app;
