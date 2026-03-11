@@ -144,6 +144,8 @@ app.get('/:id', async (c) => {
       id: pages.id, typeId: pages.typeId, typeSlug: contentTypes.slug,
       title: pages.title, slug: pages.slug, status: pages.status, fields: pages.fields,
       scheduledAt: pages.scheduledAt,
+      metaTitle: pages.metaTitle, metaDescription: pages.metaDescription,
+      ogImage: pages.ogImage, canonicalUrl: pages.canonicalUrl, robots: pages.robots,
       createdAt: pages.createdAt, updatedAt: pages.updatedAt, publishedAt: pages.publishedAt,
     })
     .from(pages)
@@ -184,6 +186,8 @@ app.get('/:id', async (c) => {
       id: page.id, typeId: page.typeId, type: page.typeSlug,
       title: page.title, slug: page.slug, status: page.status, fields: page.fields,
       scheduledAt: page.scheduledAt,
+      metaTitle: page.metaTitle, metaDescription: page.metaDescription,
+      ogImage: page.ogImage, canonicalUrl: page.canonicalUrl, robots: page.robots,
       regions,
       meta: { created_at: page.createdAt, updated_at: page.updatedAt, published_at: page.publishedAt },
     },
