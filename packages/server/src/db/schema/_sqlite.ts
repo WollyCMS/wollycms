@@ -8,4 +8,3 @@ export { media } from './media.ts';
 export { redirects, users } from './system.ts';
 export { webhooks, apiKeys, auditLogs } from './webhooks.ts';
 export { trackingScripts } from './tracking-scripts.ts';
-export { siteAlerts } from './site-alerts.ts';

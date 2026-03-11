@@ -61,43 +61,6 @@
   let showSerpPreview = $state(false);
   let showSocialPreview = $state(false);
 
-  // Site alert (homepage only)
-  const isHomePage = $derived(pageData.type === 'home_page');
-  let alert = $state<{ message: string; severity: string; isActive: boolean }>({
-    message: '', severity: 'warning', isActive: false,
-  });
-  let alertLoaded = $state(false);
-  let alertSaving = $state(false);
-
-  $effect(() => {
-    if (isHomePage && !alertLoaded) {
-      api.get<{ data: any }>('/alerts').then((res) => {
-        if (res.data) {
-          alert = {
-            message: res.data.message ?? '',
-            severity: res.data.severity ?? 'warning',
-            isActive: res.data.isActive ?? false,
-          };
-        }
-        alertLoaded = true;
-      }).catch(() => { alertLoaded = true; });
-    }
-  });
-
-  async function saveAlert() {
-    alertSaving = true;
-    try {
-      const res = await api.put<{ data: any }>('/alerts', alert);
-      if (res.data) {
-        alert = { message: res.data.message ?? '', severity: res.data.severity ?? 'warning', isActive: res.data.isActive ?? false };
-      }
-      toast.success('Alert saved.');
-    } catch (err: any) { toast.error(err.message); }
-    finally { alertSaving = false; }
-  }
-
-  const severityColors: Record<string, string> = { info: '#3b82f6', warning: '#f59e0b', emergency: '#ef4444' };
-
   const titleLen = $derived((pageData.metaTitle || '').length);
   const descLen = $derived((pageData.metaDescription || '').length);
 
@@ -218,48 +181,6 @@
 </script>
 
 <div>
-{#if isHomePage && alertLoaded}
-  <div class="card" style="margin-bottom: 1rem; border-left: 4px solid {severityColors[alert.severity] || '#f59e0b'};">
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
-      <h3 style="font-size: 0.95rem; margin: 0;">Alert Banner</h3>
-      <span
-        style="
-          position: relative; display: inline-block; width: 40px; height: 22px;
-          background: {alert.isActive ? '#16a34a' : '#ccc'}; border-radius: 11px;
-          cursor: pointer; transition: background 0.2s;
-        "
-        onclick={() => { alert.isActive = !alert.isActive; }}
-        onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); alert.isActive = !alert.isActive; } }}
-        role="switch" aria-checked={alert.isActive} tabindex="0"
-      >
-        <span style="
-          position: absolute; top: 2px; left: {alert.isActive ? '20px' : '2px'};
-          width: 18px; height: 18px; background: white; border-radius: 50%;
-          transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        "></span>
-      </span>
-    </div>
-    <p style="font-size: 0.75rem; color: {alert.isActive ? '#16a34a' : 'var(--c-text-light)'}; margin-bottom: 0.5rem;">
-      {alert.isActive ? 'Showing on all pages' : 'Hidden'}
-    </p>
-    <div class="form-group" style="margin-bottom: 0.5rem;">
-      <label style="font-size: 0.8rem;">Severity</label>
-      <select class="form-control" style="font-size: 0.85rem;" bind:value={alert.severity}>
-        <option value="info">Info (blue)</option>
-        <option value="warning">Warning (amber)</option>
-        <option value="emergency">Emergency (red)</option>
-      </select>
-    </div>
-    <div class="form-group" style="margin-bottom: 0.5rem;">
-      <label style="font-size: 0.8rem;">Message</label>
-      <textarea class="form-control" style="font-size: 0.85rem;" rows="2" bind:value={alert.message} placeholder="Alert message..."></textarea>
-    </div>
-    <button class="btn btn-sm btn-primary" onclick={saveAlert} disabled={alertSaving} style="width: 100%;">
-      {alertSaving ? 'Saving...' : 'Save Alert'}
-    </button>
-  </div>
-{/if}
-
 <AccessibilityPanel issues={a11yIssues} onNavigate={onA11yNavigate} />
 
 <div class="card" style="margin-bottom: 1rem;">
