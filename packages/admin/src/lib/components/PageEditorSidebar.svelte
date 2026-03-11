@@ -217,6 +217,7 @@
   }
 </script>
 
+<div>
 {#if isHomePage && alertLoaded}
   <div class="card" style="margin-bottom: 1rem; border-left: 4px solid {severityColors[alert.severity] || '#f59e0b'};">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
@@ -517,6 +518,7 @@
   <RevisionDiff current={getCurrentForDiff()} revision={diffRevision}
     onClose={() => diffRevision = null} onRestore={restoreRevision} />
 {/if}
+</div>
 
 <style>
   .char-count {
