@@ -48,32 +48,21 @@ app.get('/', async (c) => {
   }
 
   // Filter by taxonomy term (format: vocabulary:term)
-  let taxonomyPageIds: number[] | null = null;
+  // Uses raw SQL subquery to avoid D1's 100 bind-parameter limit with inArray
   if (taxonomyFilter) {
     const [vocabSlug, termSlug] = taxonomyFilter.split(':');
     if (vocabSlug && termSlug) {
-      const matchingPages = await db
-        .select({ entityId: contentTerms.entityId })
-        .from(contentTerms)
-        .innerJoin(terms, eq(contentTerms.termId, terms.id))
-        .innerJoin(taxonomies, eq(terms.taxonomyId, taxonomies.id))
-        .where(
-          and(
-            eq(contentTerms.entityType, 'page'),
-            eq(taxonomies.slug, vocabSlug),
-            eq(terms.slug, termSlug),
-          ),
-        );
-
-      taxonomyPageIds = matchingPages.map((r: typeof matchingPages[0]) => r.entityId);
-      if (taxonomyPageIds!.length === 0) {
-        return c.json({ data: [], meta: { total: 0, limit, offset } });
-      }
+      conditions.push(
+        sql`${pages.id} IN (
+          SELECT ${contentTerms.entityId} FROM ${contentTerms}
+          INNER JOIN ${terms} ON ${contentTerms.termId} = ${terms.id}
+          INNER JOIN ${taxonomies} ON ${terms.taxonomyId} = ${taxonomies.id}
+          WHERE ${contentTerms.entityType} = 'page'
+            AND ${taxonomies.slug} = ${vocabSlug}
+            AND ${terms.slug} = ${termSlug}
+        )`
+      );
     }
-  }
-
-  if (taxonomyPageIds !== null && taxonomyPageIds.length > 0) {
-    conditions.push(inArray(pages.id, taxonomyPageIds));
   }
 
   const whereClause = and(...conditions);
