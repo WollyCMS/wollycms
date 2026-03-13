@@ -1,15 +1,14 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
-import { join, dirname } from 'node:path';
+import { eq } from 'drizzle-orm';
 import { requireRole } from '../../auth/rbac.js';
+import { getDb } from '../../db/index.js';
+import { siteConfig } from '../../db/schema/index.js';
 
 const app = new Hono();
 
 // Config updates require admin role
 app.put('/*', requireRole('admin'));
-
-const CONFIG_PATH = join(process.cwd(), 'data', 'config.json');
 
 const defaultConfig = {
   siteName: 'Southside Virginia Community College',
@@ -25,17 +24,28 @@ const defaultConfig = {
 };
 
 async function loadConfig(): Promise<typeof defaultConfig> {
+  const db = getDb();
+  const row = await db.select().from(siteConfig).where(eq(siteConfig.id, 1)).get?.()
+    ?? (await db.select().from(siteConfig).where(eq(siteConfig.id, 1)))[0];
+  if (!row) return { ...defaultConfig };
   try {
-    const raw = await readFile(CONFIG_PATH, 'utf-8');
-    return { ...defaultConfig, ...JSON.parse(raw) };
+    return { ...defaultConfig, ...JSON.parse(row.value) };
   } catch {
     return { ...defaultConfig };
   }
 }
 
 async function saveConfig(config: typeof defaultConfig): Promise<void> {
-  await mkdir(dirname(CONFIG_PATH), { recursive: true });
-  await writeFile(CONFIG_PATH, JSON.stringify(config, null, 2));
+  const db = getDb();
+  const json = JSON.stringify(config);
+  // Upsert: insert or update the single config row
+  const existing = await db.select().from(siteConfig).where(eq(siteConfig.id, 1)).get?.()
+    ?? (await db.select().from(siteConfig).where(eq(siteConfig.id, 1)))[0];
+  if (existing) {
+    await db.update(siteConfig).set({ value: json }).where(eq(siteConfig.id, 1));
+  } else {
+    await db.insert(siteConfig).values({ id: 1, value: json });
+  }
 }
 
 /** GET / - Get site config (includes runtime server settings) */

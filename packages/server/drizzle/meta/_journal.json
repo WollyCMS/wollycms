@@ -78,6 +78,13 @@
       "when": 1773360002000,
       "tag": "0010_drop-site-alerts",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1773419085202,
+      "tag": "0011_massive_wolfsbane",
+      "breakpoints": true
     }
   ]
 }

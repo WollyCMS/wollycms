@@ -1,4 +1,12 @@
-import { pgTable, text, serial, integer, boolean, uniqueIndex } from 'drizzle-orm/pg-core';
+import { pgTable, text, serial, integer, boolean, uniqueIndex, check } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
+
+export const siteConfig = pgTable('site_config', {
+  id: integer('id').primaryKey().default(1),
+  value: text('value').notNull().default('{}'),
+}, (table) => [
+  check('single_row', sql`${table.id} = 1`),
+]);
 
 export const redirects = pgTable('redirects', {
   id: serial('id').primaryKey(),

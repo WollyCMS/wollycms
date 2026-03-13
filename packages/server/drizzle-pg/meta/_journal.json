@@ -15,6 +15,13 @@
       "when": 1773022125085,
       "tag": "0001_large_zodiak",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773419097223,
+      "tag": "0002_handy_eternals",
+      "breakpoints": true
     }
   ]
 }

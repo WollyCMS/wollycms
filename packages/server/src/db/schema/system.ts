@@ -1,4 +1,12 @@
-import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, uniqueIndex, check } from 'drizzle-orm/sqlite-core';
+import { sql } from 'drizzle-orm';
+
+export const siteConfig = sqliteTable('site_config', {
+  id: integer('id').primaryKey().default(1),
+  value: text('value').notNull().default('{}'),
+}, (table) => [
+  check('single_row', sql`${table.id} = 1`),
+]);
 
 export const redirects = sqliteTable('redirects', {
   id: integer('id').primaryKey({ autoIncrement: true }),
