@@ -23,6 +23,7 @@
   let needsSetup = $state(false);
   let showShortcuts = $state(false);
   let navCounts = $state<Record<string, number>>({});
+  let brandName = $state('WollyCMS');
 
   onMount(async () => {
     try {
@@ -42,6 +43,7 @@
     }
     if (auth.user) {
       loadNavCounts();
+      loadBrandName();
     }
   });
 
@@ -54,6 +56,13 @@
       goto(`${base}/login`);
     }
   });
+
+  async function loadBrandName() {
+    try {
+      const res = await api.get<{ data: any }>('/config');
+      brandName = res.data.adminBrandName || 'WollyCMS';
+    } catch { /* use default */ }
+  }
 
   async function loadNavCounts() {
     try {
@@ -139,9 +148,9 @@
   <div class="admin-layout">
     <aside class="sidebar" aria-label="Admin navigation">
       <div class="sidebar-header">
-        <a href="{base}/" class="logo" aria-label="WollyCMS Dashboard">
-          <span class="logo-icon" aria-hidden="true">S</span>
-          <span class="logo-text">WollyCMS</span>
+        <a href="{base}/" class="logo" aria-label="{brandName} Dashboard">
+          <span class="logo-icon" aria-hidden="true">{brandName[0].toUpperCase()}</span>
+          <span class="logo-text">{brandName}</span>
         </a>
       </div>
       <nav class="sidebar-nav" aria-label="Main navigation">

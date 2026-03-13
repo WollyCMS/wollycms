@@ -15,6 +15,7 @@ const defaultConfig = {
   siteName: 'Southside Virginia Community College',
   tagline: 'Your Future Starts Here',
   logo: null as string | null,
+  adminBrandName: 'WollyCMS' as string | null,
   footer: { text: 'Southside Virginia Community College. All rights reserved.' },
   social: {
     facebook: 'https://www.facebook.com/SouthsideVirginiaCommunityCollege/' as string | null,
@@ -56,6 +57,7 @@ app.put('/', async (c) => {
     siteName: z.string().min(1).optional(),
     tagline: z.string().optional(),
     logo: z.string().nullable().optional(),
+    adminBrandName: z.string().nullable().optional(),
     footer: z.object({ text: z.string() }).optional(),
     social: z.object({
       facebook: z.string().nullable().optional(),

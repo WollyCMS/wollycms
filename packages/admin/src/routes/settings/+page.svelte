@@ -53,6 +53,16 @@
     </div>
 
     <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--c-border);" />
+    <h2 style="font-size: 1.1rem; margin-bottom: 1rem;">Admin Branding</h2>
+    <div class="form-group">
+      <label>Admin Panel Name</label>
+      <input class="form-control" bind:value={config.adminBrandName} placeholder="WollyCMS" />
+      <p style="font-size: 0.8rem; color: var(--c-text-light); margin-top: 0.25rem;">
+        Displayed in the top-left corner of the admin panel. Leave empty to use "WollyCMS".
+      </p>
+    </div>
+
+    <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--c-border);" />
     <h2 style="font-size: 1.1rem; margin-bottom: 1rem;">Social Links</h2>
     <div class="form-group">
       <label>Facebook</label>
