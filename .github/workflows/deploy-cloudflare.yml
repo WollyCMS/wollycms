@@ -85,6 +85,21 @@ jobs:
           SITE_URL = "${{ vars.SITE_URL }}"
           TOML
 
+      - name: Backup D1 before migrations
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.71.0'
+          command: d1 export ${{ vars.D1_DATABASE_NAME }} --remote --output d1-pre-deploy-backup.sql
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: d1-backup-${{ github.sha }}
+          path: d1-pre-deploy-backup.sql
+          retention-days: 30
+
       - name: Apply D1 migrations
         uses: cloudflare/wrangler-action@v3
         with:
