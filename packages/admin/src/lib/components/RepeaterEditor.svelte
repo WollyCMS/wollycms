@@ -14,16 +14,26 @@
 
   let nextKey = $state(Date.now());
   let items = $state<any[]>([]);
-  let skipSync = false;
+  let skipSyncCount = 0;
 
   // Sync from prop — skip when the change originated from our own emitUpdate
   $effect(() => {
     const v = value;
-    if (skipSync) {
-      skipSync = false;
+    if (skipSyncCount > 0) {
+      skipSyncCount--;
       return;
     }
-    items = Array.isArray(v) ? v.map((item) => ({ ...item, _key: nextKey++ })) : [];
+    // Only reassign items (and regenerate _key) if the length changed or it's the first load.
+    // If same length, update fields in-place without destroying editors.
+    const arr = Array.isArray(v) ? v : [];
+    if (items.length === 0 || arr.length !== items.length) {
+      items = arr.map((item) => ({ ...item, _key: nextKey++ }));
+    } else {
+      for (let i = 0; i < arr.length; i++) {
+        items[i] = { ...arr[i], _key: items[i]._key };
+      }
+      items = [...items];
+    }
   });
 
   const subFields: any[] = $derived(field.fields || []);
@@ -31,7 +41,7 @@
   const maxItems: number = $derived(field.max ?? 100);
 
   function emitUpdate() {
-    skipSync = true;
+    skipSyncCount++;
     const clean = items.map(({ _key, ...rest }) => rest);
     onUpdate(clean);
   }

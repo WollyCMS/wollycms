@@ -22,6 +22,7 @@
 
   let editorEl: HTMLDivElement | undefined = $state();
   let editor: Editor | undefined = $state();
+  let hasUserEdit = false;
   let txCount = $state(0);
   let headingWarnings = $state<string[]>([]);
   let showImagePicker = $state(false);
@@ -225,14 +226,18 @@
         PasteCleanup,
       ],
       content: content || '',
-      onTransaction: () => {
+      onTransaction: ({ transaction }) => {
         txCount++;
         isInTable = !!editor?.isActive('table');
         isImageSelected = !!editor?.isActive('image');
         if (editor) checkHeadings(editor.getJSON());
+        if (transaction.docChanged) hasUserEdit = true;
       },
       onBlur: () => {
-        if (editor && !showSource) onUpdate(editor.getJSON());
+        if (editor && !showSource && hasUserEdit) {
+          onUpdate(editor.getJSON());
+          hasUserEdit = false;
+        }
         setTimeout(() => { showSlashMenu = false; }, 200);
       },
     });
