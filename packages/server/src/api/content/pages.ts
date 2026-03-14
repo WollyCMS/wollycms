@@ -47,7 +47,7 @@ app.get('/', async (c) => {
     conditions.push(eq(pages.typeId, typeRow[0].id));
   }
 
-  // Filter by taxonomy term (format: vocabulary:term)
+  // Filter by taxonomy term (format: vocabulary:term or just vocabulary)
   // Uses raw SQL subquery to avoid D1's 100 bind-parameter limit with inArray
   if (taxonomyFilter) {
     const [vocabSlug, termSlug] = taxonomyFilter.split(':');
@@ -60,6 +60,17 @@ app.get('/', async (c) => {
           WHERE ${contentTerms.entityType} = 'page'
             AND ${taxonomies.slug} = ${vocabSlug}
             AND ${terms.slug} = ${termSlug}
+        )`
+      );
+    } else if (vocabSlug) {
+      // Filter by any term in the taxonomy (no specific term)
+      conditions.push(
+        sql`${pages.id} IN (
+          SELECT ${contentTerms.entityId} FROM ${contentTerms}
+          INNER JOIN ${terms} ON ${contentTerms.termId} = ${terms.id}
+          INNER JOIN ${taxonomies} ON ${terms.taxonomyId} = ${taxonomies.id}
+          WHERE ${contentTerms.entityType} = 'page'
+            AND ${taxonomies.slug} = ${vocabSlug}
         )`
       );
     }
@@ -101,6 +112,33 @@ app.get('/', async (c) => {
     .limit(limit)
     .offset(offset);
 
+  // Batch-fetch taxonomy terms for all returned pages
+  const pageIds = rows.map((r) => r.id);
+  const termsMap: Record<number, Array<{ taxonomy: string; term: string; weight: number }>> = {};
+  if (pageIds.length > 0) {
+    const termRows = await db
+      .select({
+        entityId: contentTerms.entityId,
+        taxonomySlug: taxonomies.slug,
+        termSlug: terms.slug,
+        termName: terms.name,
+        weight: terms.weight,
+      })
+      .from(contentTerms)
+      .innerJoin(terms, eq(contentTerms.termId, terms.id))
+      .innerJoin(taxonomies, eq(terms.taxonomyId, taxonomies.id))
+      .where(
+        and(
+          eq(contentTerms.entityType, 'page'),
+          sql`${contentTerms.entityId} IN (${sql.join(pageIds.map((id) => sql`${id}`), sql`, `)})`
+        )
+      );
+    for (const tr of termRows) {
+      if (!termsMap[tr.entityId]) termsMap[tr.entityId] = [];
+      termsMap[tr.entityId].push({ taxonomy: tr.taxonomySlug, term: tr.termSlug, weight: tr.weight });
+    }
+  }
+
   const data = rows.map((row: typeof rows[0]) => ({
     id: row.id,
     type: row.typeSlug,
@@ -108,6 +146,7 @@ app.get('/', async (c) => {
     slug: row.slug,
     status: row.status,
     fields: row.fields,
+    terms: termsMap[row.id] || [],
     meta: {
       created_at: row.createdAt,
       updated_at: row.updatedAt,
@@ -211,6 +250,21 @@ app.get('/:slug{.+}', async (c) => {
     regions[pb.region].push(blockEntry);
   }
 
+  // Fetch taxonomy terms for this page
+  const termRows = await db
+    .select({
+      taxonomySlug: taxonomies.slug,
+      termSlug: terms.slug,
+      termName: terms.name,
+      weight: terms.weight,
+    })
+    .from(contentTerms)
+    .innerJoin(terms, eq(contentTerms.termId, terms.id))
+    .innerJoin(taxonomies, eq(terms.taxonomyId, taxonomies.id))
+    .where(
+      and(eq(contentTerms.entityType, 'page'), eq(contentTerms.entityId, page.id))
+    );
+
   const data = {
     id: page.id,
     type: page.typeSlug,
@@ -218,6 +272,7 @@ app.get('/:slug{.+}', async (c) => {
     slug: page.slug,
     status: page.status,
     fields: page.fields,
+    terms: termRows.map((tr) => ({ taxonomy: tr.taxonomySlug, term: tr.termSlug, weight: tr.weight })),
     seo: {
       meta_title: page.metaTitle,
       meta_description: page.metaDescription,
