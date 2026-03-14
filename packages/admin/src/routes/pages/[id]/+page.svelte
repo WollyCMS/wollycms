@@ -108,10 +108,13 @@
         history.replaceState({}, '', `${base}/pages/${id}`);
         return;
       }
-      // User confirmed — clean up to prevent further interference
-      dirty = false;
-      blocksDirtyTick = 0;
     }
+    // Collapse all blocks before navigating — TipTap editors must be
+    // destroyed cleanly before Svelte tears down the component tree,
+    // otherwise ProseMirror's DOM listeners block the new page render.
+    blockEditor?.collapseAll();
+    dirty = false;
+    blocksDirtyTick = 0;
   });
 
   function handleBeforeUnload(e: BeforeUnloadEvent) {

@@ -376,6 +376,10 @@
     }
   }
 
+  export function collapseAll() {
+    expandedBlocks = new Set();
+  }
+
   export function hasUnsavedBlocks(): boolean {
     return dirtyBlockPbIds.size > 0;
   }
