@@ -264,6 +264,11 @@ export async function seedBlockTypes(db: AppDatabase) {
             ],
           },
         },
+        {
+          name: 'height',
+          label: 'Fixed Height (e.g. 600px)',
+          type: 'text',
+        },
       ],
       icon: 'code',
       settings: {},
