@@ -24,7 +24,7 @@ app.get('/', async (c) => {
   const typeSlug = c.req.query('type');
   const taxonomyFilter = c.req.query('taxonomy');
   const sortParam = c.req.query('sort') || 'published_at:desc';
-  const limit = Math.min(parseInt(c.req.query('limit') || '20', 10), 100);
+  const limit = Math.min(parseInt(c.req.query('limit') || '20', 10), 50);
   const offset = parseInt(c.req.query('offset') || '0', 10);
 
   const now = new Date().toISOString();
@@ -113,6 +113,7 @@ app.get('/', async (c) => {
     .offset(offset);
 
   // Batch-fetch taxonomy terms for all returned pages
+  // Uses raw SQL IN clause to avoid D1's bind-parameter limit
   const pageIds = rows.map((r) => r.id);
   const termsMap: Record<number, Array<{ taxonomy: string; term: string; weight: number }>> = {};
   if (pageIds.length > 0) {
@@ -130,7 +131,7 @@ app.get('/', async (c) => {
       .where(
         and(
           eq(contentTerms.entityType, 'page'),
-          sql`${contentTerms.entityId} IN (${sql.join(pageIds.map((id) => sql`${id}`), sql`, `)})`
+          sql`${contentTerms.entityId} IN (${sql.raw(pageIds.join(','))})`
         )
       );
     for (const tr of termRows) {
