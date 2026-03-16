@@ -137,6 +137,10 @@
   }
 </script>
 
+<svelte:head>
+  <title>{brandName} Admin</title>
+</svelte:head>
+
 <svelte:window onkeydown={handleGlobalKeydown} />
 
 {#if !auth.loaded && !needsSetup}
