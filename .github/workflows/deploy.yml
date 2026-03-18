@@ -43,10 +43,6 @@ jobs:
       fail-fast: false
       matrix:
         environment: [production, catalog, shdcms]
-    if: >-
-      github.event_name == 'push' ||
-      github.event.inputs.environment == 'all' ||
-      github.event.inputs.environment == matrix.environment
     environment: ${{ matrix.environment }}
     steps:
       - name: Checkout
