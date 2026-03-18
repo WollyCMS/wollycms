@@ -1,9 +1,19 @@
-name: Deploy to Cloudflare Workers (Production)
+name: Deploy to Cloudflare Workers
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deploy to specific environment (leave empty for all)'
+        type: choice
+        options:
+          - all
+          - production
+          - catalog
+          - shdcms
+        default: all
 
 jobs:
   test:
@@ -29,7 +39,15 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    environment: production
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [production, catalog, shdcms]
+    if: >-
+      github.event_name == 'push' ||
+      github.event.inputs.environment == 'all' ||
+      github.event.inputs.environment == matrix.environment
+    environment: ${{ matrix.environment }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -99,7 +117,7 @@ jobs:
         if: steps.d1_backup.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
-          name: d1-backup-${{ github.sha }}
+          name: d1-backup-${{ matrix.environment }}-${{ github.sha }}
           path: d1-pre-deploy-backup.sql
           retention-days: 30
 
