@@ -114,7 +114,7 @@ app.get('/', async (c) => {
 
   // Batch-fetch taxonomy terms for all returned pages
   // Uses raw SQL IN clause to avoid D1's bind-parameter limit
-  const pageIds = rows.map((r: typeof rows[0]) => r.id);
+  const pageIds = rows.map((r) => r.id);
   const termsMap: Record<number, Array<{ taxonomy: string; term: string; weight: number }>> = {};
   if (pageIds.length > 0) {
     const termRows = await db
@@ -273,7 +273,7 @@ app.get('/:slug{.+}', async (c) => {
     slug: page.slug,
     status: page.status,
     fields: page.fields,
-    terms: termRows.map((tr: typeof termRows[0]) => ({ taxonomy: tr.taxonomySlug, term: tr.termSlug, weight: tr.weight })),
+    terms: termRows.map((tr) => ({ taxonomy: tr.taxonomySlug, term: tr.termSlug, weight: tr.weight })),
     seo: {
       meta_title: page.metaTitle,
       meta_description: page.metaDescription,
