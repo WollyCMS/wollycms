@@ -13,6 +13,7 @@ on:
           - production
           - catalog
           - shdcms
+          - site
         default: all
 
 jobs:
@@ -42,7 +43,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        environment: [production, catalog, shdcms]
+        environment: [production, catalog, shdcms, site]
     environment: ${{ matrix.environment }}
     steps:
       - name: Checkout
