@@ -3,6 +3,8 @@
 A self-hosted, open-source headless CMS designed for [Astro.js](https://astro.build) with composable block-based page building, reusable content blocks, and hierarchical menu management.
 
 [![CI](https://github.com/wollycms/wollycms/actions/workflows/build-push.yml/badge.svg)](https://github.com/wollycms/wollycms/actions/workflows/build-push.yml)
+[![npm](https://img.shields.io/npm/v/@wollycms/server?label=%40wollycms%2Fserver)](https://www.npmjs.com/package/@wollycms/server)
+[![npm](https://img.shields.io/npm/v/@wollycms/astro?label=%40wollycms%2Fastro)](https://www.npmjs.com/package/@wollycms/astro)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-22_LTS-green.svg)](https://nodejs.org/)
 
@@ -36,30 +38,47 @@ WollyCMS fills the gap between simple headless CMS tools (Strapi, Directus) that
 
 ## Quick Start
 
+Create a new project with a single command:
+
 ```bash
-git clone https://github.com/wollycms/wollycms.git && cd wollycms
-cp .env.example .env
-npm install
-npm run db:migrate
-npm run db:seed
+npm create wolly my-site
+cd my-site
+npm run migrate
+npm run seed
 npm run dev
 ```
 
-The API server starts at `http://localhost:4321`. Default login: `admin@wollycms.local` / `admin123`.
-
-```bash
-# In separate terminals:
-npm run dev:admin    # Admin UI at http://localhost:4324
-npm run dev:site     # Example Astro site at http://localhost:4322
-```
+That's it — the API server starts at `http://localhost:4321` with the admin UI built in.
+Default login: `admin@wollycms.local` / `admin123`.
 
 ### Docker
 
 ```bash
-cp .env.example .env
+npm create wolly my-site && cd my-site
 # Edit .env — set JWT_SECRET to a secure random value
 docker compose up -d
 ```
+
+### Astro Integration
+
+In your Astro project, install the integration package:
+
+```bash
+npm install @wollycms/astro
+```
+
+Then add it to your `astro.config.mjs`:
+
+```js
+import { defineConfig } from 'astro/config';
+import wollycms from '@wollycms/astro';
+
+export default defineConfig({
+  integrations: [wollycms({ endpoint: 'http://localhost:4321' })],
+});
+```
+
+See [Astro Integration docs](docs/architecture/astro-integration.md) for BlockRenderer, route generation, menu helpers, and image optimization.
 
 ## Content API
 
@@ -123,7 +142,35 @@ All configuration is via environment variables. See [`.env.example`](.env.exampl
 | `RATE_LIMIT_AUTH` | `10` | Max login attempts per window |
 | `RATE_LIMIT_WINDOW_MS` | `900000` | Rate limit window (15 min default) |
 
+## Packages
+
+| Package | npm | Description |
+|---|---|---|
+| [`@wollycms/server`](packages/server) | [![npm](https://img.shields.io/npm/v/@wollycms/server)](https://www.npmjs.com/package/@wollycms/server) | Hono API server, Drizzle schema, media processing |
+| [`@wollycms/astro`](packages/astro) | [![npm](https://img.shields.io/npm/v/@wollycms/astro)](https://www.npmjs.com/package/@wollycms/astro) | Astro integration — components, helpers, route generation |
+| [`create-wolly`](packages/create-wolly) | [![npm](https://img.shields.io/npm/v/create-wolly)](https://www.npmjs.com/package/create-wolly) | CLI scaffolding tool |
+| [`@wollycms/admin`](packages/admin) | — | SvelteKit admin UI (bundled with server) |
+
 ## Development
+
+To contribute or work on WollyCMS itself, clone the monorepo:
+
+```bash
+git clone https://github.com/wollycms/wollycms.git && cd wollycms
+cp .env.example .env
+npm install
+npm run db:migrate
+npm run db:seed
+npm run dev
+```
+
+```bash
+# In separate terminals:
+npm run dev:admin         # Admin UI at http://localhost:4324
+npm run dev:site          # Example Astro site at http://localhost:4322
+```
+
+### Development Commands
 
 ```bash
 npm install               # Install all workspace dependencies
@@ -170,7 +217,7 @@ Phases 1-5 complete. See [Roadmap](docs/planning/roadmap.md) for details.
 | Phase 4.5 | Admin UI Polish | Complete |
 | Phase 5a | Production Infrastructure | Complete |
 | Phase 5b-c | Security/Performance | Complete |
-| Phase 6 | Packaging & DX | In Progress |
+| Phase 6 | Packaging & DX | Complete |
 | Phase 7 | Content Features | In Progress |
 
 ## Contributing
