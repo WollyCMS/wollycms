@@ -1,0 +1,32 @@
+---
+title: WollyCMS Documentation
+description: The self-hosted, Astro-native headless CMS.
+template: splash
+hero:
+  tagline: The headless CMS built for Astro. Block-based composition, hierarchical menus, and a visual editor — self-hosted and open source.
+  actions:
+    - text: Get Started
+      link: /getting-started/quick-start/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/wollycms/wollycms
+      icon: external
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid stagger>
+  <Card title="Quick Start" icon="rocket">
+    Get a WollyCMS instance running in under 5 minutes with `npx create-wolly my-site`.
+  </Card>
+  <Card title="Block Composition" icon="puzzle">
+    Build pages from typed blocks arranged in named regions. Your Astro components render them.
+  </Card>
+  <Card title="Astro Integration" icon="astro">
+    First-class `@wollycms/astro` package with typed client, BlockRenderer, menu helpers, and SEO utilities.
+  </Card>
+  <Card title="Deploy Anywhere" icon="setting">
+    Cloudflare Workers, Docker, or bare Node.js. SQLite or PostgreSQL. S3 or R2 for media.
+  </Card>
+</CardGrid>
