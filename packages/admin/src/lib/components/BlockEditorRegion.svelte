@@ -88,6 +88,12 @@
   function toggleExpanded(pbId: number) {
     const next = new Set(expandedBlocks);
     if (next.has(pbId)) {
+      // Warn if collapsing a block with unsaved changes
+      if (dirtyBlockPbIds.has(pbId)) {
+        if (!confirm('This block has unsaved changes. Close it anyway? (Changes will be kept until you save the page.)')) {
+          return;
+        }
+      }
       next.delete(pbId);
     } else {
       next.add(pbId);

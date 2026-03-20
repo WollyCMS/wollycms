@@ -57,12 +57,21 @@
     }
   });
 
+  let brandLoaded = $state(false);
   async function loadBrandName() {
     try {
       const res = await api.get<{ data: any }>('/config');
       brandName = res.data.adminBrandName || 'WollyCMS';
+      brandLoaded = true;
     } catch { /* use default */ }
   }
+
+  // Retry brand loading when auth becomes available (covers race conditions)
+  $effect(() => {
+    if (auth.loaded && auth.user && !brandLoaded) {
+      loadBrandName();
+    }
+  });
 
   async function loadNavCounts() {
     try {
@@ -145,8 +154,10 @@
 
 {#if !auth.loaded && !needsSetup}
   <div class="loading">Loading...</div>
-{:else if isPublicPage || needsSetup || !auth.user}
+{:else if isPublicPage || needsSetup}
   {@render children()}
+{:else if !auth.user}
+  <div class="loading">Redirecting...</div>
 {:else}
   <a href="#main-content" class="skip-link">Skip to main content</a>
   <div class="admin-layout">
