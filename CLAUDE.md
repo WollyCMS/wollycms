@@ -48,25 +48,6 @@ npm run test                                   # Run all tests
 npm run test --workspace=packages/server       # Server tests only
 ```
 
-## Current Status
-
-- **Phases 1-4**: Complete (Data + API, Astro Integration, Admin UI, Visual Page Builder + Live Preview)
-- **Phase 4.5**: Complete (all sub-phases a-e)
-- **Phase 5**: Complete (webhooks, API keys, audit logging, rate limiting, CORS, cache headers, batch API, health check, security hardening, accessibility, query caching, ETag, S3/R2 media storage)
-- **Phase 6**: In progress (CLI, build pipeline, Docker, type generation)
-- **Phase 7**: In progress (SEO + OG image generation + tracking scripts complete, search partial, form builder + i18n pending)
-- Monorepo: npm workspaces (packages/server, packages/admin, packages/astro, examples/college-site)
-- Database: 18 tables with dual SQLite/PostgreSQL Drizzle schemas + indexes + migrations
-- Seed data: 8 pages, 11 block types (incl. hero, embed), 3 content types, 3 menus, 2 taxonomies
-- Content API: 12 endpoints including preview, search, sitemap, tracking scripts (166 tests passing: 41 content + 90 admin + 11 a11y + 18 seo + 6 og)
-- Schema files use `.ts` imports (drizzle-kit requires this); `rewriteRelativeImportExtensions` in tsconfig converts to `.js` on build
-- Dual database: SQLite schemas in `schema/`, PG schemas in `schema-pg/`; smart barrel in `schema/index.ts` auto-selects based on `DATABASE_URL`
-- SQLite drizzle config: `drizzle.config.ts` → `drizzle/`; PG config: `drizzle-pg.config.ts` → `drizzle-pg/`
-- App factory: `src/app.ts` (testable), `src/index.ts` (server entry)
-- Media storage: pluggable backend — local filesystem (dev) or S3-compatible/R2 (prod), set via `MEDIA_STORAGE` env var
-- Media API: supports pagination (limit/offset), sorting (createdAt/title/size, asc/desc), search, folder/type filters
-- User deletion: prevents deleting the last admin account (not just self-deletion)
-
 ## Architecture Key Points
 
 - Content is stored as structured JSON (not HTML)
@@ -77,6 +58,9 @@ npm run test --workspace=packages/server       # Server tests only
 - Content API is public/read-only; Admin API is authenticated; Preview API is token-authenticated
 - Media stored on local filesystem (dev) or S3-compatible (prod)
 - API routes: `/api/content/*` (public), `/api/admin/*` (auth), `/api/content/preview/*` (token auth)
+- Dual database: SQLite schemas in `schema/`, PG schemas in `schema-pg/`; auto-selects based on `DATABASE_URL`
+- App factory: `src/app.ts` (testable), `src/index.ts` (server entry)
+- Schema files use `.ts` imports (drizzle-kit requires this); `rewriteRelativeImportExtensions` in tsconfig converts to `.js` on build
 
 ## Important Patterns
 
