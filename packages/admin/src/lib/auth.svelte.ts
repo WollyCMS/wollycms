@@ -5,6 +5,7 @@ interface User {
   email: string;
   name: string;
   role: string;
+  twoFactorEnabled?: boolean;
 }
 
 let user = $state<User | null>(null);

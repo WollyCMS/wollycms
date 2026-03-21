@@ -48,14 +48,32 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   return json;
 }
 
+interface LoginResult {
+  token?: string;
+  user?: { id: number; email: string; name: string; role: string };
+  requiresTwoFactor?: boolean;
+  challengeToken?: string;
+}
+
 export const api = {
   get: <T>(path: string) => request<T>('GET', path),
   post: <T>(path: string, body?: unknown) => request<T>('POST', path, body),
   put: <T>(path: string, body?: unknown) => request<T>('PUT', path, body),
-  del: <T>(path: string) => request<T>('DELETE', path),
+  del: <T>(path: string, body?: unknown) => request<T>('DELETE', path, body),
 
-  login: async (email: string, password: string) => {
-    const res = await request<{ data: { token: string; user: any } }>('POST', '/auth/login', { email, password });
+  login: async (email: string, password: string): Promise<LoginResult> => {
+    const res = await request<{ data: LoginResult }>('POST', '/auth/login', { email, password });
+    if (res.data.token) {
+      setToken(res.data.token);
+    }
+    return res.data;
+  },
+
+  verify2fa: async (challengeToken: string, code: string) => {
+    const res = await request<{ data: { token: string; user: any } }>('POST', '/auth/verify-2fa', {
+      challengeToken,
+      code,
+    });
     setToken(res.data.token);
     return res.data;
   },

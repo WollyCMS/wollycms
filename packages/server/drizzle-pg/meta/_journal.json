@@ -29,6 +29,13 @@
       "when": 1774110674013,
       "tag": "0003_daily_magneto",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1774136944535,
+      "tag": "0004_cuddly_sphinx",
+      "breakpoints": true
     }
   ]
 }

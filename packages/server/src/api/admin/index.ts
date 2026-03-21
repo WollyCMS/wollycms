@@ -23,6 +23,7 @@ import searchRouter from './search.js';
 import trackingScriptsRouter from './tracking-scripts.js';
 import ogImagesRouter from './og-images.js';
 import setupRouter from './setup.js';
+import twoFactorRouter from './two-factor.js';
 
 const app = new Hono();
 
@@ -31,9 +32,13 @@ app.use('/setup/*', rateLimiter());
 app.use('/setup', rateLimiter());
 app.route('/setup', setupRouter);
 
-// Auth routes with rate limiting (login is public, /me is protected inside)
+// Auth routes with rate limiting (login and 2FA verification are public)
 app.use('/auth/login', rateLimiter());
+app.use('/auth/verify-2fa', rateLimiter());
 app.route('/auth', authRouter);
+
+// 2FA management routes (authenticated, mounted under /auth/2fa)
+app.route('/auth/2fa', twoFactorRouter);
 
 // All other admin routes require authentication
 app.use('/*', authMiddleware);
