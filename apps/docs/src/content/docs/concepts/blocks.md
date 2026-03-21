@@ -84,6 +84,12 @@ Regions can restrict which block types are allowed:
 }
 ```
 
+## Default blocks
+
+Content types can define blocks that are automatically created when a new page is made. For example, a "Secondary Page" content type might default to a hero block, a rich text block in the content region, and a navigation submenu in the sidebar.
+
+Default blocks are configured on the content type via the `defaultBlocks` field. See [Pages & Content Types](/concepts/pages/#default-blocks) for the full guide.
+
 ## Shared (reusable) blocks
 
 Blocks can be marked as **reusable**. A shared block lives in the block library and can be placed on multiple pages. When you update the shared block, the change propagates everywhere it's used.

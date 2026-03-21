@@ -98,9 +98,20 @@ The key (`sk_...`) is returned once. Use via `X-API-Key` header or `Authorizatio
 |---|---|
 | `GET /content-types` | List all |
 | `GET /content-types/:id` | Get one |
-| `POST /content-types` | Create. Body: `{ name, slug, fieldsSchema, regions, description? }` |
+| `POST /content-types` | Create. Body: `{ name, slug, fieldsSchema, regions, defaultBlocks?, description? }` |
 | `PUT /content-types/:id` | Update |
 | `DELETE /content-types/:id` | Delete |
+
+The `defaultBlocks` field is an array of block definitions that are auto-created when a new page of this type is made:
+
+```json
+{
+  "defaultBlocks": [
+    { "region": "content", "blockTypeSlug": "rich_text", "position": 0 },
+    { "region": "sidebar", "blockTypeSlug": "link_list", "position": 0 }
+  ]
+}
+```
 
 ## Block Types (admin role)
 

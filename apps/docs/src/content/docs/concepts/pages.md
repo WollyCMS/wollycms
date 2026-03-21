@@ -12,6 +12,7 @@ A content type is a blueprint for a category of pages. It defines:
 - **Fields schema** — structured data fields attached directly to the page (subtitle, featured image ID, author, etc.)
 - **Regions** — named areas where blocks can be placed (hero, content, sidebar, footer)
 - **Allowed block types per region** — optionally restrict which block types editors can add to each region
+- **Default blocks** — blocks that are automatically added when a new page of this type is created
 
 ### Creating a content type
 
@@ -33,11 +34,47 @@ curl -X POST http://localhost:4321/api/admin/content-types \
     "regions": [
       { "name": "hero", "label": "Hero", "allowed_types": ["hero", "image"] },
       { "name": "content", "label": "Content", "allowed_types": null }
+    ],
+    "defaultBlocks": [
+      { "region": "hero", "blockTypeSlug": "hero", "position": 0 },
+      { "region": "content", "blockTypeSlug": "rich_text", "position": 0 }
     ]
   }'
 ```
 
 Setting `allowed_types` to `null` means any block type can be placed in that region.
+
+### Default blocks
+
+Content types can define **default blocks** that are automatically populated when a new page is created. This saves editors from building the same layout from scratch every time.
+
+Each entry in `defaultBlocks` specifies:
+
+| Field | Type | Description |
+|---|---|---|
+| `region` | string | Which region to place the block in |
+| `blockTypeSlug` | string | The slug of the block type to create |
+| `position` | number | Order within the region (0-based) |
+| `fields` | object | Optional pre-filled field values |
+
+The blocks are created as normal inline blocks — editors can remove, reorder, or add more. They are not locked or special in any way.
+
+```json
+{
+  "defaultBlocks": [
+    { "region": "hero", "blockTypeSlug": "hero", "position": 0 },
+    { "region": "content", "blockTypeSlug": "rich_text", "position": 0 },
+    { "region": "sidebar", "blockTypeSlug": "link_list", "position": 0 },
+    { "region": "sidebar", "blockTypeSlug": "rich_text", "position": 1 }
+  ]
+}
+```
+
+Set `defaultBlocks` to `null` or `[]` to create pages with no pre-populated blocks.
+
+:::tip
+Analyze your existing pages to find the most common block layouts per content type, then set those as defaults. For example, if 90% of your secondary pages start with a hero, rich text, and sidebar navigation — make that the default.
+:::
 
 ### Common content type examples
 
