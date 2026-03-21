@@ -51,6 +51,11 @@ npm-debug.log*
 # Uploads (managed by media system)
 uploads/
 
+# Internal docs (moved to webmanagement)
+docs/analysis/
+docs/planning/
+docs/research/
+docs/BUGS.md
+
 # Cloudflare
 wrangler.toml
-!apps/docs/wrangler.toml

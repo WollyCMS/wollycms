@@ -13,9 +13,7 @@ WollyCMS is pre-1.0. Security fixes are applied to the `main` branch only.
 
 If you discover a security vulnerability, please report it responsibly.
 
-**Preferred**: Use [GitHub's private vulnerability reporting](https://github.com/wollycms/wollycms/security/advisories/new).
-
-**Email**: wollycms@cwolly.com
+Use [GitHub's private vulnerability reporting](https://github.com/wollycms/wollycms/security/advisories/new).
 
 **Do not** open a public GitHub issue for security vulnerabilities.
 

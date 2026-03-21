@@ -13,7 +13,7 @@ binding = "IMAGES"
 # Session KV namespace
 [[kv_namespaces]]
 binding = "SESSION"
-id = "63c41791eaf742f9a78becec46355d38"
+id = "<your-kv-namespace-id>"
 
 # GA_MEASUREMENT_ID is set as a secret (not in this file)
 # After deploy: wrangler secret put GA_MEASUREMENT_ID --name wollycms-docs

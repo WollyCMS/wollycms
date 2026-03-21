@@ -81,8 +81,5 @@ Read these before making structural changes:
 - `docs/architecture/block-system.md` — Block composition model
 - `docs/architecture/api-design.md` — API endpoints
 - `docs/architecture/astro-integration.md` — Astro package design
-- `docs/planning/requirements.md` — Feature requirements
-- `docs/planning/roadmap.md` — Implementation phases
-- `docs/planning/tech-stack.md` — Technology choices
 - `docs/architecture/accessibility-checks.md` — WCAG AA content checks
 - `docs/architecture/seo-editor-tools.md` — SEO previews and scoring

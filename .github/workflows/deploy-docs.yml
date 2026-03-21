@@ -26,6 +26,25 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Generate wrangler.toml
+        run: |
+          cat > wrangler.toml <<EOF
+          name = "wollycms-docs"
+          compatibility_date = "2026-03-17"
+          compatibility_flags = ["nodejs_compat"]
+
+          [assets]
+          directory = "dist"
+
+          [images]
+          binding = "IMAGES"
+
+          [[kv_namespaces]]
+          binding = "SESSION"
+          id = "${{ vars.KV_SESSION_ID }}"
+          EOF
+          sed -i 's/^          //' wrangler.toml
+
       - name: Build
         run: npx astro build
         env:
