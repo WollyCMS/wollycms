@@ -53,3 +53,4 @@ uploads/
 
 # Cloudflare
 wrangler.toml
+!apps/docs/wrangler.toml
