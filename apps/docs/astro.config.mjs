@@ -3,6 +3,8 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import cloudflare from '@astrojs/cloudflare';
 
+const gaId = process.env.GA_MEASUREMENT_ID;
+
 export default defineConfig({
 	site: 'https://docs.wollycms.com',
 	output: 'server',
@@ -10,6 +12,16 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'WollyCMS Docs',
+			head: gaId ? [
+				{
+					tag: 'script',
+					attrs: { async: true, src: `https://www.googletagmanager.com/gtag/js?id=${gaId}` },
+				},
+				{
+					tag: 'script',
+					content: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${gaId}');`,
+				},
+			] : [],
 			logo: {
 				light: '/src/assets/logo-light.svg',
 				dark: '/src/assets/logo-dark.svg',
