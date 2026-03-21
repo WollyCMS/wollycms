@@ -55,7 +55,7 @@ for (const post of posts) {
 
 ## Real-world example
 
-Read the [Community College Case Study](/migration/case-study-community-college) to see how a mid-size institutional site migrated 1,300+ pages, 500+ media files, and 244 menu items from Drupal 10 to WollyCMS — cutting hosting costs from ~$150/month to $5/month.
+Read the [Community College Case Study](/migration/case-study-community-college) to see how a mid-size institutional site migrated 1,300+ pages, 500+ media files, and 244 menu items from Drupal 10 to WollyCMS — cutting hosting costs from ~$20k/year to $5/month.
 
 ## Key concepts
 
