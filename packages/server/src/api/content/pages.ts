@@ -12,11 +12,13 @@ import {
   taxonomies,
 } from '../../db/schema/index.js';
 import { cacheGet, cacheSet } from '../../cache.js';
+import { loadConfig } from '../admin/config.js';
 
 const app = new Hono();
 
 /**
  * GET / - List published pages with filtering, sorting, pagination.
+ * Accepts ?locale= to filter by language (defaults to site's defaultLocale).
  */
 app.get('/', async (c) => {
   const db = getDb();
@@ -26,10 +28,15 @@ app.get('/', async (c) => {
   const sortParam = c.req.query('sort') || 'published_at:desc';
   const limit = Math.min(parseInt(c.req.query('limit') || '20', 10), 50);
   const offset = parseInt(c.req.query('offset') || '0', 10);
+  const localeParam = c.req.query('locale');
+
+  const config = await loadConfig();
+  const locale = localeParam || config.defaultLocale;
 
   const now = new Date().toISOString();
   const conditions: ReturnType<typeof eq>[] = [
     eq(pages.status, 'published'),
+    eq(pages.locale, locale),
     sql`(${pages.scheduledAt} IS NULL OR ${pages.scheduledAt} <= ${now})`,
   ];
 
@@ -101,6 +108,7 @@ app.get('/', async (c) => {
       slug: pages.slug,
       status: pages.status,
       fields: pages.fields,
+      locale: pages.locale,
       createdAt: pages.createdAt,
       updatedAt: pages.updatedAt,
       publishedAt: pages.publishedAt,
@@ -146,6 +154,7 @@ app.get('/', async (c) => {
     title: row.title,
     slug: row.slug,
     status: row.status,
+    locale: row.locale,
     fields: row.fields,
     terms: termsMap[row.id] || [],
     meta: {
@@ -164,8 +173,12 @@ app.get('/', async (c) => {
 app.get('/:slug{.+}', async (c) => {
   const db = getDb();
   const slug = c.req.param('slug');
+  const localeParam = c.req.query('locale');
 
-  const cacheKey = `pages:${slug}`;
+  const config = await loadConfig();
+  const locale = localeParam || config.defaultLocale;
+
+  const cacheKey = `pages:${locale}:${slug}`;
   const cached = cacheGet<object>(cacheKey);
   if (cached) return c.json(cached);
 
@@ -178,6 +191,8 @@ app.get('/:slug{.+}', async (c) => {
       title: pages.title,
       slug: pages.slug,
       status: pages.status,
+      locale: pages.locale,
+      translationGroupId: pages.translationGroupId,
       fields: pages.fields,
       metaTitle: pages.metaTitle,
       metaDescription: pages.metaDescription,
@@ -192,6 +207,7 @@ app.get('/:slug{.+}', async (c) => {
     .innerJoin(contentTypes, eq(pages.typeId, contentTypes.id))
     .where(and(
       eq(pages.slug, slug),
+      eq(pages.locale, locale),
       eq(pages.status, 'published'),
       sql`(${pages.scheduledAt} IS NULL OR ${pages.scheduledAt} <= ${new Date().toISOString()})`,
     ))
@@ -266,12 +282,29 @@ app.get('/:slug{.+}', async (c) => {
       and(eq(contentTerms.entityType, 'page'), eq(contentTerms.entityId, page.id))
     );
 
+  // Fetch sibling translations if page is in a translation group
+  let translations: Array<{ locale: string; slug: string; title: string; id: number }> = [];
+  if (page.translationGroupId) {
+    const siblings = await db
+      .select({ id: pages.id, locale: pages.locale, slug: pages.slug, title: pages.title })
+      .from(pages)
+      .where(and(
+        eq(pages.translationGroupId, page.translationGroupId),
+        eq(pages.status, 'published'),
+        sql`${pages.id} != ${page.id}`,
+      ));
+    translations = siblings;
+  }
+
   const data = {
     id: page.id,
     type: page.typeSlug,
     title: page.title,
     slug: page.slug,
     status: page.status,
+    locale: page.locale,
+    translationGroupId: page.translationGroupId,
+    translations,
     fields: page.fields,
     terms: termRows.map((tr: typeof termRows[0]) => ({ taxonomy: tr.taxonomySlug, term: tr.termSlug, weight: tr.weight })),
     seo: {

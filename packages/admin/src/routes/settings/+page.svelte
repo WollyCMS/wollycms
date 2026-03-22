@@ -63,6 +63,60 @@
     </div>
 
     <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--c-border);" />
+    <h2 style="font-size: 1.1rem; margin-bottom: 1rem;">Localization</h2>
+    <div class="form-group">
+      <label>Default Locale</label>
+      <select class="form-control" bind:value={config.defaultLocale} style="max-width: 200px;">
+        {#each (config.supportedLocales || ['en']) as loc}
+          <option value={loc}>{loc}</option>
+        {/each}
+      </select>
+      <p style="font-size: 0.8rem; color: var(--c-text-light); margin-top: 0.25rem;">
+        Used when no locale is specified in API requests.
+      </p>
+    </div>
+    <div class="form-group">
+      <label>Supported Locales</label>
+      <div style="display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.5rem;">
+        {#each (config.supportedLocales || ['en']) as loc, i}
+          <span style="display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.5rem; background: var(--c-bg-subtle); border-radius: var(--radius); font-size: 0.85rem;">
+            {loc}
+            {#if config.supportedLocales.length > 1}
+              <button
+                type="button"
+                style="background: none; border: none; cursor: pointer; color: var(--c-text-light); font-size: 0.75rem; padding: 0;"
+                onclick={() => {
+                  config.supportedLocales = config.supportedLocales.filter((_: string, j: number) => j !== i);
+                  if (config.defaultLocale === loc) config.defaultLocale = config.supportedLocales[0];
+                }}
+                aria-label="Remove {loc}"
+              >&times;</button>
+            {/if}
+          </span>
+        {/each}
+      </div>
+      <div style="display: flex; gap: 0.35rem; align-items: center;">
+        <input
+          class="form-control"
+          placeholder="e.g. es, fr, de"
+          style="max-width: 120px; font-size: 0.85rem;"
+          onkeydown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              const input = e.target as HTMLInputElement;
+              const val = input.value.trim().toLowerCase();
+              if (val && val.length >= 2 && !config.supportedLocales.includes(val)) {
+                config.supportedLocales = [...config.supportedLocales, val];
+                input.value = '';
+              }
+            }
+          }}
+        />
+        <span style="font-size: 0.75rem; color: var(--c-text-light);">Press Enter to add</span>
+      </div>
+    </div>
+
+    <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--c-border);" />
     <h2 style="font-size: 1.1rem; margin-bottom: 1rem;">Social Links</h2>
     <div class="form-group">
       <label>Facebook</label>

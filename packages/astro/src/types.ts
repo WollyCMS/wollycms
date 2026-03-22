@@ -34,9 +34,17 @@ export interface PageSummary {
   title: string;
   slug: string;
   status: 'draft' | 'published' | 'archived';
+  locale?: string;
   fields: Record<string, unknown>;
   terms?: PageTerm[];
   meta: PageMeta;
+}
+
+export interface PageTranslation {
+  id: number;
+  locale: string;
+  slug: string;
+  title: string;
 }
 
 /** Resolved block in a page region */
@@ -62,6 +70,8 @@ export interface PageSeo {
 export interface Page extends PageSummary {
   regions: Record<string, ResolvedBlock[]>;
   seo?: PageSeo;
+  translationGroupId?: string | null;
+  translations?: PageTranslation[];
 }
 
 /** Menu item (recursive tree) */
@@ -211,4 +221,16 @@ export interface PageListParams {
   limit?: number;
   offset?: number;
   status?: string;
+  locale?: string;
+}
+
+/** Site configuration (from content API /config) */
+export interface SiteConfig {
+  siteName: string;
+  tagline: string;
+  logo: string | null;
+  footer: { text: string };
+  social: { facebook: string | null; twitter: string | null; instagram: string | null };
+  defaultLocale: string;
+  supportedLocales: string[];
 }

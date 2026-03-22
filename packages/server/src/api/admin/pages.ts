@@ -12,6 +12,7 @@ import { clearOgCache } from '../content/og-image.js';
 import pageBlocksRouter from './page-blocks.js';
 import pageTermsRouter from './page-terms.js';
 import { requireRole } from '../../auth/rbac.js';
+import { loadConfig } from './config.js';
 
 const app = new Hono();
 
@@ -32,6 +33,8 @@ const pageSchema = z.object({
   ogImage: z.string().nullable().optional(),
   canonicalUrl: z.string().nullable().optional(),
   robots: z.string().nullable().optional(),
+  locale: z.string().min(2).max(10).optional(),
+  translationGroupId: z.string().nullable().optional(),
 });
 
 const pageUpdateSchema = pageSchema.partial().extend({
@@ -48,6 +51,7 @@ app.get('/', async (c) => {
   const typeSlug = c.req.query('type');
   const status = c.req.query('status');
   const search = c.req.query('search');
+  const locale = c.req.query('locale');
   const sortParam = c.req.query('sort') || 'updated_at:desc';
   const limit = Math.min(parseInt(c.req.query('limit') || '50', 10), 100);
   const offset = parseInt(c.req.query('offset') || '0', 10);
@@ -66,6 +70,8 @@ app.get('/', async (c) => {
       publishedAt: pages.publishedAt,
       scheduledAt: pages.scheduledAt,
       unpublishAt: pages.unpublishAt,
+      locale: pages.locale,
+      translationGroupId: pages.translationGroupId,
     })
     .from(pages)
     .innerJoin(contentTypes, eq(pages.typeId, contentTypes.id))
@@ -73,6 +79,7 @@ app.get('/', async (c) => {
 
   const conditions: ReturnType<typeof eq>[] = [];
   if (status) conditions.push(eq(pages.status, status as 'draft' | 'published' | 'archived'));
+  if (locale) conditions.push(eq(pages.locale, locale));
 
   if (typeSlug) {
     const [typeRow] = await db.select({ id: contentTypes.id }).from(contentTypes).where(eq(contentTypes.slug, typeSlug)).limit(1);
@@ -102,6 +109,8 @@ app.get('/', async (c) => {
       status: r.status, fields: r.fields,
       scheduledAt: r.scheduledAt,
       unpublishAt: r.unpublishAt,
+      locale: r.locale,
+      translationGroupId: r.translationGroupId,
       meta: { created_at: r.createdAt, updated_at: r.updatedAt, published_at: r.publishedAt },
     })),
     meta: { total: countResult[0].count, limit, offset },
@@ -149,6 +158,7 @@ app.get('/:id', async (c) => {
       scheduledAt: pages.scheduledAt,
       metaTitle: pages.metaTitle, metaDescription: pages.metaDescription,
       ogImage: pages.ogImage, canonicalUrl: pages.canonicalUrl, robots: pages.robots,
+      locale: pages.locale, translationGroupId: pages.translationGroupId,
       createdAt: pages.createdAt, updatedAt: pages.updatedAt, publishedAt: pages.publishedAt,
     })
     .from(pages)
@@ -192,6 +202,7 @@ app.get('/:id', async (c) => {
       unpublishAt: page.unpublishAt,
       metaTitle: page.metaTitle, metaDescription: page.metaDescription,
       ogImage: page.ogImage, canonicalUrl: page.canonicalUrl, robots: page.robots,
+      locale: page.locale, translationGroupId: page.translationGroupId,
       regions,
       meta: { created_at: page.createdAt, updated_at: page.updatedAt, published_at: page.publishedAt },
     },
@@ -205,11 +216,13 @@ app.post('/', async (c) => {
   if (!parsed.success) return c.json({ errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message, path: i.path })) }, 400);
 
   const db = getDb();
+  const config = await loadConfig();
   const payload = c.get('jwtPayload');
   const now = new Date().toISOString();
   const slug = parsed.data.slug || slugify(parsed.data.title);
+  const pageLocale = parsed.data.locale || config.defaultLocale;
 
-  const existing = await db.select({ id: pages.id }).from(pages).where(eq(pages.slug, slug)).limit(1);
+  const existing = await db.select({ id: pages.id }).from(pages).where(and(eq(pages.slug, slug), eq(pages.locale, pageLocale))).limit(1);
   if (existing.length > 0) return c.json({ errors: [{ code: 'CONFLICT', message: 'Slug already exists' }] }, 409);
 
   const [row] = await db.insert(pages).values({
@@ -217,6 +230,8 @@ app.post('/', async (c) => {
     title: parsed.data.title,
     slug,
     status: parsed.data.status,
+    locale: pageLocale,
+    translationGroupId: parsed.data.translationGroupId || null,
     fields: parsed.data.fields,
     scheduledAt: parsed.data.scheduledAt ?? null,
     unpublishAt: parsed.data.unpublishAt ?? null,
@@ -277,11 +292,13 @@ app.post('/upsert', async (c) => {
   if (!parsed.success) return c.json({ errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message, path: i.path })) }, 400);
 
   const db = getDb();
+  const config = await loadConfig();
   const payload = c.get('jwtPayload');
   const now = new Date().toISOString();
   const slug = parsed.data.slug || slugify(parsed.data.title);
+  const pageLocale = parsed.data.locale || config.defaultLocale;
 
-  const [existing] = await db.select().from(pages).where(eq(pages.slug, slug)).limit(1);
+  const [existing] = await db.select().from(pages).where(and(eq(pages.slug, slug), eq(pages.locale, pageLocale))).limit(1);
 
   if (!existing) {
     // Create — same logic as POST /
@@ -290,6 +307,8 @@ app.post('/upsert', async (c) => {
       title: parsed.data.title,
       slug,
       status: parsed.data.status,
+      locale: pageLocale,
+      translationGroupId: parsed.data.translationGroupId || null,
       fields: parsed.data.fields,
       scheduledAt: parsed.data.scheduledAt ?? null,
       createdAt: now,
@@ -436,7 +455,8 @@ app.put('/:id', async (c) => {
   if (!existing) return c.json({ errors: [{ code: 'NOT_FOUND', message: 'Page not found' }] }, 404);
 
   if (parsed.data.slug && parsed.data.slug !== existing.slug) {
-    const dup = await db.select({ id: pages.id }).from(pages).where(eq(pages.slug, parsed.data.slug)).limit(1);
+    const checkLocale = parsed.data.locale || existing.locale;
+    const dup = await db.select({ id: pages.id }).from(pages).where(and(eq(pages.slug, parsed.data.slug), eq(pages.locale, checkLocale))).limit(1);
     if (dup.length > 0) return c.json({ errors: [{ code: 'CONFLICT', message: 'Slug already exists' }] }, 409);
   }
 
@@ -475,6 +495,9 @@ app.put('/:id', async (c) => {
 
   const { revisionNote: _note, ...pageFields } = parsed.data;
   const updates: Record<string, unknown> = { ...pageFields, updatedAt: now };
+  if (parsed.data.translationGroupId !== undefined) {
+    updates.translationGroupId = parsed.data.translationGroupId;
+  }
   if (parsed.data.status === 'published' && !existing.publishedAt) {
     updates.publishedAt = now;
   }
@@ -523,6 +546,81 @@ app.delete('/:id', async (c) => {
   cacheInvalidate('pages:');
   clearOgCache();
   return c.json({ data: { deleted: true } });
+});
+
+/** POST /:id/translate - Create a translation of an existing page. */
+app.post('/:id/translate', async (c) => {
+  const id = parseInt(c.req.param('id'), 10);
+  const body = await c.req.json().catch(() => null);
+  const parsed = z.object({ locale: z.string().min(2).max(10) }).safeParse(body);
+  if (!parsed.success) {
+    return c.json({ errors: [{ code: 'VALIDATION', message: 'Target locale required' }] }, 400);
+  }
+
+  const db = getDb();
+  const [source] = await db.select().from(pages).where(eq(pages.id, id)).limit(1);
+  if (!source) return c.json({ errors: [{ code: 'NOT_FOUND', message: 'Page not found' }] }, 404);
+
+  // Check target locale doesn't already exist for this slug
+  const [existing] = await db.select({ id: pages.id }).from(pages)
+    .where(and(eq(pages.slug, source.slug), eq(pages.locale, parsed.data.locale)))
+    .limit(1);
+  if (existing) {
+    return c.json({ errors: [{ code: 'CONFLICT', message: 'Translation already exists for this locale' }] }, 409);
+  }
+
+  // Ensure source has a translationGroupId
+  let groupId = source.translationGroupId;
+  if (!groupId) {
+    groupId = crypto.randomUUID();
+    await db.update(pages).set({ translationGroupId: groupId }).where(eq(pages.id, id));
+  }
+
+  // Check if a translation already exists in this group for the target locale
+  const [groupExisting] = await db.select({ id: pages.id }).from(pages)
+    .where(and(eq(pages.translationGroupId, groupId), eq(pages.locale, parsed.data.locale)))
+    .limit(1);
+  if (groupExisting) {
+    return c.json({ errors: [{ code: 'CONFLICT', message: 'Translation already exists in this group' }] }, 409);
+  }
+
+  const now = new Date().toISOString();
+  const payload = c.get('jwtPayload');
+  const [newPage] = await db.insert(pages).values({
+    typeId: source.typeId,
+    title: source.title,
+    slug: source.slug,
+    status: 'draft',
+    locale: parsed.data.locale,
+    translationGroupId: groupId,
+    fields: source.fields,
+    metaTitle: source.metaTitle,
+    metaDescription: source.metaDescription,
+    ogImage: source.ogImage,
+    canonicalUrl: source.canonicalUrl,
+    robots: source.robots,
+    createdAt: now,
+    updatedAt: now,
+    createdBy: payload.sub,
+  }).returning();
+
+  return c.json({ data: { id: newPage.id, locale: parsed.data.locale, translationGroupId: groupId } }, 201);
+});
+
+/** GET /:id/translations - Get all translations of a page. */
+app.get('/:id/translations', async (c) => {
+  const id = parseInt(c.req.param('id'), 10);
+  const db = getDb();
+  const [page] = await db.select({ translationGroupId: pages.translationGroupId }).from(pages)
+    .where(eq(pages.id, id)).limit(1);
+  if (!page) return c.json({ errors: [{ code: 'NOT_FOUND', message: 'Page not found' }] }, 404);
+  if (!page.translationGroupId) return c.json({ data: [] });
+
+  const siblings = await db.select({
+    id: pages.id, locale: pages.locale, title: pages.title, slug: pages.slug, status: pages.status,
+  }).from(pages).where(eq(pages.translationGroupId, page.translationGroupId));
+
+  return c.json({ data: siblings });
 });
 
 // Mount page-block sub-routes (add/update/delete blocks, duplicate, reorder)

@@ -31,6 +31,8 @@
   let allMenus = $state<any[]>([]);
   let menuDetails = $state<Record<number, any>>({});
   let revisions = $state<any[]>([]);
+  let translations = $state<any[]>([]);
+  let supportedLocales = $state<string[]>(['en']);
   let previewPanel = $state<PreviewPanel | null>(null);
   let blockEditor = $state<BlockEditorRegion | null>(null);
 
@@ -158,6 +160,8 @@
       }
       await loadMenuDetails();
       await loadMediaCache();
+      loadTranslations();
+      loadLocaleConfig();
       takeSnapshot();
       dirty = false; blocksDirtyTick = 0;
     } catch (err: any) { error = err.message; }
@@ -178,6 +182,20 @@
       const res = await api.get<{ data: any[] }>(`/pages/${id}/revisions`);
       revisions = res.data;
     } catch { revisions = []; }
+  }
+
+  async function loadTranslations() {
+    try {
+      const res = await api.get<{ data: any[] }>(`/pages/${id}/translations`);
+      translations = res.data;
+    } catch { /* ignore */ }
+  }
+
+  async function loadLocaleConfig() {
+    try {
+      const res = await api.get<{ data: any }>('/config');
+      supportedLocales = res.data.supportedLocales || ['en'];
+    } catch { /* ignore */ }
   }
 
   /** Load media metadata for alt-text checks */
@@ -203,6 +221,15 @@
 
   function handleA11yNavigate(pbId: number, a11yCode?: string) {
     blockEditor?.scrollToBlock(`pb_${pbId}`, a11yCode);
+  }
+
+  async function handleTranslate(targetLocale: string) {
+    try {
+      const res = await api.post<{ data: { id: number } }>(`/pages/${id}/translate`, { locale: targetLocale });
+      goto(`${base}/pages/${res.data.id}`);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to create translation');
+    }
   }
 
   onMount(load);
@@ -300,6 +327,9 @@
           <statusConfig.icon size={12} />
           {statusConfig.label}
         </span>
+        {#if pageData.locale}
+          <span class="badge" style="font-size: 0.75rem; background: var(--c-bg-subtle); color: var(--c-text-light);">{pageData.locale.toUpperCase()}</span>
+        {/if}
       </div>
       <div class="slug-row">
         {#if editingSlug}
@@ -390,6 +420,8 @@
         <PageEditorSidebar
           {pageData} {id} {allMenus} {menuDetails} {revisions}
           {a11yIssues} {seoChecks} {siteUrl}
+          {translations} {supportedLocales}
+          onTranslate={handleTranslate}
           bind:success bind:error
           onMenuDetailsReload={loadMenuDetails}
           onRevisionsReload={loadRevisions}

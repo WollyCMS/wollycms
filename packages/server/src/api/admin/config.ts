@@ -22,9 +22,11 @@ const defaultConfig = {
     twitter: null as string | null,
     instagram: null as string | null,
   },
+  defaultLocale: 'en',
+  supportedLocales: ['en'] as string[],
 };
 
-async function loadConfig(): Promise<typeof defaultConfig> {
+export async function loadConfig(): Promise<typeof defaultConfig> {
   const db = getDb();
   const row = await db.select().from(siteConfig).where(eq(siteConfig.id, 1)).get?.()
     ?? (await db.select().from(siteConfig).where(eq(siteConfig.id, 1)))[0];
@@ -75,6 +77,8 @@ app.put('/', async (c) => {
       twitter: z.string().nullable().optional(),
       instagram: z.string().nullable().optional(),
     }).optional(),
+    defaultLocale: z.string().min(2).max(10).optional(),
+    supportedLocales: z.array(z.string().min(2).max(10)).min(1).optional(),
   }).safeParse(body);
   if (!parsed.success) return c.json({ errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message })) }, 400);
 

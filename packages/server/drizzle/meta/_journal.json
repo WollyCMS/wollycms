@@ -127,6 +127,13 @@
       "when": 1774190230323,
       "tag": "0017_brown_doctor_strange",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1774200000000,
+      "tag": "0018_i18n",
+      "breakpoints": true
     }
   ]
 }
