@@ -63,9 +63,9 @@
 
   const statusConfig = $derived.by(() => {
     switch (pageData?.status) {
-      case 'published': return { label: 'Published', color: '#38a169', icon: CheckCircle };
-      case 'archived': return { label: 'Archived', color: '#718096', icon: Archive };
-      default: return { label: 'Draft', color: '#d69e2e', icon: Circle };
+      case 'published': return { label: 'Published', color: 'var(--c-success)', icon: CheckCircle };
+      case 'archived': return { label: 'Archived', color: 'var(--c-text-light)', icon: Archive };
+      default: return { label: 'Draft', color: 'var(--c-warning)', icon: Circle };
     }
   });
 

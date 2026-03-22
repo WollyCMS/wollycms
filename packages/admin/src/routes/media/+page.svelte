@@ -380,7 +380,7 @@
   }
   .folder-item:hover { background: var(--c-bg); }
   .folder-item.active {
-    background: var(--c-primary);
+    background: var(--c-accent);
     color: white;
     font-weight: 500;
   }

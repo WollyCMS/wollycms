@@ -16,6 +16,7 @@
   --c-warning: #d69e2e;
   --c-bg: #f7f8fa;
   --c-bg-subtle: #f1f5f9;
+  --c-bg-alt: #f1f5f9;
   --c-surface: #ffffff;
   --c-text: #2d3748;
   --c-text-light: #5a6878;
@@ -31,8 +32,8 @@
 }
 
 [data-theme="dark"] {
-  --c-primary: #90cdf4;
-  --c-primary-light: #63b3ed;
+  --c-primary: #2b6cb0;
+  --c-primary-light: #3182ce;
   --c-accent: #63b3ed;
   --c-accent-muted: rgba(99, 179, 237, 0.15);
   --c-danger: #fc8181;
@@ -40,6 +41,7 @@
   --c-warning: #f6e05e;
   --c-bg: #0f1219;
   --c-bg-subtle: #171c28;
+  --c-bg-alt: #171c28;
   --c-surface: #1a2030;
   --c-text: #e2e8f0;
   --c-text-light: #94a3b8;
@@ -57,6 +59,21 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   transition: background var(--transition), color var(--transition);
+}
+
+/* Global link colors (prevent browser default purple visited links) */
+a {
+  color: var(--c-accent);
+}
+
+a:visited {
+  color: var(--c-accent);
+}
+
+/* Checkbox and radio visibility in dark mode */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--c-accent);
 }
 
 /* Smooth theme transitions on key elements */

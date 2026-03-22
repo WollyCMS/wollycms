@@ -93,7 +93,7 @@
       <div class="repeater-item-fields">
         {#each subFields as sf}
           <div class="form-group">
-            <label style="font-size: 0.78rem;">{sf.label || sf.name}{#if sf.required} <span style="color: #ef4444;">*</span>{/if}</label>
+            <label style="font-size: 0.78rem;">{sf.label || sf.name}{#if sf.required} <span style="color: var(--c-danger);">*</span>{/if}</label>
             {#if sf.type === 'richtext'}
               <RichTextEditor content={item[sf.name] || ''} onUpdate={(json) => updateSubField(i, sf.name, json)} />
             {:else if sf.type === 'media'}
