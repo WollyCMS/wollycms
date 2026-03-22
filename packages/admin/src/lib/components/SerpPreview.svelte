@@ -36,7 +36,7 @@
 
 <style>
   .serp-preview {
-    background: #fff;
+    background: var(--c-surface);
     border: 1px solid var(--c-border, #e2e8f0);
     border-radius: var(--radius, 6px);
     padding: 0.75rem;
@@ -46,7 +46,7 @@
   .serp-title {
     font-size: 1.1rem;
     line-height: 1.3;
-    color: #1a0dab;
+    color: var(--c-accent);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -59,7 +59,7 @@
 
   .serp-url {
     font-size: 0.8rem;
-    color: #006621;
+    color: var(--c-success);
     margin: 0.15rem 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -69,7 +69,7 @@
   .serp-desc {
     font-size: 0.82rem;
     line-height: 1.5;
-    color: #545454;
+    color: var(--c-text-light);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -78,6 +78,6 @@
 
   .serp-desc-missing {
     font-style: italic;
-    color: #999;
+    color: var(--c-text-light);
   }
 </style>

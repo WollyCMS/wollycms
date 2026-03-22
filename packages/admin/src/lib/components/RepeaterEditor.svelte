@@ -155,7 +155,7 @@
   .repeater-item {
     border: 1px solid var(--c-border, #e2e8f0);
     border-radius: var(--radius, 6px);
-    background: #fff;
+    background: var(--c-surface);
     overflow: hidden;
   }
 
@@ -207,7 +207,7 @@
     justify-content: center;
     border: 1px solid var(--c-border, #e2e8f0);
     border-radius: 4px;
-    background: #fff;
+    background: var(--c-surface);
     color: var(--c-text-light, #94a3b8);
     font-size: 0.6rem;
     cursor: pointer;
@@ -215,7 +215,7 @@
   }
 
   .repeater-btn:hover:not(:disabled) {
-    border-color: #cbd5e1;
+    border-color: var(--c-border);
     color: var(--c-text, #1e293b);
   }
 
@@ -225,9 +225,9 @@
   }
 
   .repeater-btn-remove:hover:not(:disabled) {
-    border-color: #fca5a5;
-    color: #ef4444;
-    background: #fef2f2;
+    border-color: var(--c-danger);
+    color: var(--c-danger);
+    background: color-mix(in srgb, var(--c-danger), transparent 90%);
   }
 
   .repeater-item-fields {

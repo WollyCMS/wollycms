@@ -449,15 +449,15 @@
   }
 
   .char-good {
-    color: #16a34a;
+    color: var(--c-success);
   }
 
   .char-warn {
-    color: #d97706;
+    color: var(--c-warning);
   }
 
   .char-bad {
-    color: #dc2626;
+    color: var(--c-danger);
   }
 
   .seo-previews {
@@ -483,7 +483,7 @@
   }
 
   .seo-preview-toggle:hover {
-    background: rgba(49, 130, 206, 0.04);
+    background: color-mix(in srgb, var(--c-accent), transparent 96%);
     border-color: var(--c-accent, #3182ce);
   }
 

@@ -457,11 +457,11 @@
   }
 
   .page-title:hover {
-    background: rgba(0, 0, 0, 0.03);
+    background: var(--c-bg-subtle);
   }
 
   .page-title:focus {
-    background: rgba(0, 0, 0, 0.03);
+    background: var(--c-bg-subtle);
     border-bottom-color: var(--c-accent);
   }
 
@@ -500,7 +500,7 @@
 
   .slug-display:hover {
     color: var(--c-accent);
-    background: rgba(49, 130, 206, 0.06);
+    background: color-mix(in srgb, var(--c-accent), transparent 94%);
   }
 
   .slug-prefix {
@@ -570,7 +570,7 @@
   .dirty-dot {
     width: 7px;
     height: 7px;
-    background: #fbbf24;
+    background: var(--c-warning);
     border-radius: 50%;
     display: inline-block;
     margin-right: 0.15rem;

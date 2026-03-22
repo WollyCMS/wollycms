@@ -364,7 +364,7 @@
 
   .tag-input:focus {
     border-color: var(--c-accent, #3182ce);
-    box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.15);
+    box-shadow: 0 0 0 2px var(--c-focus-ring);
   }
 
   .dropdown {

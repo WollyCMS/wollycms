@@ -381,7 +381,7 @@
   .folder-item:hover { background: var(--c-bg); }
   .folder-item.active {
     background: var(--c-primary);
-    color: #fff;
+    color: white;
     font-weight: 500;
   }
 
@@ -450,7 +450,7 @@
     font-family: inherit;
     border: 1px solid var(--c-border, #e2e8f0);
     border-radius: var(--radius, 6px);
-    background: #fff;
+    background: var(--c-surface);
     color: var(--c-text, #2d3748);
     cursor: pointer;
     transition: all 0.12s;
@@ -464,7 +464,7 @@
   .pagination-btn.active {
     background: var(--c-accent, #3182ce);
     border-color: var(--c-accent, #3182ce);
-    color: #fff;
+    color: white;
   }
 
   .pagination-btn:disabled {
@@ -513,8 +513,8 @@
     font-size: 0.6rem;
     font-weight: 600;
     padding: 0.15rem 0.4rem;
-    background: #fbbf24;
-    color: #78350f;
+    background: var(--c-warning);
+    color: var(--c-surface);
     border-radius: 3px;
     line-height: 1;
   }
