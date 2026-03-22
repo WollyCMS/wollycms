@@ -9,10 +9,25 @@ import { createInterface } from 'readline';
 const rl = createInterface({ input: process.stdin, output: process.stdout });
 const ask = (q) => new Promise((resolve) => rl.question(q, resolve));
 
+const TEMPLATES = ['blog', 'marketing', 'wordpress', 'drupal', 'college'];
+
+function parseArgs() {
+  const args = process.argv.slice(2);
+  let name = '';
+  let template = '';
+  for (const arg of args) {
+    if (arg.startsWith('--template=')) template = arg.split('=')[1];
+    else if (arg.startsWith('--template')) template = args[args.indexOf(arg) + 1] || '';
+    else if (!arg.startsWith('-')) name = name || arg;
+  }
+  return { name, template };
+}
+
 async function main() {
   console.log('\n  🚀 Create WollyCMS Project\n');
 
-  const projectName = process.argv[2] || await ask('  Project name: ');
+  const parsed = parseArgs();
+  const projectName = parsed.name || await ask('  Project name: ');
   if (!projectName) {
     console.error('  Project name is required.');
     process.exit(1);
@@ -26,6 +41,16 @@ async function main() {
 
   const siteName = await ask(`  Site name [${projectName}]: `) || projectName;
   const port = await ask('  API port [4321]: ') || '4321';
+
+  let template = parsed.template;
+  if (!template) {
+    console.log(`\n  Available templates: ${TEMPLATES.join(', ')}`);
+    template = await ask('  Template (or press Enter to skip): ') || '';
+  }
+  if (template && !TEMPLATES.includes(template)) {
+    console.error(`  Unknown template: "${template}". Available: ${TEMPLATES.join(', ')}`);
+    process.exit(1);
+  }
 
   rl.close();
 
@@ -150,6 +175,35 @@ docker compose up -d
 Edit \`.env\` to configure. See \`.env.example\` for all options.
 `);
 
+  // Copy template seed file if selected
+  if (template) {
+    try {
+      const { fileURLToPath } = await import('url');
+      const { dirname: dirn } = await import('path');
+      const { copyFileSync } = await import('fs');
+      // Try to find template seed.json relative to this script or in the installed package
+      const scriptDir = dirn(fileURLToPath(import.meta.url));
+      const possiblePaths = [
+        join(scriptDir, '..', '..', '..', 'templates', template, 'seed.json'),
+        join(scriptDir, '..', 'templates', template, 'seed.json'),
+      ];
+      let copied = false;
+      for (const seedPath of possiblePaths) {
+        if (existsSync(seedPath)) {
+          copyFileSync(seedPath, join(projectDir, 'seed.json'));
+          copied = true;
+          break;
+        }
+      }
+      if (!copied) {
+        console.log(`  Template "${template}" seed file not found locally.`);
+        console.log(`  Download it from: https://github.com/wollycms/wollycms/tree/main/templates/${template}/seed.json`);
+      }
+    } catch {
+      console.log(`  Could not copy template seed file.`);
+    }
+  }
+
   console.log('  Created project files:');
   console.log('    package.json');
   console.log('    .env');
@@ -157,6 +211,7 @@ Edit \`.env\` to configure. See \`.env.example\` for all options.
   console.log('    .gitignore');
   console.log('    docker-compose.yml');
   console.log('    README.md');
+  if (template) console.log('    seed.json');
   console.log('');
 
   // Install dependencies
@@ -167,13 +222,14 @@ Edit \`.env\` to configure. See \`.env.example\` for all options.
     console.log('\n  npm install failed — run it manually after setup.');
   }
 
+  const seedStep = template ? `    wolly import seed.json    # Import ${template} template content` : '    npm run seed              # Sample content';
   console.log(`
-  ✅ Project created!
+  ✅ Project created!${template ? ` (${template} template)` : ''}
 
   Next steps:
     cd ${projectName}
     npm run migrate
-    npm run seed
+${seedStep}
     npm run dev
 
   Then open http://localhost:${port}

@@ -1,0 +1,1057 @@
+{
+  "version": 1,
+  "blockTypes": [
+    {
+      "id": 1,
+      "name": "Rich Text",
+      "slug": "rich_text",
+      "description": "A rich text content block using TipTap JSON format",
+      "fieldsSchema": [
+        { "name": "body", "label": "Body", "type": "richtext", "required": true }
+      ],
+      "icon": "text",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "name": "Hero",
+      "slug": "hero",
+      "description": "A hero banner with heading, subheading, and optional background image",
+      "fieldsSchema": [
+        { "name": "heading", "label": "Heading", "type": "text", "required": true },
+        { "name": "subheading", "label": "Subheading", "type": "text" },
+        { "name": "background_image", "label": "Background Image", "type": "media" }
+      ],
+      "icon": "layout",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "name": "Image",
+      "slug": "image",
+      "description": "A single image with optional caption and alt text",
+      "fieldsSchema": [
+        { "name": "src", "label": "Image", "type": "media", "required": true },
+        { "name": "alt", "label": "Alt Text", "type": "text", "required": true },
+        { "name": "caption", "label": "Caption", "type": "text" }
+      ],
+      "icon": "image",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "name": "CTA Button",
+      "slug": "cta_button",
+      "description": "A call-to-action button with configurable text, URL, and style",
+      "fieldsSchema": [
+        { "name": "text", "label": "Button Text", "type": "text", "required": true },
+        { "name": "url", "label": "URL", "type": "url", "required": true },
+        { "name": "style", "label": "Style", "type": "select", "options": ["primary", "secondary", "outline"] }
+      ],
+      "icon": "mouse-pointer",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "name": "Accordion",
+      "slug": "accordion",
+      "description": "Expandable accordion sections for FAQs or collapsible content",
+      "fieldsSchema": [
+        {
+          "name": "items",
+          "label": "Accordion Items",
+          "type": "repeater",
+          "fields": [
+            { "name": "title", "label": "Title", "type": "text" },
+            { "name": "content", "label": "Content", "type": "textarea" }
+          ]
+        }
+      ],
+      "icon": "chevrons-down",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "name": "Contact List",
+      "slug": "contact_list",
+      "description": "A list of contacts with name, title, email, and phone",
+      "fieldsSchema": [
+        {
+          "name": "contacts",
+          "label": "Contacts",
+          "type": "repeater",
+          "fields": [
+            { "name": "name", "label": "Name", "type": "text" },
+            { "name": "title", "label": "Title", "type": "text" },
+            { "name": "email", "label": "Email", "type": "text" },
+            { "name": "phone", "label": "Phone", "type": "text" }
+          ]
+        }
+      ],
+      "icon": "users",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "name": "Location",
+      "slug": "location",
+      "description": "A location block with address, coordinates, and optional map embed",
+      "fieldsSchema": [
+        { "name": "name", "label": "Location Name", "type": "text" },
+        { "name": "address", "label": "Address", "type": "textarea" },
+        { "name": "latitude", "label": "Latitude", "type": "text" },
+        { "name": "longitude", "label": "Longitude", "type": "text" },
+        { "name": "map_embed", "label": "Map Embed URL", "type": "url" }
+      ],
+      "icon": "map-pin",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "name": "Content Listing",
+      "slug": "content_listing",
+      "description": "A dynamic listing of content filtered by type, taxonomy, or custom query",
+      "fieldsSchema": [
+        { "name": "content_type", "label": "Content Type Slug", "type": "text" },
+        { "name": "limit", "label": "Number of Items", "type": "number" },
+        { "name": "taxonomy_filter", "label": "Taxonomy Filter (slug)", "type": "text" },
+        { "name": "display_style", "label": "Display Style", "type": "select", "options": ["list", "grid", "cards"] }
+      ],
+      "icon": "list",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 9,
+      "name": "Link List",
+      "slug": "link_list",
+      "description": "A styled list of links with optional descriptions",
+      "fieldsSchema": [
+        { "name": "heading", "label": "Heading", "type": "text" },
+        {
+          "name": "links",
+          "label": "Links",
+          "type": "repeater",
+          "fields": [
+            { "name": "text", "label": "Link Text", "type": "text" },
+            { "name": "url", "label": "URL", "type": "url" },
+            { "name": "description", "label": "Description", "type": "text" }
+          ]
+        }
+      ],
+      "icon": "link",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 10,
+      "name": "Embed",
+      "slug": "embed",
+      "description": "Embed external content via URL or HTML snippet",
+      "fieldsSchema": [
+        { "name": "embed_url", "label": "Embed URL", "type": "url" },
+        { "name": "embed_html", "label": "Embed HTML", "type": "textarea" },
+        { "name": "caption", "label": "Caption", "type": "text" }
+      ],
+      "icon": "code",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "contentTypes": [
+    {
+      "id": 1,
+      "name": "Home Page",
+      "slug": "home_page",
+      "description": "The main college homepage with hero, content, features, and bottom regions",
+      "fieldsSchema": [],
+      "regions": [
+        { "name": "hero", "label": "Hero" },
+        { "name": "content", "label": "Content" },
+        { "name": "features", "label": "Features" },
+        { "name": "bottom", "label": "Bottom" }
+      ],
+      "defaultBlocks": [
+        { "region": "hero", "blockTypeSlug": "hero", "position": 0 },
+        { "region": "content", "blockTypeSlug": "rich_text", "position": 0 }
+      ],
+      "settings": {}
+    },
+    {
+      "id": 2,
+      "name": "Landing Page",
+      "slug": "landing_page",
+      "description": "A full-width landing page for departments and campaigns",
+      "fieldsSchema": [],
+      "regions": [
+        { "name": "hero", "label": "Hero" },
+        { "name": "content", "label": "Content" },
+        { "name": "features", "label": "Features" },
+        { "name": "bottom", "label": "Bottom" }
+      ],
+      "defaultBlocks": [
+        { "region": "hero", "blockTypeSlug": "hero", "position": 0 },
+        { "region": "content", "blockTypeSlug": "rich_text", "position": 0 }
+      ],
+      "settings": {}
+    },
+    {
+      "id": 3,
+      "name": "Secondary Page",
+      "slug": "secondary_page",
+      "description": "A standard interior page with sidebar navigation",
+      "fieldsSchema": [],
+      "regions": [
+        { "name": "hero", "label": "Hero" },
+        { "name": "content", "label": "Content" },
+        { "name": "sidebar", "label": "Sidebar" },
+        { "name": "bottom", "label": "Bottom" }
+      ],
+      "defaultBlocks": [
+        { "region": "hero", "blockTypeSlug": "hero", "position": 0 },
+        { "region": "content", "blockTypeSlug": "rich_text", "position": 0 }
+      ],
+      "settings": {}
+    },
+    {
+      "id": 4,
+      "name": "Program",
+      "slug": "program",
+      "description": "An academic program or degree page with department, degree type, and credits",
+      "fieldsSchema": [
+        { "name": "department", "label": "Department", "type": "text" },
+        { "name": "degree_type", "label": "Degree Type", "type": "select", "options": ["associate", "bachelor", "certificate"] },
+        { "name": "credits", "label": "Credits", "type": "number" },
+        { "name": "application_url", "label": "Application URL", "type": "url" }
+      ],
+      "regions": [
+        { "name": "hero", "label": "Hero" },
+        { "name": "content", "label": "Content" },
+        { "name": "sidebar", "label": "Sidebar" }
+      ],
+      "defaultBlocks": [
+        { "region": "hero", "blockTypeSlug": "hero", "position": 0 },
+        { "region": "content", "blockTypeSlug": "rich_text", "position": 0 }
+      ],
+      "settings": {}
+    },
+    {
+      "id": 5,
+      "name": "Article",
+      "slug": "article",
+      "description": "A news article or press release",
+      "fieldsSchema": [
+        { "name": "body_summary", "label": "Summary", "type": "textarea" },
+        { "name": "author", "label": "Author", "type": "text" },
+        { "name": "tags", "label": "Tags", "type": "text" },
+        { "name": "published_date", "label": "Published Date", "type": "date" }
+      ],
+      "regions": [
+        { "name": "hero", "label": "Hero" },
+        { "name": "content", "label": "Content" },
+        { "name": "sidebar", "label": "Sidebar" }
+      ],
+      "defaultBlocks": [
+        { "region": "hero", "blockTypeSlug": "hero", "position": 0 },
+        { "region": "content", "blockTypeSlug": "rich_text", "position": 0 }
+      ],
+      "settings": {}
+    },
+    {
+      "id": 6,
+      "name": "Event",
+      "slug": "event",
+      "description": "A campus event with date, time, location, and registration",
+      "fieldsSchema": [
+        { "name": "event_date", "label": "Event Date", "type": "text" },
+        { "name": "event_time", "label": "Event Time", "type": "text" },
+        { "name": "location", "label": "Location", "type": "text" },
+        { "name": "registration_url", "label": "Registration URL", "type": "url" }
+      ],
+      "regions": [
+        { "name": "hero", "label": "Hero" },
+        { "name": "content", "label": "Content" },
+        { "name": "sidebar", "label": "Sidebar" }
+      ],
+      "defaultBlocks": [
+        { "region": "hero", "blockTypeSlug": "hero", "position": 0 },
+        { "region": "content", "blockTypeSlug": "rich_text", "position": 0 }
+      ],
+      "settings": {}
+    }
+  ],
+  "taxonomies": [
+    {
+      "id": 1,
+      "name": "Departments",
+      "slug": "departments",
+      "description": "Academic departments — hierarchical",
+      "hierarchical": true
+    },
+    {
+      "id": 2,
+      "name": "Tags",
+      "slug": "tags",
+      "description": "General content tags",
+      "hierarchical": false
+    }
+  ],
+  "terms": [
+    { "id": 1, "taxonomyId": 1, "name": "Business", "slug": "business", "weight": 0 },
+    { "id": 2, "taxonomyId": 1, "name": "Sciences", "slug": "sciences", "weight": 1 },
+    { "id": 3, "taxonomyId": 1, "name": "Arts & Humanities", "slug": "arts-humanities", "weight": 2 },
+    { "id": 4, "taxonomyId": 1, "name": "Health Sciences", "slug": "health-sciences", "weight": 3 },
+    { "id": 5, "taxonomyId": 1, "name": "Technology", "slug": "technology", "weight": 4 },
+    { "id": 6, "taxonomyId": 2, "name": "admissions", "slug": "admissions", "weight": 0 },
+    { "id": 7, "taxonomyId": 2, "name": "financial-aid", "slug": "financial-aid", "weight": 1 },
+    { "id": 8, "taxonomyId": 2, "name": "student-life", "slug": "student-life", "weight": 2 },
+    { "id": 9, "taxonomyId": 2, "name": "athletics", "slug": "athletics", "weight": 3 }
+  ],
+  "pages": [
+    {
+      "id": 1,
+      "typeId": 1,
+      "title": "Home",
+      "slug": "home",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "typeId": 3,
+      "title": "About",
+      "slug": "about",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "typeId": 2,
+      "title": "Admissions",
+      "slug": "admissions",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "typeId": 2,
+      "title": "Academics",
+      "slug": "academics",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "typeId": 3,
+      "title": "Student Life",
+      "slug": "student-life",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "typeId": 3,
+      "title": "Campus Map",
+      "slug": "campus-map",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "typeId": 3,
+      "title": "Contact",
+      "slug": "contact",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "typeId": 4,
+      "title": "Business Administration",
+      "slug": "business-administration",
+      "status": "published",
+      "locale": "en",
+      "fields": {
+        "department": "Business",
+        "degree_type": "associate",
+        "credits": 60,
+        "application_url": "https://example.edu/apply"
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 9,
+      "typeId": 4,
+      "title": "Computer Science",
+      "slug": "computer-science",
+      "status": "published",
+      "locale": "en",
+      "fields": {
+        "department": "Technology",
+        "degree_type": "associate",
+        "credits": 64,
+        "application_url": "https://example.edu/apply"
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 10,
+      "typeId": 5,
+      "title": "Fall Enrollment Numbers Reach Record High",
+      "slug": "fall-enrollment-numbers-reach-record-high",
+      "status": "published",
+      "locale": "en",
+      "fields": {
+        "body_summary": "The college reports its highest enrollment numbers in over a decade as new programs attract students from across the region.",
+        "author": "Communications Office",
+        "tags": "admissions",
+        "published_date": "2026-01-15"
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 11,
+      "typeId": 5,
+      "title": "New Scholarship Program Announced",
+      "slug": "new-scholarship-program-announced",
+      "status": "published",
+      "locale": "en",
+      "fields": {
+        "body_summary": "A generous donation from alumni establishes a new scholarship fund for students in health sciences and technology programs.",
+        "author": "Communications Office",
+        "tags": "financial-aid",
+        "published_date": "2026-01-20"
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 12,
+      "typeId": 6,
+      "title": "Spring Open House",
+      "slug": "spring-open-house",
+      "status": "published",
+      "locale": "en",
+      "fields": {
+        "event_date": "2026-04-10",
+        "event_time": "9:00 AM - 3:00 PM",
+        "location": "Main Campus",
+        "registration_url": "https://example.edu/open-house"
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "blocks": [
+    {
+      "id": 1,
+      "typeId": 2,
+      "title": "Home Hero",
+      "fields": {
+        "heading": "Your Future Starts Here",
+        "subheading": "Discover programs designed to launch your career and transform your life",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "typeId": 9,
+      "title": "Home Features",
+      "fields": {
+        "heading": "Quick Links",
+        "links": [
+          { "text": "Apply Now", "url": "/admissions", "description": "Start your application today" },
+          { "text": "Programs", "url": "/academics", "description": "Explore our degree programs" },
+          { "text": "Financial Aid", "url": "/admissions#financial-aid", "description": "Scholarships and aid information" },
+          { "text": "Campus Visit", "url": "/admissions#visit", "description": "Schedule a campus tour" }
+        ]
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "typeId": 8,
+      "title": "Home News Listing",
+      "fields": {
+        "content_type": "article",
+        "limit": 3,
+        "taxonomy_filter": "",
+        "display_style": "cards"
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "typeId": 2,
+      "title": "About Hero",
+      "fields": {
+        "heading": "About Our College",
+        "subheading": "A tradition of excellence in education since 1965",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "typeId": 1,
+      "title": "About Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Our college has been serving the community for over 60 years, providing affordable, high-quality education that prepares students for successful careers and lifelong learning." }]
+            },
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "Mission" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "We are committed to student success through innovative teaching, comprehensive support services, and strong community partnerships." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "typeId": 5,
+      "title": "About FAQ",
+      "fields": {
+        "items": [
+          { "title": "What types of degrees do you offer?", "content": "We offer associate degrees, bachelor degrees, and certificate programs across five academic departments." },
+          { "title": "What is the student-to-faculty ratio?", "content": "Our average class size is 22 students, with a student-to-faculty ratio of 18:1." },
+          { "title": "Do you offer online courses?", "content": "Yes. Many of our programs are available fully online or in a hybrid format combining online and in-person instruction." },
+          { "title": "How do I schedule a campus visit?", "content": "Visit our Admissions page to schedule a campus tour. We offer both individual and group tours throughout the academic year." }
+        ]
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "typeId": 2,
+      "title": "Admissions Hero",
+      "fields": {
+        "heading": "Admissions",
+        "subheading": "Take the first step toward your future",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "typeId": 1,
+      "title": "Admissions Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Applying is simple. Whether you are a first-time college student, transferring from another institution, or returning to finish your degree, we are here to help you through every step of the process." }]
+            },
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "How to Apply" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Complete our online application — it takes about 15 minutes. There is no application fee." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 9,
+      "typeId": 4,
+      "title": "Admissions CTA",
+      "fields": {
+        "text": "Apply Now",
+        "url": "https://example.edu/apply",
+        "style": "primary"
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 10,
+      "typeId": 5,
+      "title": "Admissions FAQ",
+      "fields": {
+        "items": [
+          { "title": "What are the admission requirements?", "content": "Requirements vary by program. Most programs require a high school diploma or GED. Some programs have additional prerequisites." },
+          { "title": "When are the application deadlines?", "content": "We accept applications on a rolling basis. Priority deadlines are March 1 for fall and October 1 for spring." },
+          { "title": "Is financial aid available?", "content": "Yes. We offer federal financial aid, state grants, institutional scholarships, and work-study programs. Complete the FAFSA to get started." },
+          { "title": "Can I transfer credits from another college?", "content": "We accept transfer credits from accredited institutions. Contact the Registrar for a transfer credit evaluation." }
+        ]
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 11,
+      "typeId": 2,
+      "title": "Academics Hero",
+      "fields": {
+        "heading": "Academics",
+        "subheading": "Explore our programs and find the right fit for your goals",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 12,
+      "typeId": 8,
+      "title": "Academics Program Listing",
+      "fields": {
+        "content_type": "program",
+        "limit": 20,
+        "taxonomy_filter": "",
+        "display_style": "grid"
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 13,
+      "typeId": 2,
+      "title": "Student Life Hero",
+      "fields": {
+        "heading": "Student Life",
+        "subheading": "More than a degree — a complete college experience",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 14,
+      "typeId": 1,
+      "title": "Student Life Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "College is about more than classes. Get involved in student organizations, intramural sports, community service, and campus events. Our Student Life office is here to help you make the most of your time with us." }]
+            },
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "Student Organizations" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "We have over 30 student clubs and organizations covering everything from academic honor societies to recreational sports and cultural groups." }]
+            },
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "Support Services" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Tutoring, counseling, career services, and disability accommodations are available to all enrolled students at no extra cost." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 15,
+      "typeId": 2,
+      "title": "Campus Map Hero",
+      "fields": {
+        "heading": "Campus Map",
+        "subheading": "Find your way around campus",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 16,
+      "typeId": 7,
+      "title": "Campus Location",
+      "fields": {
+        "name": "Main Campus",
+        "address": "1000 College Drive\nAnytown, ST 12345",
+        "latitude": "40.7128",
+        "longitude": "-74.0060",
+        "map_embed": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 17,
+      "typeId": 2,
+      "title": "Contact Hero",
+      "fields": {
+        "heading": "Contact Us",
+        "subheading": "We are here to help",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 18,
+      "typeId": 6,
+      "title": "Contact List",
+      "fields": {
+        "contacts": [
+          { "name": "Admissions Office", "title": "New Student Enrollment", "email": "admissions@example.edu", "phone": "(555) 100-2000" },
+          { "name": "Financial Aid Office", "title": "Scholarships & Aid", "email": "finaid@example.edu", "phone": "(555) 100-2001" },
+          { "name": "Registrar", "title": "Records & Transcripts", "email": "registrar@example.edu", "phone": "(555) 100-2002" },
+          { "name": "Student Services", "title": "General Support", "email": "studentservices@example.edu", "phone": "(555) 100-2003" }
+        ]
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 19,
+      "typeId": 2,
+      "title": "Program 1 Hero",
+      "fields": {
+        "heading": "Business Administration",
+        "subheading": "Associate Degree — 60 Credits",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 20,
+      "typeId": 1,
+      "title": "Program 1 Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "The Business Administration program prepares students for careers in management, marketing, finance, and entrepreneurship. Graduates are ready to enter the workforce or transfer to a four-year institution." }]
+            },
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "Program Highlights" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Small class sizes, experienced faculty with industry backgrounds, internship opportunities with local businesses, and articulation agreements with regional universities." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 21,
+      "typeId": 4,
+      "title": "Program 1 CTA",
+      "fields": {
+        "text": "Apply to This Program",
+        "url": "https://example.edu/apply",
+        "style": "primary"
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 22,
+      "typeId": 2,
+      "title": "Program 2 Hero",
+      "fields": {
+        "heading": "Computer Science",
+        "subheading": "Associate Degree — 64 Credits",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 23,
+      "typeId": 1,
+      "title": "Program 2 Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "The Computer Science program provides a strong foundation in programming, data structures, algorithms, and software development. Students gain hands-on experience with modern technologies and development tools." }]
+            },
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "Career Paths" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Graduates pursue careers in software development, web development, database administration, systems analysis, and IT support. Many also transfer to four-year programs in computer science or information technology." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 24,
+      "typeId": 4,
+      "title": "Program 2 CTA",
+      "fields": {
+        "text": "Apply to This Program",
+        "url": "https://example.edu/apply",
+        "style": "primary"
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 25,
+      "typeId": 2,
+      "title": "Article 1 Hero",
+      "fields": {
+        "heading": "Fall Enrollment Numbers Reach Record High",
+        "subheading": "College reports highest enrollment in over a decade",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 26,
+      "typeId": 1,
+      "title": "Article 1 Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "The college is pleased to announce that fall enrollment has reached its highest level in over a decade. The increase is attributed to new academic programs, expanded online offerings, and enhanced student support services." }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Programs in health sciences and technology saw the largest growth, with enrollment in those departments increasing by 25% compared to the previous year." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 27,
+      "typeId": 2,
+      "title": "Article 2 Hero",
+      "fields": {
+        "heading": "New Scholarship Program Announced",
+        "subheading": "Alumni donation creates new opportunities for students",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 28,
+      "typeId": 1,
+      "title": "Article 2 Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "A generous donation from the college alumni association has established a new scholarship fund targeting students in health sciences and technology programs." }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "The scholarship covers up to full tuition for qualifying students and is renewable for up to two years. Applications open on March 1." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 29,
+      "typeId": 2,
+      "title": "Event 1 Hero",
+      "fields": {
+        "heading": "Spring Open House",
+        "subheading": "Tour the campus and meet faculty and staff",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 30,
+      "typeId": 1,
+      "title": "Event 1 Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Join us for our annual Spring Open House. Tour the campus, meet faculty and current students, learn about academic programs, and get information on admissions and financial aid." }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "The event is free and open to prospective students and their families. Register online to reserve your spot." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "pageBlocks": [
+    { "id": 1, "pageId": 1, "blockId": 1, "region": "hero", "position": 0, "isShared": false },
+    { "id": 2, "pageId": 1, "blockId": 2, "region": "features", "position": 0, "isShared": false },
+    { "id": 3, "pageId": 1, "blockId": 3, "region": "content", "position": 0, "isShared": false },
+    { "id": 4, "pageId": 2, "blockId": 4, "region": "hero", "position": 0, "isShared": false },
+    { "id": 5, "pageId": 2, "blockId": 5, "region": "content", "position": 0, "isShared": false },
+    { "id": 6, "pageId": 2, "blockId": 6, "region": "bottom", "position": 0, "isShared": false },
+    { "id": 7, "pageId": 3, "blockId": 7, "region": "hero", "position": 0, "isShared": false },
+    { "id": 8, "pageId": 3, "blockId": 8, "region": "content", "position": 0, "isShared": false },
+    { "id": 9, "pageId": 3, "blockId": 9, "region": "bottom", "position": 0, "isShared": false },
+    { "id": 10, "pageId": 3, "blockId": 10, "region": "features", "position": 0, "isShared": false },
+    { "id": 11, "pageId": 4, "blockId": 11, "region": "hero", "position": 0, "isShared": false },
+    { "id": 12, "pageId": 4, "blockId": 12, "region": "content", "position": 0, "isShared": false },
+    { "id": 13, "pageId": 5, "blockId": 13, "region": "hero", "position": 0, "isShared": false },
+    { "id": 14, "pageId": 5, "blockId": 14, "region": "content", "position": 0, "isShared": false },
+    { "id": 15, "pageId": 6, "blockId": 15, "region": "hero", "position": 0, "isShared": false },
+    { "id": 16, "pageId": 6, "blockId": 16, "region": "content", "position": 0, "isShared": false },
+    { "id": 17, "pageId": 7, "blockId": 17, "region": "hero", "position": 0, "isShared": false },
+    { "id": 18, "pageId": 7, "blockId": 18, "region": "content", "position": 0, "isShared": false },
+    { "id": 19, "pageId": 8, "blockId": 19, "region": "hero", "position": 0, "isShared": false },
+    { "id": 20, "pageId": 8, "blockId": 20, "region": "content", "position": 0, "isShared": false },
+    { "id": 21, "pageId": 8, "blockId": 21, "region": "sidebar", "position": 0, "isShared": false },
+    { "id": 22, "pageId": 9, "blockId": 22, "region": "hero", "position": 0, "isShared": false },
+    { "id": 23, "pageId": 9, "blockId": 23, "region": "content", "position": 0, "isShared": false },
+    { "id": 24, "pageId": 9, "blockId": 24, "region": "sidebar", "position": 0, "isShared": false },
+    { "id": 25, "pageId": 10, "blockId": 25, "region": "hero", "position": 0, "isShared": false },
+    { "id": 26, "pageId": 10, "blockId": 26, "region": "content", "position": 0, "isShared": false },
+    { "id": 27, "pageId": 11, "blockId": 27, "region": "hero", "position": 0, "isShared": false },
+    { "id": 28, "pageId": 11, "blockId": 28, "region": "content", "position": 0, "isShared": false },
+    { "id": 29, "pageId": 12, "blockId": 29, "region": "hero", "position": 0, "isShared": false },
+    { "id": 30, "pageId": 12, "blockId": 30, "region": "content", "position": 0, "isShared": false }
+  ],
+  "menus": [
+    { "id": 1, "name": "Main Navigation", "slug": "main-nav" },
+    { "id": 2, "name": "Footer Navigation", "slug": "footer-nav" }
+  ],
+  "menuItems": [
+    { "id": 1, "menuId": 1, "title": "About", "url": "/about", "pageId": 2, "target": "_self", "position": 0, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} },
+    { "id": 2, "menuId": 1, "title": "Admissions", "url": "/admissions", "pageId": 3, "target": "_self", "position": 1, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} },
+    { "id": 3, "menuId": 1, "title": "Academics", "url": "/academics", "pageId": 4, "target": "_self", "position": 2, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} },
+    { "id": 4, "menuId": 1, "title": "Student Life", "url": "/student-life", "pageId": 5, "target": "_self", "position": 3, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} },
+    { "id": 5, "menuId": 1, "title": "Contact", "url": "/contact", "pageId": 7, "target": "_self", "position": 4, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} },
+    { "id": 6, "menuId": 2, "title": "Campus Map", "url": "/campus-map", "pageId": 6, "target": "_self", "position": 0, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} },
+    { "id": 7, "menuId": 2, "title": "Privacy", "url": "/privacy", "pageId": null, "target": "_self", "position": 1, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} },
+    { "id": 8, "menuId": 2, "title": "Accessibility", "url": "/accessibility", "pageId": null, "target": "_self", "position": 2, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} }
+  ]
+}

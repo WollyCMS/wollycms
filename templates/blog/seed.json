@@ -1,0 +1,426 @@
+{
+  "version": 1,
+  "blockTypes": [
+    {
+      "id": 1,
+      "name": "Rich Text",
+      "slug": "rich_text",
+      "description": "A rich text content block using TipTap JSON format",
+      "fieldsSchema": [
+        { "name": "body", "label": "Body", "type": "richtext", "required": true }
+      ],
+      "icon": "text",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "name": "Hero",
+      "slug": "hero",
+      "description": "A hero banner with heading, subheading, and optional background image",
+      "fieldsSchema": [
+        { "name": "heading", "label": "Heading", "type": "text", "required": true },
+        { "name": "subheading", "label": "Subheading", "type": "text" },
+        { "name": "background_image", "label": "Background Image", "type": "media" }
+      ],
+      "icon": "layout",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "name": "Image",
+      "slug": "image",
+      "description": "A single image with optional caption and alt text",
+      "fieldsSchema": [
+        { "name": "src", "label": "Image", "type": "media", "required": true },
+        { "name": "alt", "label": "Alt Text", "type": "text", "required": true },
+        { "name": "caption", "label": "Caption", "type": "text" }
+      ],
+      "icon": "image",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "name": "CTA Button",
+      "slug": "cta_button",
+      "description": "A call-to-action button with configurable text, URL, and style",
+      "fieldsSchema": [
+        { "name": "text", "label": "Button Text", "type": "text", "required": true },
+        { "name": "url", "label": "URL", "type": "url", "required": true },
+        { "name": "style", "label": "Style", "type": "select", "options": ["primary", "secondary", "outline"] }
+      ],
+      "icon": "mouse-pointer",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "contentTypes": [
+    {
+      "id": 1,
+      "name": "Blog Post",
+      "slug": "blog_post",
+      "description": "A blog post with hero area and main content",
+      "fieldsSchema": [
+        { "name": "excerpt", "label": "Excerpt", "type": "text" },
+        { "name": "author", "label": "Author", "type": "text" },
+        { "name": "tags", "label": "Tags", "type": "text" },
+        { "name": "published_date", "label": "Published Date", "type": "date" },
+        { "name": "featured_image", "label": "Featured Image", "type": "media" }
+      ],
+      "regions": [
+        { "name": "hero", "label": "Hero" },
+        { "name": "content", "label": "Content" }
+      ],
+      "defaultBlocks": [
+        { "region": "hero", "blockTypeSlug": "hero", "position": 0 },
+        { "region": "content", "blockTypeSlug": "rich_text", "position": 0 }
+      ],
+      "settings": {}
+    },
+    {
+      "id": 2,
+      "name": "Page",
+      "slug": "page",
+      "description": "A general-purpose page with hero, content, and sidebar regions",
+      "fieldsSchema": [],
+      "regions": [
+        { "name": "hero", "label": "Hero" },
+        { "name": "content", "label": "Content" },
+        { "name": "sidebar", "label": "Sidebar" }
+      ],
+      "defaultBlocks": [
+        { "region": "hero", "blockTypeSlug": "hero", "position": 0 },
+        { "region": "content", "blockTypeSlug": "rich_text", "position": 0 }
+      ],
+      "settings": {}
+    }
+  ],
+  "taxonomies": [
+    {
+      "id": 1,
+      "name": "Tags",
+      "slug": "tags",
+      "description": "Blog post tags for categorization",
+      "hierarchical": false
+    }
+  ],
+  "terms": [
+    { "id": 1, "taxonomyId": 1, "name": "Technology", "slug": "technology", "weight": 0 },
+    { "id": 2, "taxonomyId": 1, "name": "Tutorial", "slug": "tutorial", "weight": 1 },
+    { "id": 3, "taxonomyId": 1, "name": "News", "slug": "news", "weight": 2 },
+    { "id": 4, "taxonomyId": 1, "name": "Opinion", "slug": "opinion", "weight": 3 }
+  ],
+  "pages": [
+    {
+      "id": 1,
+      "typeId": 2,
+      "title": "Home",
+      "slug": "home",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "typeId": 2,
+      "title": "About",
+      "slug": "about",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "typeId": 1,
+      "title": "Getting Started with WollyCMS",
+      "slug": "getting-started-with-wollycms",
+      "status": "published",
+      "locale": "en",
+      "fields": {
+        "excerpt": "A beginner's guide to setting up and using WollyCMS for your blog.",
+        "author": "Admin",
+        "tags": "technology, tutorial",
+        "published_date": "2026-01-01",
+        "featured_image": ""
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "typeId": 1,
+      "title": "Why Headless CMS Is the Future",
+      "slug": "why-headless-cms-is-the-future",
+      "status": "published",
+      "locale": "en",
+      "fields": {
+        "excerpt": "Exploring the benefits of headless CMS architecture for modern websites.",
+        "author": "Admin",
+        "tags": "technology, opinion",
+        "published_date": "2026-01-05",
+        "featured_image": ""
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "typeId": 1,
+      "title": "Building Custom Block Types",
+      "slug": "building-custom-block-types",
+      "status": "published",
+      "locale": "en",
+      "fields": {
+        "excerpt": "Learn how to create custom block types to extend your WollyCMS site.",
+        "author": "Admin",
+        "tags": "tutorial",
+        "published_date": "2026-01-10",
+        "featured_image": ""
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "blocks": [
+    {
+      "id": 1,
+      "typeId": 2,
+      "title": "Home Hero",
+      "fields": {
+        "heading": "Welcome to Our Blog",
+        "subheading": "Thoughts, tutorials, and stories from our team",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "typeId": 1,
+      "title": "Home Intro",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Welcome to our blog. Here you will find the latest posts on technology, tutorials, news, and opinion pieces from our team." }]
+            },
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "Recent Posts" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Check out the latest articles below, or browse by tag to find topics that interest you." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "typeId": 2,
+      "title": "About Hero",
+      "fields": {
+        "heading": "About Us",
+        "subheading": "Learn more about who we are and what we do",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "typeId": 1,
+      "title": "About Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "We are a team of writers and developers passionate about technology and the open web. This blog is powered by WollyCMS, a headless content management system designed for modern Astro frontends." }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Our mission is to share knowledge, document our journey, and help others build better websites." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "typeId": 2,
+      "title": "Post 1 Hero",
+      "fields": {
+        "heading": "Getting Started with WollyCMS",
+        "subheading": "A beginner's guide to your new CMS",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "typeId": 1,
+      "title": "Post 1 Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "WollyCMS is a headless content management system built with Hono and designed to pair with Astro frontends. In this post, we will walk through the basics of getting your site set up." }]
+            },
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "Installation" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Start by creating a new project with the WollyCMS CLI. Run the create command, choose your template, and you are ready to go in minutes." }]
+            },
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "Creating Content" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "The admin interface lets you create pages using composable blocks. Add a hero, drop in some rich text, and publish. Your Astro frontend fetches the content at build time or on request." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "typeId": 2,
+      "title": "Post 2 Hero",
+      "fields": {
+        "heading": "Why Headless CMS Is the Future",
+        "subheading": "Decoupled architecture for the modern web",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "typeId": 1,
+      "title": "Post 2 Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Traditional CMSs tightly couple the content management layer with the presentation layer. Headless CMS breaks this apart, giving developers freedom to choose any frontend technology." }]
+            },
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "Benefits of Going Headless" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Performance, security, and developer experience all improve when your CMS is an API. Your frontend can be statically generated, server-rendered, or a mix of both." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 9,
+      "typeId": 2,
+      "title": "Post 3 Hero",
+      "fields": {
+        "heading": "Building Custom Block Types",
+        "subheading": "Extend WollyCMS with your own blocks",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 10,
+      "typeId": 1,
+      "title": "Post 3 Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "One of the most powerful features of WollyCMS is its extensible block system. You can define custom block types with their own field schemas, then render them however you like in your Astro frontend." }]
+            },
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "Defining a Block Type" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Block types are defined with a name, slug, and a fields schema. The schema tells the admin UI what form fields to render, and your frontend what data to expect." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "pageBlocks": [
+    { "id": 1, "pageId": 1, "blockId": 1, "region": "hero", "position": 0, "isShared": false },
+    { "id": 2, "pageId": 1, "blockId": 2, "region": "content", "position": 0, "isShared": false },
+    { "id": 3, "pageId": 2, "blockId": 3, "region": "hero", "position": 0, "isShared": false },
+    { "id": 4, "pageId": 2, "blockId": 4, "region": "content", "position": 0, "isShared": false },
+    { "id": 5, "pageId": 3, "blockId": 5, "region": "hero", "position": 0, "isShared": false },
+    { "id": 6, "pageId": 3, "blockId": 6, "region": "content", "position": 0, "isShared": false },
+    { "id": 7, "pageId": 4, "blockId": 7, "region": "hero", "position": 0, "isShared": false },
+    { "id": 8, "pageId": 4, "blockId": 8, "region": "content", "position": 0, "isShared": false },
+    { "id": 9, "pageId": 5, "blockId": 9, "region": "hero", "position": 0, "isShared": false },
+    { "id": 10, "pageId": 5, "blockId": 10, "region": "content", "position": 0, "isShared": false }
+  ],
+  "menus": [
+    { "id": 1, "name": "Main Navigation", "slug": "main-nav" }
+  ],
+  "menuItems": [
+    { "id": 1, "menuId": 1, "title": "Home", "url": "/", "pageId": 1, "target": "_self", "position": 0, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} },
+    { "id": 2, "menuId": 1, "title": "Blog", "url": "/blog", "pageId": null, "target": "_self", "position": 1, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} },
+    { "id": 3, "menuId": 1, "title": "About", "url": "/about", "pageId": 2, "target": "_self", "position": 2, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} }
+  ]
+}

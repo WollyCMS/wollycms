@@ -1,0 +1,525 @@
+{
+  "version": 1,
+  "blockTypes": [
+    {
+      "id": 1,
+      "name": "Rich Text",
+      "slug": "rich_text",
+      "description": "A rich text content block using TipTap JSON format",
+      "fieldsSchema": [
+        { "name": "body", "label": "Body", "type": "richtext", "required": true }
+      ],
+      "icon": "text",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "name": "Hero",
+      "slug": "hero",
+      "description": "A hero banner with heading, subheading, and optional background image",
+      "fieldsSchema": [
+        { "name": "heading", "label": "Heading", "type": "text", "required": true },
+        { "name": "subheading", "label": "Subheading", "type": "text" },
+        { "name": "background_image", "label": "Background Image", "type": "media" }
+      ],
+      "icon": "layout",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "name": "CTA Button",
+      "slug": "cta_button",
+      "description": "A call-to-action button with configurable text, URL, and style",
+      "fieldsSchema": [
+        { "name": "text", "label": "Button Text", "type": "text", "required": true },
+        { "name": "url", "label": "URL", "type": "url", "required": true },
+        { "name": "style", "label": "Style", "type": "select", "options": ["primary", "secondary", "outline"] }
+      ],
+      "icon": "mouse-pointer",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "name": "Feature Grid",
+      "slug": "feature_grid",
+      "description": "A grid of features with title, description, and icon for each item",
+      "fieldsSchema": [
+        {
+          "name": "items",
+          "label": "Features",
+          "type": "repeater",
+          "fields": [
+            { "name": "title", "label": "Title", "type": "text" },
+            { "name": "description", "label": "Description", "type": "textarea" },
+            { "name": "icon", "label": "Icon", "type": "text" }
+          ]
+        }
+      ],
+      "icon": "grid",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "name": "Stat Bar",
+      "slug": "stat_bar",
+      "description": "A row of statistics with numbers and labels",
+      "fieldsSchema": [
+        {
+          "name": "stats",
+          "label": "Statistics",
+          "type": "repeater",
+          "fields": [
+            { "name": "value", "label": "Value", "type": "text" },
+            { "name": "label", "label": "Label", "type": "text" }
+          ]
+        }
+      ],
+      "icon": "bar-chart",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "name": "Image",
+      "slug": "image",
+      "description": "A single image with optional caption and alt text",
+      "fieldsSchema": [
+        { "name": "src", "label": "Image", "type": "media", "required": true },
+        { "name": "alt", "label": "Alt Text", "type": "text", "required": true },
+        { "name": "caption", "label": "Caption", "type": "text" }
+      ],
+      "icon": "image",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "name": "Accordion",
+      "slug": "accordion",
+      "description": "Expandable accordion sections for FAQs or collapsible content",
+      "fieldsSchema": [
+        {
+          "name": "items",
+          "label": "Accordion Items",
+          "type": "repeater",
+          "fields": [
+            { "name": "title", "label": "Title", "type": "text" },
+            { "name": "content", "label": "Content", "type": "textarea" }
+          ]
+        }
+      ],
+      "icon": "chevrons-down",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "name": "Embed",
+      "slug": "embed",
+      "description": "Embed external content via URL or HTML snippet",
+      "fieldsSchema": [
+        { "name": "embed_url", "label": "Embed URL", "type": "url" },
+        { "name": "embed_html", "label": "Embed HTML", "type": "textarea" },
+        { "name": "caption", "label": "Caption", "type": "text" }
+      ],
+      "icon": "code",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "contentTypes": [
+    {
+      "id": 1,
+      "name": "Home Page",
+      "slug": "home_page",
+      "description": "The main homepage layout with hero, content, features, and bottom CTA",
+      "fieldsSchema": [],
+      "regions": [
+        { "name": "hero", "label": "Hero" },
+        { "name": "content", "label": "Content" },
+        { "name": "features", "label": "Features" },
+        { "name": "bottom", "label": "Bottom" }
+      ],
+      "defaultBlocks": [
+        { "region": "hero", "blockTypeSlug": "hero", "position": 0 },
+        { "region": "features", "blockTypeSlug": "feature_grid", "position": 0 },
+        { "region": "bottom", "blockTypeSlug": "cta_button", "position": 0 }
+      ],
+      "settings": {}
+    },
+    {
+      "id": 2,
+      "name": "Landing Page",
+      "slug": "landing_page",
+      "description": "A conversion-focused landing page with hero, content, features, and bottom sections",
+      "fieldsSchema": [],
+      "regions": [
+        { "name": "hero", "label": "Hero" },
+        { "name": "content", "label": "Content" },
+        { "name": "features", "label": "Features" },
+        { "name": "bottom", "label": "Bottom" }
+      ],
+      "defaultBlocks": [
+        { "region": "hero", "blockTypeSlug": "hero", "position": 0 },
+        { "region": "content", "blockTypeSlug": "rich_text", "position": 0 },
+        { "region": "bottom", "blockTypeSlug": "cta_button", "position": 0 }
+      ],
+      "settings": {}
+    },
+    {
+      "id": 3,
+      "name": "Page",
+      "slug": "page",
+      "description": "A general-purpose page with hero, content, and sidebar regions",
+      "fieldsSchema": [],
+      "regions": [
+        { "name": "hero", "label": "Hero" },
+        { "name": "content", "label": "Content" },
+        { "name": "sidebar", "label": "Sidebar" }
+      ],
+      "defaultBlocks": [
+        { "region": "hero", "blockTypeSlug": "hero", "position": 0 },
+        { "region": "content", "blockTypeSlug": "rich_text", "position": 0 }
+      ],
+      "settings": {}
+    }
+  ],
+  "taxonomies": [],
+  "terms": [],
+  "pages": [
+    {
+      "id": 1,
+      "typeId": 1,
+      "title": "Home",
+      "slug": "home",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "typeId": 2,
+      "title": "Features",
+      "slug": "features",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "typeId": 2,
+      "title": "Pricing",
+      "slug": "pricing",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "typeId": 3,
+      "title": "About",
+      "slug": "about",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "typeId": 3,
+      "title": "Contact",
+      "slug": "contact",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "blocks": [
+    {
+      "id": 1,
+      "typeId": 2,
+      "title": "Home Hero",
+      "fields": {
+        "heading": "Build Something Amazing",
+        "subheading": "The all-in-one platform to launch, grow, and scale your business",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "typeId": 4,
+      "title": "Home Features",
+      "fields": {
+        "items": [
+          { "title": "Lightning Fast", "description": "Built on edge infrastructure for sub-second response times worldwide.", "icon": "zap" },
+          { "title": "Easy to Use", "description": "Intuitive interface that your whole team can learn in minutes.", "icon": "smile" },
+          { "title": "Fully Customizable", "description": "Adapt every aspect to match your brand and workflow.", "icon": "sliders" },
+          { "title": "Secure by Default", "description": "Enterprise-grade security with encryption at rest and in transit.", "icon": "shield" }
+        ]
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "typeId": 5,
+      "title": "Home Stats",
+      "fields": {
+        "stats": [
+          { "value": "10K+", "label": "Active Users" },
+          { "value": "99.9%", "label": "Uptime" },
+          { "value": "50ms", "label": "Avg Response" },
+          { "value": "24/7", "label": "Support" }
+        ]
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "typeId": 3,
+      "title": "Home CTA",
+      "fields": {
+        "text": "Get Started Free",
+        "url": "/pricing",
+        "style": "primary"
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "typeId": 2,
+      "title": "Features Hero",
+      "fields": {
+        "heading": "Powerful Features",
+        "subheading": "Everything you need to build and manage your online presence",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "typeId": 4,
+      "title": "Features Grid",
+      "fields": {
+        "items": [
+          { "title": "Block-Based Editor", "description": "Compose pages using reusable content blocks. Mix and match hero banners, text, images, CTAs, and more.", "icon": "layout" },
+          { "title": "Headless API", "description": "A clean REST API powers your frontend. Use Astro, Next.js, or any framework you prefer.", "icon": "code" },
+          { "title": "Media Management", "description": "Upload, crop, and optimize images automatically. Responsive image variants generated on the fly.", "icon": "image" },
+          { "title": "SEO Tools", "description": "Built-in meta tag management, OpenGraph previews, and sitemap generation.", "icon": "search" },
+          { "title": "Role-Based Access", "description": "Control who can create, edit, and publish content with granular permissions.", "icon": "users" },
+          { "title": "Multi-Language", "description": "Manage content in multiple languages with locale-aware routing and fallback.", "icon": "globe" }
+        ]
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "typeId": 1,
+      "title": "Features Comparison",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "Why Choose Us?" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Unlike monolithic CMSs, our headless approach gives you complete control over your frontend. No theme lock-in, no plugin conflicts, no performance compromises." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "typeId": 2,
+      "title": "Pricing Hero",
+      "fields": {
+        "heading": "Simple, Transparent Pricing",
+        "subheading": "No hidden fees. No surprises. Start free and scale as you grow.",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 9,
+      "typeId": 1,
+      "title": "Pricing Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Choose the plan that fits your needs. All plans include the core CMS features, API access, and community support." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 10,
+      "typeId": 7,
+      "title": "Pricing FAQ",
+      "fields": {
+        "items": [
+          { "title": "Can I try it for free?", "content": "Yes! Our free tier includes everything you need to get started. No credit card required." },
+          { "title": "Can I switch plans later?", "content": "Absolutely. Upgrade or downgrade at any time. Changes take effect on your next billing cycle." },
+          { "title": "Is there a setup fee?", "content": "No setup fees. You only pay the monthly subscription price." },
+          { "title": "Do you offer custom enterprise plans?", "content": "Yes. Contact us for custom pricing, SLAs, and dedicated support options." }
+        ]
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 11,
+      "typeId": 2,
+      "title": "About Hero",
+      "fields": {
+        "heading": "About Us",
+        "subheading": "The team and mission behind the product",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 12,
+      "typeId": 1,
+      "title": "About Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "We believe content management should be simple, fast, and flexible. Our platform is built by developers for developers, with a content editing experience that non-technical users love." }]
+            },
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "Our Mission" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "To give every team the tools to build exceptional web experiences without compromising on performance, security, or developer happiness." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 13,
+      "typeId": 2,
+      "title": "Contact Hero",
+      "fields": {
+        "heading": "Get in Touch",
+        "subheading": "Have questions? We would love to hear from you.",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 14,
+      "typeId": 1,
+      "title": "Contact Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Reach out to our team for sales inquiries, technical support, or partnership opportunities. We typically respond within one business day." }]
+            },
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "Email" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "hello@example.com" }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "pageBlocks": [
+    { "id": 1, "pageId": 1, "blockId": 1, "region": "hero", "position": 0, "isShared": false },
+    { "id": 2, "pageId": 1, "blockId": 2, "region": "features", "position": 0, "isShared": false },
+    { "id": 3, "pageId": 1, "blockId": 3, "region": "content", "position": 0, "isShared": false },
+    { "id": 4, "pageId": 1, "blockId": 4, "region": "bottom", "position": 0, "isShared": false },
+    { "id": 5, "pageId": 2, "blockId": 5, "region": "hero", "position": 0, "isShared": false },
+    { "id": 6, "pageId": 2, "blockId": 6, "region": "features", "position": 0, "isShared": false },
+    { "id": 7, "pageId": 2, "blockId": 7, "region": "content", "position": 0, "isShared": false },
+    { "id": 8, "pageId": 3, "blockId": 8, "region": "hero", "position": 0, "isShared": false },
+    { "id": 9, "pageId": 3, "blockId": 9, "region": "content", "position": 0, "isShared": false },
+    { "id": 10, "pageId": 3, "blockId": 10, "region": "features", "position": 0, "isShared": false },
+    { "id": 11, "pageId": 4, "blockId": 11, "region": "hero", "position": 0, "isShared": false },
+    { "id": 12, "pageId": 4, "blockId": 12, "region": "content", "position": 0, "isShared": false },
+    { "id": 13, "pageId": 5, "blockId": 13, "region": "hero", "position": 0, "isShared": false },
+    { "id": 14, "pageId": 5, "blockId": 14, "region": "content", "position": 0, "isShared": false }
+  ],
+  "menus": [
+    { "id": 1, "name": "Main Navigation", "slug": "main-nav" }
+  ],
+  "menuItems": [
+    { "id": 1, "menuId": 1, "title": "Features", "url": "/features", "pageId": 2, "target": "_self", "position": 0, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} },
+    { "id": 2, "menuId": 1, "title": "Pricing", "url": "/pricing", "pageId": 3, "target": "_self", "position": 1, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} },
+    { "id": 3, "menuId": 1, "title": "About", "url": "/about", "pageId": 4, "target": "_self", "position": 2, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} },
+    { "id": 4, "menuId": 1, "title": "Contact", "url": "/contact", "pageId": 5, "target": "_self", "position": 3, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} }
+  ]
+}

@@ -1,0 +1,558 @@
+{
+  "version": 1,
+  "blockTypes": [
+    {
+      "id": 1,
+      "name": "Rich Text",
+      "slug": "rich_text",
+      "description": "A rich text content block using TipTap JSON format",
+      "fieldsSchema": [
+        { "name": "body", "label": "Body", "type": "richtext", "required": true }
+      ],
+      "icon": "text",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "name": "Hero",
+      "slug": "hero",
+      "description": "A hero banner with heading, subheading, and optional background image",
+      "fieldsSchema": [
+        { "name": "heading", "label": "Heading", "type": "text", "required": true },
+        { "name": "subheading", "label": "Subheading", "type": "text" },
+        { "name": "background_image", "label": "Background Image", "type": "media" }
+      ],
+      "icon": "layout",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "name": "Image",
+      "slug": "image",
+      "description": "A single image with optional caption and alt text",
+      "fieldsSchema": [
+        { "name": "src", "label": "Image", "type": "media", "required": true },
+        { "name": "alt", "label": "Alt Text", "type": "text", "required": true },
+        { "name": "caption", "label": "Caption", "type": "text" }
+      ],
+      "icon": "image",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "name": "CTA Button",
+      "slug": "cta_button",
+      "description": "A call-to-action button with configurable text, URL, and style",
+      "fieldsSchema": [
+        { "name": "text", "label": "Button Text", "type": "text", "required": true },
+        { "name": "url", "label": "URL", "type": "url", "required": true },
+        { "name": "style", "label": "Style", "type": "select", "options": ["primary", "secondary", "outline"] }
+      ],
+      "icon": "mouse-pointer",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "name": "Embed",
+      "slug": "embed",
+      "description": "Embed external content via URL or HTML snippet",
+      "fieldsSchema": [
+        { "name": "embed_url", "label": "Embed URL", "type": "url" },
+        { "name": "embed_html", "label": "Embed HTML", "type": "textarea" },
+        { "name": "caption", "label": "Caption", "type": "text" }
+      ],
+      "icon": "code",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "contentTypes": [
+    {
+      "id": 1,
+      "name": "Post",
+      "slug": "post",
+      "description": "A blog post — similar to WordPress posts with excerpt, author, and categories",
+      "fieldsSchema": [
+        { "name": "excerpt", "label": "Excerpt", "type": "textarea" },
+        { "name": "author", "label": "Author", "type": "text" },
+        { "name": "categories", "label": "Categories", "type": "text" },
+        { "name": "featured_image", "label": "Featured Image", "type": "media" },
+        { "name": "published_date", "label": "Published Date", "type": "date" }
+      ],
+      "regions": [
+        { "name": "content", "label": "Content" },
+        { "name": "sidebar", "label": "Sidebar" }
+      ],
+      "defaultBlocks": [
+        { "region": "content", "blockTypeSlug": "rich_text", "position": 0 }
+      ],
+      "settings": {}
+    },
+    {
+      "id": 2,
+      "name": "Page",
+      "slug": "page",
+      "description": "A static page — similar to WordPress pages with hero, content, and sidebar",
+      "fieldsSchema": [],
+      "regions": [
+        { "name": "hero", "label": "Hero" },
+        { "name": "content", "label": "Content" },
+        { "name": "sidebar", "label": "Sidebar" }
+      ],
+      "defaultBlocks": [
+        { "region": "hero", "blockTypeSlug": "hero", "position": 0 },
+        { "region": "content", "blockTypeSlug": "rich_text", "position": 0 }
+      ],
+      "settings": {}
+    }
+  ],
+  "taxonomies": [
+    {
+      "id": 1,
+      "name": "Categories",
+      "slug": "categories",
+      "description": "Post categories — hierarchical, like WordPress categories",
+      "hierarchical": true
+    },
+    {
+      "id": 2,
+      "name": "Tags",
+      "slug": "tags",
+      "description": "Post tags — flat taxonomy for flexible labeling",
+      "hierarchical": false
+    }
+  ],
+  "terms": [
+    { "id": 1, "taxonomyId": 1, "name": "Uncategorized", "slug": "uncategorized", "weight": 0 },
+    { "id": 2, "taxonomyId": 1, "name": "News", "slug": "news", "weight": 1 },
+    { "id": 3, "taxonomyId": 1, "name": "Tutorials", "slug": "tutorials", "weight": 2 },
+    { "id": 4, "taxonomyId": 2, "name": "wordpress", "slug": "wordpress", "weight": 0 },
+    { "id": 5, "taxonomyId": 2, "name": "migration", "slug": "migration", "weight": 1 },
+    { "id": 6, "taxonomyId": 2, "name": "cms", "slug": "cms", "weight": 2 }
+  ],
+  "pages": [
+    {
+      "id": 1,
+      "typeId": 2,
+      "title": "Home",
+      "slug": "home",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "typeId": 2,
+      "title": "Blog",
+      "slug": "blog",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "typeId": 2,
+      "title": "About",
+      "slug": "about",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "typeId": 2,
+      "title": "Contact",
+      "slug": "contact",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "typeId": 2,
+      "title": "Privacy Policy",
+      "slug": "privacy-policy",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "typeId": 1,
+      "title": "Hello World",
+      "slug": "hello-world",
+      "status": "published",
+      "locale": "en",
+      "fields": {
+        "excerpt": "Welcome to your new site! This is your first post. Edit or delete it, then start writing.",
+        "author": "Admin",
+        "categories": "Uncategorized",
+        "featured_image": "",
+        "published_date": "2026-01-01"
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "typeId": 1,
+      "title": "Migrating from WordPress to WollyCMS",
+      "slug": "migrating-from-wordpress-to-wollycms",
+      "status": "published",
+      "locale": "en",
+      "fields": {
+        "excerpt": "A step-by-step guide for WordPress users making the switch to a headless CMS.",
+        "author": "Admin",
+        "categories": "Tutorials",
+        "featured_image": "",
+        "published_date": "2026-01-05"
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "typeId": 1,
+      "title": "Understanding Content Blocks",
+      "slug": "understanding-content-blocks",
+      "status": "published",
+      "locale": "en",
+      "fields": {
+        "excerpt": "How WollyCMS blocks compare to the WordPress block editor and what makes them different.",
+        "author": "Admin",
+        "categories": "News",
+        "featured_image": "",
+        "published_date": "2026-01-10"
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "blocks": [
+    {
+      "id": 1,
+      "typeId": 2,
+      "title": "Home Hero",
+      "fields": {
+        "heading": "Welcome to Your New Site",
+        "subheading": "Powered by WollyCMS — a modern headless CMS that feels familiar",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "typeId": 1,
+      "title": "Home Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "Latest Posts" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Welcome to your new site. If you are coming from WordPress, you will feel right at home. Posts, pages, categories, and tags all work the way you expect — with the added power of a headless CMS." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "typeId": 2,
+      "title": "Blog Hero",
+      "fields": {
+        "heading": "Blog",
+        "subheading": "All the latest posts and updates",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "typeId": 1,
+      "title": "Blog Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Browse our latest articles below. Use categories and tags to find topics that interest you." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "typeId": 2,
+      "title": "About Hero",
+      "fields": {
+        "heading": "About Us",
+        "subheading": "Who we are and what we do",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "typeId": 1,
+      "title": "About Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "This site is powered by WollyCMS, a headless content management system. We migrated from WordPress and have not looked back." }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "With WollyCMS, we get the content editing experience we loved in WordPress combined with the performance and flexibility of a modern headless architecture." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "typeId": 2,
+      "title": "Contact Hero",
+      "fields": {
+        "heading": "Contact Us",
+        "subheading": "Get in touch — we would love to hear from you",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "typeId": 1,
+      "title": "Contact Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Have a question or want to get in touch? Send us an email at hello@example.com and we will get back to you as soon as possible." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 9,
+      "typeId": 2,
+      "title": "Privacy Hero",
+      "fields": {
+        "heading": "Privacy Policy",
+        "subheading": "",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 10,
+      "typeId": 1,
+      "title": "Privacy Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "What Data We Collect" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "This is a sample privacy policy. Replace this content with your actual privacy policy that describes what data you collect, how you use it, and how users can request its deletion." }]
+            },
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "How We Use Your Data" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Describe how collected data is processed, stored, and shared with third parties if applicable." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 11,
+      "typeId": 1,
+      "title": "Hello World Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Welcome to WollyCMS! This is your first post. Edit or delete it, then start writing." }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "If you are coming from WordPress, you will notice that WollyCMS uses a similar posts and pages model. Create posts for your blog content and pages for static content like About or Contact." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 12,
+      "typeId": 1,
+      "title": "Migration Guide Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "Before You Start" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Export your WordPress content using the built-in export tool. WollyCMS can import your posts, pages, categories, and tags — preserving your content structure." }]
+            },
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "Step 1: Export from WordPress" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Go to Tools > Export in your WordPress dashboard. Select All Content and download the XML file." }]
+            },
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "Step 2: Import into WollyCMS" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Use the wolly import command to bring your content into WollyCMS. The importer maps WordPress post types to WollyCMS content types automatically." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 13,
+      "typeId": 1,
+      "title": "Content Blocks Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "If you have used the WordPress block editor (Gutenberg), WollyCMS blocks will feel familiar. The key difference is that WollyCMS blocks are stored as structured data, not rendered HTML." }]
+            },
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "What Are Content Blocks?" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Content blocks are reusable pieces of structured content. Each block has a type (like Rich Text, Hero, or Image), a set of fields defined by its schema, and can be placed in any region of a page." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "pageBlocks": [
+    { "id": 1, "pageId": 1, "blockId": 1, "region": "hero", "position": 0, "isShared": false },
+    { "id": 2, "pageId": 1, "blockId": 2, "region": "content", "position": 0, "isShared": false },
+    { "id": 3, "pageId": 2, "blockId": 3, "region": "hero", "position": 0, "isShared": false },
+    { "id": 4, "pageId": 2, "blockId": 4, "region": "content", "position": 0, "isShared": false },
+    { "id": 5, "pageId": 3, "blockId": 5, "region": "hero", "position": 0, "isShared": false },
+    { "id": 6, "pageId": 3, "blockId": 6, "region": "content", "position": 0, "isShared": false },
+    { "id": 7, "pageId": 4, "blockId": 7, "region": "hero", "position": 0, "isShared": false },
+    { "id": 8, "pageId": 4, "blockId": 8, "region": "content", "position": 0, "isShared": false },
+    { "id": 9, "pageId": 5, "blockId": 9, "region": "hero", "position": 0, "isShared": false },
+    { "id": 10, "pageId": 5, "blockId": 10, "region": "content", "position": 0, "isShared": false },
+    { "id": 11, "pageId": 6, "blockId": 11, "region": "content", "position": 0, "isShared": false },
+    { "id": 12, "pageId": 7, "blockId": 12, "region": "content", "position": 0, "isShared": false },
+    { "id": 13, "pageId": 8, "blockId": 13, "region": "content", "position": 0, "isShared": false }
+  ],
+  "menus": [
+    { "id": 1, "name": "Main Navigation", "slug": "main-nav" },
+    { "id": 2, "name": "Footer Navigation", "slug": "footer-nav" }
+  ],
+  "menuItems": [
+    { "id": 1, "menuId": 1, "title": "Home", "url": "/", "pageId": 1, "target": "_self", "position": 0, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} },
+    { "id": 2, "menuId": 1, "title": "Blog", "url": "/blog", "pageId": 2, "target": "_self", "position": 1, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} },
+    { "id": 3, "menuId": 1, "title": "About", "url": "/about", "pageId": 3, "target": "_self", "position": 2, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} },
+    { "id": 4, "menuId": 1, "title": "Contact", "url": "/contact", "pageId": 4, "target": "_self", "position": 3, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} },
+    { "id": 5, "menuId": 2, "title": "Privacy Policy", "url": "/privacy-policy", "pageId": 5, "target": "_self", "position": 0, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} },
+    { "id": 6, "menuId": 2, "title": "About", "url": "/about", "pageId": 3, "target": "_self", "position": 1, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} }
+  ]
+}

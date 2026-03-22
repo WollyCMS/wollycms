@@ -1,0 +1,785 @@
+{
+  "version": 1,
+  "blockTypes": [
+    {
+      "id": 1,
+      "name": "Rich Text",
+      "slug": "rich_text",
+      "description": "A rich text content block using TipTap JSON format",
+      "fieldsSchema": [
+        { "name": "body", "label": "Body", "type": "richtext", "required": true }
+      ],
+      "icon": "text",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "name": "Hero",
+      "slug": "hero",
+      "description": "A hero banner with heading, subheading, and optional background image",
+      "fieldsSchema": [
+        { "name": "heading", "label": "Heading", "type": "text", "required": true },
+        { "name": "subheading", "label": "Subheading", "type": "text" },
+        { "name": "background_image", "label": "Background Image", "type": "media" }
+      ],
+      "icon": "layout",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "name": "Image",
+      "slug": "image",
+      "description": "A single image with optional caption and alt text",
+      "fieldsSchema": [
+        { "name": "src", "label": "Image", "type": "media", "required": true },
+        { "name": "alt", "label": "Alt Text", "type": "text", "required": true },
+        { "name": "caption", "label": "Caption", "type": "text" }
+      ],
+      "icon": "image",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "name": "CTA Button",
+      "slug": "cta_button",
+      "description": "A call-to-action button with configurable text, URL, and style",
+      "fieldsSchema": [
+        { "name": "text", "label": "Button Text", "type": "text", "required": true },
+        { "name": "url", "label": "URL", "type": "url", "required": true },
+        { "name": "style", "label": "Style", "type": "select", "options": ["primary", "secondary", "outline"] }
+      ],
+      "icon": "mouse-pointer",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "name": "Accordion",
+      "slug": "accordion",
+      "description": "Expandable accordion sections for FAQs or collapsible content",
+      "fieldsSchema": [
+        {
+          "name": "items",
+          "label": "Accordion Items",
+          "type": "repeater",
+          "fields": [
+            { "name": "title", "label": "Title", "type": "text" },
+            { "name": "content", "label": "Content", "type": "textarea" }
+          ]
+        }
+      ],
+      "icon": "chevrons-down",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "name": "Contact List",
+      "slug": "contact_list",
+      "description": "A list of contacts with name, title, email, and phone",
+      "fieldsSchema": [
+        {
+          "name": "contacts",
+          "label": "Contacts",
+          "type": "repeater",
+          "fields": [
+            { "name": "name", "label": "Name", "type": "text" },
+            { "name": "title", "label": "Title", "type": "text" },
+            { "name": "email", "label": "Email", "type": "text" },
+            { "name": "phone", "label": "Phone", "type": "text" }
+          ]
+        }
+      ],
+      "icon": "users",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "name": "Location",
+      "slug": "location",
+      "description": "A location block with address, coordinates, and optional map embed",
+      "fieldsSchema": [
+        { "name": "name", "label": "Location Name", "type": "text" },
+        { "name": "address", "label": "Address", "type": "textarea" },
+        { "name": "latitude", "label": "Latitude", "type": "text" },
+        { "name": "longitude", "label": "Longitude", "type": "text" },
+        { "name": "map_embed", "label": "Map Embed URL", "type": "url" }
+      ],
+      "icon": "map-pin",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "name": "Content Listing",
+      "slug": "content_listing",
+      "description": "A dynamic listing of content filtered by type, taxonomy, or custom query",
+      "fieldsSchema": [
+        { "name": "content_type", "label": "Content Type Slug", "type": "text" },
+        { "name": "limit", "label": "Number of Items", "type": "number" },
+        { "name": "taxonomy_filter", "label": "Taxonomy Filter (slug)", "type": "text" },
+        { "name": "display_style", "label": "Display Style", "type": "select", "options": ["list", "grid", "cards"] }
+      ],
+      "icon": "list",
+      "settings": {},
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "contentTypes": [
+    {
+      "id": 1,
+      "name": "Article",
+      "slug": "article",
+      "description": "A news article or blog post — similar to Drupal's Article content type",
+      "fieldsSchema": [
+        { "name": "body_summary", "label": "Body Summary", "type": "textarea" },
+        { "name": "author", "label": "Author", "type": "text" },
+        { "name": "tags", "label": "Tags", "type": "text" },
+        { "name": "published_date", "label": "Published Date", "type": "date" }
+      ],
+      "regions": [
+        { "name": "hero", "label": "Hero" },
+        { "name": "content", "label": "Content" },
+        { "name": "sidebar", "label": "Sidebar" }
+      ],
+      "defaultBlocks": [
+        { "region": "hero", "blockTypeSlug": "hero", "position": 0 },
+        { "region": "content", "blockTypeSlug": "rich_text", "position": 0 }
+      ],
+      "settings": {}
+    },
+    {
+      "id": 2,
+      "name": "Basic Page",
+      "slug": "basic_page",
+      "description": "A general-purpose page — similar to Drupal's Basic Page content type",
+      "fieldsSchema": [],
+      "regions": [
+        { "name": "hero", "label": "Hero" },
+        { "name": "content", "label": "Content" },
+        { "name": "sidebar", "label": "Sidebar" },
+        { "name": "bottom", "label": "Bottom" }
+      ],
+      "defaultBlocks": [
+        { "region": "hero", "blockTypeSlug": "hero", "position": 0 },
+        { "region": "content", "blockTypeSlug": "rich_text", "position": 0 }
+      ],
+      "settings": {}
+    },
+    {
+      "id": 3,
+      "name": "Landing Page",
+      "slug": "landing_page",
+      "description": "A full-width landing page with hero, content, features, and bottom regions",
+      "fieldsSchema": [],
+      "regions": [
+        { "name": "hero", "label": "Hero" },
+        { "name": "content", "label": "Content" },
+        { "name": "features", "label": "Features" },
+        { "name": "bottom", "label": "Bottom" }
+      ],
+      "defaultBlocks": [
+        { "region": "hero", "blockTypeSlug": "hero", "position": 0 },
+        { "region": "content", "blockTypeSlug": "rich_text", "position": 0 }
+      ],
+      "settings": {}
+    },
+    {
+      "id": 4,
+      "name": "Event",
+      "slug": "event",
+      "description": "An event with date, time, location, and registration details",
+      "fieldsSchema": [
+        { "name": "event_date", "label": "Event Date", "type": "text" },
+        { "name": "event_time", "label": "Event Time", "type": "text" },
+        { "name": "location", "label": "Location", "type": "text" },
+        { "name": "registration_url", "label": "Registration URL", "type": "url" }
+      ],
+      "regions": [
+        { "name": "hero", "label": "Hero" },
+        { "name": "content", "label": "Content" },
+        { "name": "sidebar", "label": "Sidebar" }
+      ],
+      "defaultBlocks": [
+        { "region": "hero", "blockTypeSlug": "hero", "position": 0 },
+        { "region": "content", "blockTypeSlug": "rich_text", "position": 0 }
+      ],
+      "settings": {}
+    }
+  ],
+  "taxonomies": [
+    {
+      "id": 1,
+      "name": "Tags",
+      "slug": "tags",
+      "description": "Free-tagging vocabulary for content categorization",
+      "hierarchical": false
+    },
+    {
+      "id": 2,
+      "name": "Content Category",
+      "slug": "content_category",
+      "description": "Hierarchical content categories — similar to Drupal vocabularies",
+      "hierarchical": true
+    }
+  ],
+  "terms": [
+    { "id": 1, "taxonomyId": 1, "name": "drupal", "slug": "drupal", "weight": 0 },
+    { "id": 2, "taxonomyId": 1, "name": "migration", "slug": "migration", "weight": 1 },
+    { "id": 3, "taxonomyId": 1, "name": "cms", "slug": "cms", "weight": 2 },
+    { "id": 4, "taxonomyId": 1, "name": "web-development", "slug": "web-development", "weight": 3 },
+    { "id": 5, "taxonomyId": 2, "name": "News", "slug": "news", "weight": 0 },
+    { "id": 6, "taxonomyId": 2, "name": "Events", "slug": "events", "weight": 1 },
+    { "id": 7, "taxonomyId": 2, "name": "Resources", "slug": "resources", "weight": 2 }
+  ],
+  "pages": [
+    {
+      "id": 1,
+      "typeId": 3,
+      "title": "Home",
+      "slug": "home",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "typeId": 2,
+      "title": "About",
+      "slug": "about",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "typeId": 2,
+      "title": "News",
+      "slug": "news",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "typeId": 2,
+      "title": "Events",
+      "slug": "events",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "typeId": 2,
+      "title": "Contact",
+      "slug": "contact",
+      "status": "published",
+      "locale": "en",
+      "fields": {},
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "typeId": 1,
+      "title": "Migrating from Drupal to WollyCMS",
+      "slug": "migrating-from-drupal-to-wollycms",
+      "status": "published",
+      "locale": "en",
+      "fields": {
+        "body_summary": "A practical guide for Drupal administrators making the transition to a headless CMS.",
+        "author": "Admin",
+        "tags": "drupal, migration, cms",
+        "published_date": "2026-01-01"
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "typeId": 1,
+      "title": "Understanding Content Types and Regions",
+      "slug": "understanding-content-types-and-regions",
+      "status": "published",
+      "locale": "en",
+      "fields": {
+        "body_summary": "How WollyCMS content types and regions map to Drupal concepts you already know.",
+        "author": "Admin",
+        "tags": "cms, web-development",
+        "published_date": "2026-01-05"
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "typeId": 1,
+      "title": "Building Views with Content Listings",
+      "slug": "building-views-with-content-listings",
+      "status": "published",
+      "locale": "en",
+      "fields": {
+        "body_summary": "Replicate Drupal Views functionality using WollyCMS content listing blocks.",
+        "author": "Admin",
+        "tags": "drupal, web-development",
+        "published_date": "2026-01-10"
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 9,
+      "typeId": 4,
+      "title": "CMS Migration Workshop",
+      "slug": "cms-migration-workshop",
+      "status": "published",
+      "locale": "en",
+      "fields": {
+        "event_date": "2026-03-15",
+        "event_time": "10:00 AM - 2:00 PM",
+        "location": "Virtual (Zoom)",
+        "registration_url": "https://example.com/register"
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 10,
+      "typeId": 4,
+      "title": "Headless CMS Community Meetup",
+      "slug": "headless-cms-community-meetup",
+      "status": "published",
+      "locale": "en",
+      "fields": {
+        "event_date": "2026-04-20",
+        "event_time": "6:00 PM - 8:00 PM",
+        "location": "Community Center, 123 Main St",
+        "registration_url": "https://example.com/meetup"
+      },
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "publishedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "blocks": [
+    {
+      "id": 1,
+      "typeId": 2,
+      "title": "Home Hero",
+      "fields": {
+        "heading": "Welcome to Our Organization",
+        "subheading": "Powered by a modern headless CMS — familiar structure, better performance",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "typeId": 8,
+      "title": "Home Content Listing",
+      "fields": {
+        "content_type": "article",
+        "limit": 5,
+        "taxonomy_filter": "",
+        "display_style": "cards"
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "typeId": 2,
+      "title": "About Hero",
+      "fields": {
+        "heading": "About Us",
+        "subheading": "Our mission, history, and team",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "typeId": 1,
+      "title": "About Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "We are an organization committed to delivering excellent digital experiences. Our site has been migrated from Drupal to WollyCMS, giving us the familiar content structure we relied on with the performance benefits of a headless architecture." }]
+            },
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "Our History" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Founded with a focus on open-source technology, we have always valued flexibility and community-driven development." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "typeId": 2,
+      "title": "News Hero",
+      "fields": {
+        "heading": "News",
+        "subheading": "The latest articles and announcements",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "typeId": 8,
+      "title": "News Content Listing",
+      "fields": {
+        "content_type": "article",
+        "limit": 10,
+        "taxonomy_filter": "news",
+        "display_style": "list"
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "typeId": 2,
+      "title": "Events Hero",
+      "fields": {
+        "heading": "Events",
+        "subheading": "Upcoming workshops, meetups, and conferences",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "typeId": 8,
+      "title": "Events Content Listing",
+      "fields": {
+        "content_type": "event",
+        "limit": 10,
+        "taxonomy_filter": "",
+        "display_style": "cards"
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 9,
+      "typeId": 2,
+      "title": "Contact Hero",
+      "fields": {
+        "heading": "Contact Us",
+        "subheading": "Get in touch with our team",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 10,
+      "typeId": 6,
+      "title": "Contact List",
+      "fields": {
+        "contacts": [
+          { "name": "General Inquiries", "title": "Main Office", "email": "info@example.com", "phone": "(555) 123-4567" },
+          { "name": "Technical Support", "title": "IT Department", "email": "support@example.com", "phone": "(555) 123-4568" }
+        ]
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 11,
+      "typeId": 7,
+      "title": "Contact Location",
+      "fields": {
+        "name": "Main Office",
+        "address": "123 Main Street\nSuite 100\nAnytown, ST 12345",
+        "latitude": "40.7128",
+        "longitude": "-74.0060",
+        "map_embed": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 12,
+      "typeId": 2,
+      "title": "Article 1 Hero",
+      "fields": {
+        "heading": "Migrating from Drupal to WollyCMS",
+        "subheading": "A practical guide for Drupal administrators",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 13,
+      "typeId": 1,
+      "title": "Article 1 Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "If you are a Drupal site administrator considering a move to a headless CMS, WollyCMS offers a familiar content modeling approach. Content types, taxonomies, and regions map closely to Drupal concepts." }]
+            },
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "Content Types" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "WollyCMS content types work like Drupal content types. Each has a set of fields and regions. Regions are similar to Drupal block regions — named areas where you place content blocks." }]
+            },
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "Taxonomy Vocabularies" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "WollyCMS taxonomies are directly equivalent to Drupal vocabularies. They can be flat or hierarchical, and terms are used to categorize content." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 14,
+      "typeId": 2,
+      "title": "Article 2 Hero",
+      "fields": {
+        "heading": "Understanding Content Types and Regions",
+        "subheading": "Mapping Drupal concepts to WollyCMS",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 15,
+      "typeId": 1,
+      "title": "Article 2 Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "In Drupal, content types define the structure of your content. WollyCMS takes a similar approach, but adds the concept of regions — named areas within a page where blocks are placed." }]
+            },
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "Regions vs. Drupal Block Regions" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Drupal has site-wide block regions defined by themes. WollyCMS regions are per-content-type, giving you more granular control over layout without needing a theme layer." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 16,
+      "typeId": 2,
+      "title": "Article 3 Hero",
+      "fields": {
+        "heading": "Building Views with Content Listings",
+        "subheading": "Replicate Drupal Views in WollyCMS",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 17,
+      "typeId": 1,
+      "title": "Article 3 Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Drupal Views is one of the most powerful modules in the Drupal ecosystem. WollyCMS provides a content listing block type that covers the most common use cases: listing content by type, filtering by taxonomy, and controlling display style." }]
+            },
+            {
+              "type": "heading",
+              "attrs": { "level": 2 },
+              "content": [{ "type": "text", "text": "Content Listing Blocks" }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Add a content listing block to any region. Configure the content type to list, the number of items, an optional taxonomy filter, and the display style (list, grid, or cards)." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 18,
+      "typeId": 2,
+      "title": "Event 1 Hero",
+      "fields": {
+        "heading": "CMS Migration Workshop",
+        "subheading": "Hands-on workshop for migrating to WollyCMS",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 19,
+      "typeId": 1,
+      "title": "Event 1 Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Join us for a hands-on workshop covering the complete migration process from Drupal to WollyCMS. We will walk through content export, schema mapping, data import, and frontend integration." }]
+            },
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "This virtual workshop is suitable for developers and site administrators. No prior WollyCMS experience required." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 20,
+      "typeId": 2,
+      "title": "Event 2 Hero",
+      "fields": {
+        "heading": "Headless CMS Community Meetup",
+        "subheading": "Connect with fellow CMS enthusiasts",
+        "background_image": ""
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": 21,
+      "typeId": 1,
+      "title": "Event 2 Content",
+      "fields": {
+        "body": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{ "type": "text", "text": "Our monthly community meetup brings together developers, content strategists, and site administrators interested in headless CMS architecture. Share your experiences, ask questions, and learn from the community." }]
+            }
+          ]
+        }
+      },
+      "isReusable": false,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "pageBlocks": [
+    { "id": 1, "pageId": 1, "blockId": 1, "region": "hero", "position": 0, "isShared": false },
+    { "id": 2, "pageId": 1, "blockId": 2, "region": "content", "position": 0, "isShared": false },
+    { "id": 3, "pageId": 2, "blockId": 3, "region": "hero", "position": 0, "isShared": false },
+    { "id": 4, "pageId": 2, "blockId": 4, "region": "content", "position": 0, "isShared": false },
+    { "id": 5, "pageId": 3, "blockId": 5, "region": "hero", "position": 0, "isShared": false },
+    { "id": 6, "pageId": 3, "blockId": 6, "region": "content", "position": 0, "isShared": false },
+    { "id": 7, "pageId": 4, "blockId": 7, "region": "hero", "position": 0, "isShared": false },
+    { "id": 8, "pageId": 4, "blockId": 8, "region": "content", "position": 0, "isShared": false },
+    { "id": 9, "pageId": 5, "blockId": 9, "region": "hero", "position": 0, "isShared": false },
+    { "id": 10, "pageId": 5, "blockId": 10, "region": "content", "position": 0, "isShared": false },
+    { "id": 11, "pageId": 5, "blockId": 11, "region": "bottom", "position": 0, "isShared": false },
+    { "id": 12, "pageId": 6, "blockId": 12, "region": "hero", "position": 0, "isShared": false },
+    { "id": 13, "pageId": 6, "blockId": 13, "region": "content", "position": 0, "isShared": false },
+    { "id": 14, "pageId": 7, "blockId": 14, "region": "hero", "position": 0, "isShared": false },
+    { "id": 15, "pageId": 7, "blockId": 15, "region": "content", "position": 0, "isShared": false },
+    { "id": 16, "pageId": 8, "blockId": 16, "region": "hero", "position": 0, "isShared": false },
+    { "id": 17, "pageId": 8, "blockId": 17, "region": "content", "position": 0, "isShared": false },
+    { "id": 18, "pageId": 9, "blockId": 18, "region": "hero", "position": 0, "isShared": false },
+    { "id": 19, "pageId": 9, "blockId": 19, "region": "content", "position": 0, "isShared": false },
+    { "id": 20, "pageId": 10, "blockId": 20, "region": "hero", "position": 0, "isShared": false },
+    { "id": 21, "pageId": 10, "blockId": 21, "region": "content", "position": 0, "isShared": false }
+  ],
+  "menus": [
+    { "id": 1, "name": "Main Navigation", "slug": "main-nav" }
+  ],
+  "menuItems": [
+    { "id": 1, "menuId": 1, "title": "Home", "url": "/", "pageId": 1, "target": "_self", "position": 0, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} },
+    { "id": 2, "menuId": 1, "title": "About", "url": "/about", "pageId": 2, "target": "_self", "position": 1, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} },
+    { "id": 3, "menuId": 1, "title": "News", "url": "/news", "pageId": 3, "target": "_self", "position": 2, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} },
+    { "id": 4, "menuId": 1, "title": "Events", "url": "/events", "pageId": 4, "target": "_self", "position": 3, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} },
+    { "id": 5, "menuId": 1, "title": "Contact", "url": "/contact", "pageId": 5, "target": "_self", "position": 4, "depth": 0, "parentId": null, "isExpanded": false, "attributes": {} }
+  ]
+}
