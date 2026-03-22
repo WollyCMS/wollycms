@@ -27,7 +27,8 @@
 
   function buildPreviewUrl(s: string): string {
     if (!siteUrl || !previewToken) return 'about:blank';
-    return `${siteUrl}/preview/${s}?token=${previewToken}`;
+    // Token is sent via httpOnly cookie (wolly_preview), not in URL
+    return `${siteUrl}/preview/${s}`;
   }
 
   let previewUrl = $state('about:blank');

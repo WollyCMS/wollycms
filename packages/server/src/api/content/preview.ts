@@ -20,13 +20,17 @@ import {
  */
 const previewAuth = createMiddleware(async (c, next) => {
   const token = c.req.header('Authorization')?.replace('Bearer ', '')
-    || getCookie(c, 'wolly_preview')
-    || c.req.query('token');
+    || getCookie(c, 'wolly_preview');
   if (!token) {
     return c.json({ errors: [{ code: 'UNAUTHORIZED', message: 'Preview requires authentication' }] }, 401);
   }
   try {
-    await verify(token, env.JWT_SECRET, 'HS256');
+    const payload = (await verify(token, env.JWT_SECRET, 'HS256')) as unknown as { purpose?: string };
+    // Accept both preview-scoped tokens and full session tokens
+    // (editors need to preview from the admin panel using their session)
+    if (payload.purpose && payload.purpose !== 'preview') {
+      return c.json({ errors: [{ code: 'UNAUTHORIZED', message: 'Invalid token type' }] }, 401);
+    }
     await next();
   } catch {
     return c.json({ errors: [{ code: 'UNAUTHORIZED', message: 'Invalid token' }] }, 401);

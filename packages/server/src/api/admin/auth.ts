@@ -285,7 +285,7 @@ app.post('/preview-session', authMiddleware, async (c) => {
   const payload = c.get('jwtPayload');
   const now = Math.floor(Date.now() / 1000);
   const token = await sign(
-    { sub: payload.sub, email: payload.email, role: payload.role, exp: now + 600 },
+    { sub: payload.sub, email: payload.email, role: payload.role, purpose: 'preview', exp: now + 600 },
     env.JWT_SECRET,
     'HS256',
   );
