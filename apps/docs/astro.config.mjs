@@ -50,9 +50,12 @@ export default defineConfig({
 						{ label: 'Revisions', slug: 'concepts/revisions' },
 						{ label: 'Accessibility', slug: 'concepts/accessibility' },
 						{ label: 'Two-Factor Auth', slug: 'concepts/two-factor-auth' },
+						{ label: 'OAuth Login', slug: 'concepts/oauth' },
 						{ label: 'API Keys', slug: 'concepts/api-keys' },
 						{ label: 'Webhooks', slug: 'concepts/webhooks' },
 						{ label: 'Tracking Scripts', slug: 'concepts/tracking' },
+						{ label: 'Admin UI', slug: 'concepts/admin-ui' },
+						{ label: 'Block Type Recipes', slug: 'concepts/block-recipes' },
 					],
 				},
 				{
