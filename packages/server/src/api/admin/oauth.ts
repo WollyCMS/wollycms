@@ -76,6 +76,9 @@ app.get('/google/callback', async (c) => {
   const state = c.req.query('state');
   const errorParam = c.req.query('error');
 
+  // Clear the state cookie on all paths
+  setCookie(c, OAUTH_STATE_COOKIE, '', { path: '/', maxAge: 0 });
+
   if (errorParam) {
     return c.redirect(
       '/admin/login#oauth_error=' + encodeURIComponent(errorParam),
@@ -92,9 +95,6 @@ app.get('/google/callback', async (c) => {
     return c.redirect('/admin/login#oauth_error=missing_state');
   }
 
-  // Clear the state cookie
-  setCookie(c, OAUTH_STATE_COOKIE, '', { path: '/', maxAge: 0 });
-
   let expectedState: string;
   try {
     expectedState = await verifyOAuthState(stateCookie);
@@ -110,8 +110,8 @@ app.get('/google/callback', async (c) => {
   let tokens: { access_token: string };
   try {
     tokens = await exchangeGoogleCode(code);
-  } catch (err) {
-    console.error('OAuth token exchange failed:', err);
+  } catch {
+    console.error('OAuth token exchange failed');
     return c.redirect('/admin/login#oauth_error=token_exchange_failed');
   }
 
@@ -119,8 +119,8 @@ app.get('/google/callback', async (c) => {
   let googleUser: Awaited<ReturnType<typeof fetchGoogleUserInfo>>;
   try {
     googleUser = await fetchGoogleUserInfo(tokens.access_token);
-  } catch (err) {
-    console.error('OAuth userinfo fetch failed:', err);
+  } catch {
+    console.error('OAuth userinfo fetch failed');
     return c.redirect('/admin/login#oauth_error=userinfo_failed');
   }
 

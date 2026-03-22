@@ -62,4 +62,5 @@ export const userOauth = pgTable('user_oauth', {
   createdAt: text('created_at').notNull(),
 }, (table) => [
   uniqueIndex('user_oauth_provider_unique').on(table.provider, table.providerId),
+  uniqueIndex('user_oauth_user_provider_unique').on(table.userId, table.provider),
 ]);

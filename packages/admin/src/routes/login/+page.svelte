@@ -50,7 +50,7 @@
           no_account: 'No CMS account matches that Google email — ask an admin to create one',
           user_not_found: 'Account not found',
         };
-        error = errorMessages[oauthError] || `OAuth error: ${oauthError}`;
+        error = errorMessages[oauthError] || 'An unknown error occurred during sign-in';
       }
     }
 
