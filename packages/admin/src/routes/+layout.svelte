@@ -169,7 +169,15 @@
     <aside class="sidebar" aria-label="Admin navigation">
       <div class="sidebar-header">
         <a href="{base}/" class="logo" aria-label="{brandName} Dashboard">
-          <span class="logo-icon" aria-hidden="true">{brandName[0].toUpperCase()}</span>
+          <span class="logo-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 512 512" fill="none">
+              <rect width="512" height="512" rx="128" fill="#10B981"/>
+              <rect x="110" y="110" width="292" height="55" rx="18" fill="white"/>
+              <rect x="110" y="195" width="180" height="207" rx="18" fill="white"/>
+              <rect x="320" y="195" width="82" height="91" rx="18" fill="white"/>
+              <rect x="320" y="311" width="82" height="91" rx="18" fill="white"/>
+            </svg>
+          </span>
           <span class="logo-text">{brandName}</span>
         </a>
       </div>
