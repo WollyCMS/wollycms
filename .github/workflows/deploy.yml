@@ -126,6 +126,10 @@ jobs:
           path: d1-pre-deploy-backup.sql
           retention-days: 30
 
+      - name: Wait for D1 export to complete
+        if: steps.d1_backup.outcome == 'success'
+        run: sleep 15
+
       - name: Apply D1 migrations
         uses: cloudflare/wrangler-action@v3
         with:
