@@ -46,6 +46,89 @@ app.get('/providers', (c) => {
   return c.json({ data: configured });
 });
 
+/** GET /connections — List connected OAuth accounts for the current user. */
+app.get('/connections', authMiddleware, async (c) => {
+  const payload = c.get('jwtPayload');
+  const db = getDb();
+
+  const connections = await db
+    .select({
+      id: userOauth.id,
+      provider: userOauth.provider,
+      email: userOauth.email,
+      name: userOauth.name,
+      createdAt: userOauth.createdAt,
+    })
+    .from(userOauth)
+    .where(eq(userOauth.userId, payload.sub));
+
+  return c.json({ data: connections });
+});
+
+/** DELETE /connections/:id — Disconnect an OAuth account. */
+app.delete('/connections/:id', authMiddleware, async (c) => {
+  const payload = c.get('jwtPayload');
+  const id = parseInt(c.req.param('id') || '', 10);
+  if (isNaN(id)) {
+    return c.json(
+      { errors: [{ code: 'VALIDATION', message: 'Invalid connection ID' }] },
+      400,
+    );
+  }
+
+  const db = getDb();
+
+  const [connection] = await db
+    .select()
+    .from(userOauth)
+    .where(and(eq(userOauth.id, id), eq(userOauth.userId, payload.sub)))
+    .limit(1);
+
+  if (!connection) {
+    return c.json(
+      { errors: [{ code: 'NOT_FOUND', message: 'Connection not found' }] },
+      404,
+    );
+  }
+
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, payload.sub))
+    .limit(1);
+
+  const allConnections = await db
+    .select({ id: userOauth.id })
+    .from(userOauth)
+    .where(eq(userOauth.userId, payload.sub));
+
+  if (!user?.passwordHash && allConnections.length <= 1) {
+    return c.json(
+      {
+        errors: [
+          {
+            code: 'LAST_AUTH',
+            message:
+              'Cannot disconnect — set a password first or keep at least one OAuth connection',
+          },
+        ],
+      },
+      400,
+    );
+  }
+
+  await db.delete(userOauth).where(eq(userOauth.id, id));
+
+  await logAudit(c, {
+    action: 'oauth-disconnected',
+    entity: 'user',
+    entityId: payload.sub,
+    details: { provider: connection.provider },
+  });
+
+  return c.json({ data: { ok: true } });
+});
+
 /** GET /:provider — Redirect to provider's OAuth2 consent screen. */
 app.get('/:provider', async (c) => {
   const providerName = c.req.param('provider') || '';
@@ -229,91 +312,6 @@ app.get('/:provider/callback', async (c) => {
     return c.redirect(returnTo);
   }
   return c.redirect(`/admin/login#oauth_token=${token}`);
-});
-
-/** GET /connections — List connected OAuth accounts for the current user. */
-app.get('/connections', authMiddleware, async (c) => {
-  const payload = c.get('jwtPayload');
-  const db = getDb();
-
-  const connections = await db
-    .select({
-      id: userOauth.id,
-      provider: userOauth.provider,
-      email: userOauth.email,
-      name: userOauth.name,
-      createdAt: userOauth.createdAt,
-    })
-    .from(userOauth)
-    .where(eq(userOauth.userId, payload.sub));
-
-  return c.json({ data: connections });
-});
-
-/** DELETE /connections/:id — Disconnect an OAuth account. */
-app.delete('/connections/:id', authMiddleware, async (c) => {
-  const payload = c.get('jwtPayload');
-  const id = parseInt(c.req.param('id') || '', 10);
-  if (isNaN(id)) {
-    return c.json(
-      { errors: [{ code: 'VALIDATION', message: 'Invalid connection ID' }] },
-      400,
-    );
-  }
-
-  const db = getDb();
-
-  // Verify the connection belongs to this user
-  const [connection] = await db
-    .select()
-    .from(userOauth)
-    .where(and(eq(userOauth.id, id), eq(userOauth.userId, payload.sub)))
-    .limit(1);
-
-  if (!connection) {
-    return c.json(
-      { errors: [{ code: 'NOT_FOUND', message: 'Connection not found' }] },
-      404,
-    );
-  }
-
-  // Ensure user retains at least one login method
-  const [user] = await db
-    .select()
-    .from(users)
-    .where(eq(users.id, payload.sub))
-    .limit(1);
-
-  const allConnections = await db
-    .select({ id: userOauth.id })
-    .from(userOauth)
-    .where(eq(userOauth.userId, payload.sub));
-
-  if (!user?.passwordHash && allConnections.length <= 1) {
-    return c.json(
-      {
-        errors: [
-          {
-            code: 'LAST_AUTH',
-            message:
-              'Cannot disconnect — set a password first or keep at least one OAuth connection',
-          },
-        ],
-      },
-      400,
-    );
-  }
-
-  await db.delete(userOauth).where(eq(userOauth.id, id));
-
-  await logAudit(c, {
-    action: 'oauth-disconnected',
-    entity: 'user',
-    entityId: payload.sub,
-    details: { provider: connection.provider },
-  });
-
-  return c.json({ data: { ok: true } });
 });
 
 export default app;
