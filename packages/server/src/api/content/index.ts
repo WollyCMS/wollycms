@@ -15,6 +15,7 @@ import sitemapRouter from './sitemap.js';
 import searchRouter from './search.js';
 import ogImageRouter from './og-image.js';
 import trackingScriptsRouter from './tracking-scripts.js';
+import graphqlRouter from './graphql.js';
 const app = new Hono();
 
 // Cache-Control + ETag headers for public content API
@@ -63,4 +64,5 @@ app.route('/sitemap', sitemapRouter);
 app.route('/search', searchRouter);
 app.route('/og', ogImageRouter);
 app.route('/tracking-scripts', trackingScriptsRouter);
+app.route('/graphql', graphqlRouter);
 export default app;
