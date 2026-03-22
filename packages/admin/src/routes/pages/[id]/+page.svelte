@@ -375,7 +375,7 @@
             onclick={() => setStatus(transition.slug)}
             title="{transition.label}"
           >
-            {transition.label}
+            {transition.slug === 'published' ? 'Publish' : transition.slug === 'draft' ? 'Unpublish' : transition.slug === 'archived' ? 'Archive' : transition.label}
           </button>
         {/each}
       {:else}
