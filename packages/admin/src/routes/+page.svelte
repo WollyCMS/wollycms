@@ -73,11 +73,20 @@
       <div class="stat-label">Users</div>
     </div>
   </div>
+{:else if !error}
+  <div class="stats-grid">
+    {#each Array(7) as _}
+      <div class="stat-card">
+        <div class="skeleton skeleton-title" style="width: 50%;"></div>
+        <div class="skeleton skeleton-text" style="width: 70%;"></div>
+      </div>
+    {/each}
+  </div>
 {/if}
 
 <div class="card">
   <h2 style="margin-bottom: 1rem; font-size: 1.1rem;">Recently Updated Pages</h2>
-  {#if recentPages.length > 0}
+  {#if stats && recentPages.length > 0}
     <div class="table-wrap">
       <table>
         <thead>
@@ -102,8 +111,19 @@
         </tbody>
       </table>
     </div>
-  {:else}
-    <div class="empty-state"><p>No pages yet. Create your first page to get started.</p></div>
+  {:else if stats && recentPages.length === 0}
+    <div class="empty-state">
+      <div class="empty-state-icon"><FilePlus size={40} /></div>
+      <div class="empty-state-title">No pages yet</div>
+      <p>Create your first page to get started.</p>
+      <a href="{base}/pages" class="btn btn-primary" style="margin-top: 0.5rem;">Go to Pages</a>
+    </div>
+  {:else if !error}
+    <div>
+      {#each Array(5) as _}
+        <div class="skeleton skeleton-row" style="margin-bottom: 1px;"></div>
+      {/each}
+    </div>
   {/if}
 </div>
 

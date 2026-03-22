@@ -18,6 +18,7 @@
 
   let pages = $state<any[]>([]);
   let total = $state(0);
+  let loading = $state(true);
   let error = $state('');
   let search = $state('');
   let statusFilter = $state('');
@@ -39,6 +40,7 @@
   );
 
   async function load() {
+    loading = true;
     try {
       const params = new URLSearchParams();
       if (search) params.set('search', search);
@@ -53,6 +55,8 @@
       selected = new Set();
     } catch (err: any) {
       error = err.message;
+    } finally {
+      loading = false;
     }
   }
 
@@ -221,24 +225,47 @@
       </tr>
     </thead>
     <tbody>
-      {#each pages as page}
-        <tr style="--type-color: {getTypeColor(page.type || '')};">
-          <td><input type="checkbox" checked={selected.has(page.id)} onchange={() => toggleSelect(page.id)} aria-label={"Select page " + page.title} /></td>
-          <td class="td-title"><span class="type-bar"></span><a href="{base}/pages/{page.id}"><strong>{page.title}</strong></a></td>
-          <td class="mono" style="color: var(--c-text-light);">/{page.slug}</td>
-          <td>{page.typeName}</td>
-          <td><span class="badge badge-{page.status}">{page.status}</span></td>
-          <td>{new Date(page.meta.updated_at).toLocaleDateString()}</td>
-          <td style="text-align: right;">
-            <a href="{base}/pages/{page.id}" class="btn btn-sm btn-outline">Edit</a>
-            <button class="btn btn-sm btn-outline" onclick={() => duplicatePage(page.id)}>Duplicate</button>
-            {#if page.status !== 'archived'}
-              <button class="btn btn-sm btn-outline" onclick={() => archivePage(page.id)}>Archive</button>
-            {/if}
-            <button class="btn btn-sm btn-danger" onclick={() => deletePage(page.id)}>Delete</button>
+      {#if loading}
+        {#each Array(5) as _}
+          <tr>
+            <td><div class="skeleton" style="width: 16px; height: 16px; border-radius: 3px;"></div></td>
+            <td><div class="skeleton skeleton-text" style="width: 70%;"></div></td>
+            <td><div class="skeleton skeleton-text" style="width: 50%;"></div></td>
+            <td><div class="skeleton skeleton-text" style="width: 80%;"></div></td>
+            <td><div class="skeleton" style="width: 72px; height: 22px; border-radius: 999px;"></div></td>
+            <td><div class="skeleton skeleton-text" style="width: 60%;"></div></td>
+            <td></td>
+          </tr>
+        {/each}
+      {:else if pages.length === 0}
+        <tr>
+          <td colspan="7">
+            <div class="empty-state">
+              <div class="empty-state-title">No pages found</div>
+              <p>{search || statusFilter || typeFilter ? 'Try adjusting your filters.' : 'Create your first page to get started.'}</p>
+            </div>
           </td>
         </tr>
-      {/each}
+      {:else}
+        {#each pages as page}
+          <tr style="--type-color: {getTypeColor(page.type || '')};">
+            <td><input type="checkbox" checked={selected.has(page.id)} onchange={() => toggleSelect(page.id)} aria-label={"Select page " + page.title} /></td>
+            <td class="td-title"><span class="type-bar"></span><a href="{base}/pages/{page.id}"><strong>{page.title}</strong></a></td>
+            <td class="mono" style="color: var(--c-text-light);">/{page.slug}</td>
+            <td>{page.typeName}</td>
+            <td><span class="badge badge-{page.status}">{page.status}</span></td>
+            <td>{new Date(page.meta.updated_at).toLocaleDateString()}</td>
+            <td style="text-align: right;">
+              <a href="{base}/pages/{page.id}" class="btn btn-sm btn-outline">Edit</a>
+              <button class="btn btn-sm btn-outline" onclick={() => duplicatePage(page.id)}>Duplicate</button>
+              {#if page.status !== 'archived'}
+                <button class="btn btn-sm btn-outline" onclick={() => archivePage(page.id)}>Archive</button>
+              {/if}
+              <button class="btn btn-sm btn-danger" onclick={() => deletePage(page.id)}>Delete</button>
+            </td>
+          </tr>
+        {/each}
+      {/if}
     </tbody>
   </table>
 </div>
