@@ -413,15 +413,16 @@
   }
 
   .btn-danger {
-    background: #dc2626;
+    background: var(--c-danger);
     color: white;
     border: none;
     padding: 0.5rem 1rem;
-    border-radius: 4px;
+    border-radius: var(--radius);
     cursor: pointer;
+    transition: opacity var(--transition);
   }
 
   .btn-danger:hover {
-    background: #b91c1c;
+    opacity: 0.85;
   }
 </style>

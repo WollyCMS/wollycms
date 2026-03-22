@@ -12,8 +12,12 @@
     LayoutDashboard, FileText, Blocks, Image, Menu, Tags,
     CornerDownRight, ClipboardList, Square, Users, Settings,
     Webhook, KeyRound, ScrollText, Code, Shield,
+    Sun, Moon, Monitor,
   } from 'lucide-svelte';
+  import { getTheme } from '$lib/theme.svelte.js';
   import '../app.css';
+
+  const theme = getTheme();
 
   let { children } = $props();
   const auth = getAuth();
@@ -197,6 +201,20 @@
           <span class="user-role">{auth.user.role}</span>
         </div>
         <div class="sidebar-footer-actions">
+          <button
+            class="btn-theme-toggle"
+            onclick={() => theme.cycle()}
+            title="{theme.preference === 'light' ? 'Light' : theme.preference === 'dark' ? 'Dark' : 'System'} theme"
+            aria-label="Toggle theme"
+          >
+            {#if theme.preference === 'light'}
+              <Sun size={14} />
+            {:else if theme.preference === 'dark'}
+              <Moon size={14} />
+            {:else}
+              <Monitor size={14} />
+            {/if}
+          </button>
           <button class="btn-shortcut-hint" onclick={() => showShortcuts = true} title="Keyboard shortcuts">
             <kbd>?</kbd>
           </button>

@@ -252,20 +252,20 @@
     gap: 0.5rem;
     width: 100%;
     padding: 0.6rem 1rem;
-    background: white;
-    color: #3c4043;
-    border: 1px solid #dadce0;
-    border-radius: 4px;
+    background: var(--c-surface);
+    color: var(--c-text);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
     font-size: 0.9rem;
     font-weight: 500;
     cursor: pointer;
     text-decoration: none;
-    transition: background 0.15s, box-shadow 0.15s;
+    transition: background var(--transition), box-shadow var(--transition);
   }
 
   .btn-google:hover {
-    background: #f8f9fa;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background: var(--c-bg-subtle);
+    box-shadow: var(--shadow);
   }
 
   .google-icon {
@@ -290,7 +290,7 @@
   .btn-link {
     background: none;
     border: none;
-    color: var(--c-primary, #4f46e5);
+    color: var(--c-accent);
     cursor: pointer;
     font-size: 0.85rem;
     padding: 0;
