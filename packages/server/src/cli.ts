@@ -261,6 +261,16 @@ async function main() {
       break;
     }
 
+    case 'search:rebuild': {
+      const { getDb: getDbForSearch } = await import('./db/index.js');
+      const { rebuildSearchIndex } = await import('./search-index.js');
+      getDbForSearch();
+      console.log('Rebuilding search index...');
+      const count = await rebuildSearchIndex();
+      console.log(`Indexed ${count} published pages.`);
+      break;
+    }
+
     default:
       console.log(`WollyCMS CLI v0.1.0
 
@@ -274,6 +284,7 @@ Commands:
   import <file>        Import data from a JSON backup file
   types generate       Generate TypeScript types from CMS schemas
   og:generate          Generate OG images for published pages
+  search:rebuild       Rebuild full-text search index
   health               Check server health status
 
 Examples:
@@ -285,7 +296,8 @@ Examples:
   wolly og:generate                    # pages missing OG images
   wolly og:generate --force            # regenerate all
   wolly og:generate --type=blog        # specific content type
-  wolly og:generate --dry-run          # preview without generating`);
+  wolly og:generate --dry-run          # preview without generating
+  wolly search:rebuild                 # rebuild FTS index`);
       if (command) {
         console.error(`\nUnknown command: ${command}`);
         process.exit(1);

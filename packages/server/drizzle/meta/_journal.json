@@ -134,6 +134,13 @@
       "when": 1774200000000,
       "tag": "0018_i18n",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1774210000000,
+      "tag": "0019_fts_search",
+      "breakpoints": true
     }
   ]
 }

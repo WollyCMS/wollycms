@@ -14,6 +14,7 @@ import pageTermsRouter from './page-terms.js';
 import { requireRole } from '../../auth/rbac.js';
 import { loadConfig } from './config.js';
 import { hooks } from '../../hooks.js';
+import { indexPage, deindexPage, extractPageBody } from '../../search-index.js';
 
 /** Validate a workflow status transition. Returns error message or null if valid. */
 async function validateTransition(
@@ -327,6 +328,9 @@ app.post('/', async (c) => {
   // Lifecycle hook: afterCreate
   hooks.runAfter('afterCreate', { entity: row as unknown as Record<string, unknown>, id: row.id, user: { id: payload.sub, email: payload.email, role: payload.role } });
 
+  // Index for full-text search (best-effort, don't block response)
+  indexPage(row.id, row.title, slug, '', row.metaDescription || null).catch(() => {});
+
   return c.json({ data: row }, 201);
 });
 
@@ -604,6 +608,16 @@ app.put('/:id', async (c) => {
   // Lifecycle hook: afterUpdate
   hooks.runAfter('afterUpdate', { entity: updated as unknown as Record<string, unknown>, id, user: { id: payload.sub, email: payload.email, role: payload.role } });
 
+  // Re-index for full-text search (fetch block content for body text)
+  db.select({ fields: blocks.fields })
+    .from(pageBlocks)
+    .innerJoin(blocks, eq(pageBlocks.blockId, blocks.id))
+    .where(eq(pageBlocks.pageId, id))
+    .then((blockRows: Array<{ fields: Record<string, unknown> | null }>) => {
+      const bx = blockRows.map((r: { fields: Record<string, unknown> | null }) => ({ fields: (r.fields || {}) as Record<string, unknown> }));
+      return indexPage(id, updated.title, updated.slug, extractPageBody(bx), updated.metaDescription || null);
+    }).catch(() => {});
+
   cacheInvalidate('pages:');
   clearOgCache();
   return c.json({ data: updated });
@@ -631,6 +645,9 @@ app.delete('/:id', async (c) => {
 
   // Lifecycle hook: afterDelete
   hooks.runAfter('afterDelete', { entity: existing as unknown as Record<string, unknown>, id, user: { id: payload.sub, email: payload.email, role: payload.role } });
+
+  // Remove from search index
+  deindexPage(id).catch(() => {});
 
   return c.json({ data: { deleted: true } });
 });
