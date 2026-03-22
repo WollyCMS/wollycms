@@ -158,11 +158,11 @@
 <svelte:window onkeydown={handleGlobalKeydown} />
 
 {#if !auth.loaded && !needsSetup}
-  <div class="loading">Loading...</div>
+  <div class="loading"><div class="loading-spinner"></div></div>
 {:else if isPublicPage || needsSetup}
   {@render children()}
 {:else if !auth.user}
-  <div class="loading">Redirecting...</div>
+  <div class="loading"><div class="loading-spinner"></div></div>
 {:else}
   <a href="#main-content" class="skip-link">Skip to main content</a>
   <div class="admin-layout">
