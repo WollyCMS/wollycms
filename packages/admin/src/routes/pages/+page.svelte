@@ -5,6 +5,7 @@
   import { api } from '$lib/api.js';
   import { toast } from '$lib/toast.svelte.js';
   import { focusTrap } from '$lib/focusTrap.js';
+  import { List, GitBranch } from 'lucide-svelte';
 
   const typeColors: Record<string, string> = {
     home_page: '#d69e2e',
@@ -16,7 +17,9 @@
     return typeColors[slug] || '#94a3b8';
   }
 
+  let viewMode = $state<'list' | 'tree'>('list');
   let pages = $state<any[]>([]);
+  let allPages = $state<any[]>([]);
   let total = $state(0);
   let loading = $state(true);
   let error = $state('');
@@ -164,6 +167,65 @@
     }
   }
 
+  // Tree view: build hierarchy from slug paths
+  type TreeNode = { page: any; children: TreeNode[]; depth: number };
+
+  let pageTree = $derived.by(() => {
+    if (viewMode !== 'tree' || allPages.length === 0) return [];
+
+    // Sort by slug for consistent tree building
+    const sorted = [...allPages].sort((a, b) => (a.slug || '').localeCompare(b.slug || ''));
+    const nodes: TreeNode[] = [];
+    const slugMap = new Map<string, TreeNode>();
+
+    for (const page of sorted) {
+      const slug = page.slug || '';
+      const parts = slug.split('/').filter(Boolean);
+      const node: TreeNode = { page, children: [], depth: parts.length - 1 };
+
+      // Find parent by checking progressively shorter slug prefixes
+      let placed = false;
+      if (parts.length > 1) {
+        for (let i = parts.length - 1; i > 0; i--) {
+          const parentSlug = parts.slice(0, i).join('/');
+          const parent = slugMap.get(parentSlug);
+          if (parent) {
+            parent.children.push(node);
+            placed = true;
+            break;
+          }
+        }
+      }
+
+      if (!placed) nodes.push(node);
+      slugMap.set(slug, node);
+    }
+
+    return nodes;
+  });
+
+  async function loadAllPages() {
+    try {
+      const params = new URLSearchParams();
+      if (statusFilter) params.set('status', statusFilter);
+      if (typeFilter) params.set('type', typeFilter);
+      if (localeFilter) params.set('locale', localeFilter);
+      params.set('limit', '200');
+      params.set('sort', 'title:asc');
+      const res = await api.get<{ data: any[] }>(`/pages?${params}`);
+      allPages = res.data;
+    } catch { /* ignore */ }
+  }
+
+  async function switchView(mode: 'list' | 'tree') {
+    viewMode = mode;
+    if (mode === 'tree' && allPages.length === 0) {
+      loading = true;
+      await loadAllPages();
+      loading = false;
+    }
+  }
+
   async function bulkAction(action: string) {
     if (selected.size === 0) return;
     const label = action === 'delete' ? `Delete ${selected.size} page(s)?` : `${action} ${selected.size} page(s)?`;
@@ -179,7 +241,25 @@
 </script>
 
 <div class="page-header">
-  <h1>Pages ({total})</h1>
+  <div style="display: flex; align-items: center; gap: 0.75rem;">
+    <h1>Pages ({total})</h1>
+    <div class="view-toggle">
+      <button
+        class="view-toggle-btn"
+        class:active={viewMode === 'list'}
+        onclick={() => switchView('list')}
+        title="List view"
+        aria-label="List view"
+      ><List size={16} /></button>
+      <button
+        class="view-toggle-btn"
+        class:active={viewMode === 'tree'}
+        onclick={() => switchView('tree')}
+        title="Tree view"
+        aria-label="Tree view"
+      ><GitBranch size={16} /></button>
+    </div>
+  </div>
   <button class="btn btn-primary" onclick={() => { createError = ''; slugManuallyEdited = false; newPage.slug = ''; showCreate = true; }}>+ New Page</button>
 </div>
 
@@ -226,6 +306,7 @@
   {/if}
 </div>
 
+{#if viewMode === 'list'}
 <div class="table-wrap">
   <table>
     <thead>
@@ -304,6 +385,46 @@
       <button class="btn btn-sm btn-outline" disabled={currentPage >= totalPages} onclick={() => { offset = (totalPages - 1) * pageSize; load(); }}>»</button>
     </div>
   </div>
+{/if}
+{:else}
+<!-- Tree View -->
+<div class="card tree-view">
+  {#if loading}
+    {#each Array(8) as _}
+      <div class="skeleton skeleton-row"></div>
+    {/each}
+  {:else if pageTree.length === 0}
+    <div class="empty-state">
+      <div class="empty-state-title">No pages found</div>
+      <p>Create your first page to see the content tree.</p>
+    </div>
+  {:else}
+    {#snippet treeNode(nodes: TreeNode[], depth: number)}
+      {#each nodes as node}
+        <div class="tree-item" style="padding-left: {depth * 1.5 + 0.5}rem;">
+          <div class="tree-item-row">
+            {#if node.children.length > 0}
+              <span class="tree-branch" style="color: var(--c-text-light);">▸</span>
+            {:else}
+              <span class="tree-leaf" style="color: var(--c-border);">·</span>
+            {/if}
+            <span class="type-dot" style="background: {getTypeColor(node.page.type || '')};"></span>
+            <a href="{base}/pages/{node.page.id}" class="tree-title">{node.page.title}</a>
+            <span class="mono tree-slug">/{node.page.slug}</span>
+            <span class="badge badge-{node.page.status}" style="font-size: 0.65rem;">{node.page.status}</span>
+            {#if node.page.locale}
+              <span class="badge" style="font-size: 0.6rem; background: var(--c-bg-subtle); color: var(--c-text-light);">{node.page.locale?.toUpperCase()}</span>
+            {/if}
+          </div>
+        </div>
+        {#if node.children.length > 0}
+          {@render treeNode(node.children, depth + 1)}
+        {/if}
+      {/each}
+    {/snippet}
+    {@render treeNode(pageTree, 0)}
+  {/if}
+</div>
 {/if}
 
 {#if showCreate}
@@ -384,5 +505,86 @@
     font: inherit;
     color: inherit;
     padding: 0;
+  }
+
+  .view-toggle {
+    display: flex;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .view-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 28px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--c-text-light);
+    transition: background var(--transition), color var(--transition);
+  }
+
+  .view-toggle-btn:hover {
+    background: var(--c-bg-subtle);
+  }
+
+  .view-toggle-btn.active {
+    background: var(--c-accent);
+    color: white;
+  }
+
+  .view-toggle-btn + .view-toggle-btn {
+    border-left: 1px solid var(--c-border);
+  }
+
+  .tree-view {
+    padding: 0.5rem 0;
+  }
+
+  .tree-item-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.9rem;
+    border-radius: var(--radius);
+    transition: background var(--transition);
+  }
+
+  .tree-item-row:hover {
+    background: var(--c-bg-subtle);
+  }
+
+  .tree-branch, .tree-leaf {
+    font-size: 0.75rem;
+    width: 1rem;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .type-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .tree-title {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tree-slug {
+    color: var(--c-text-light);
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
   }
 </style>
