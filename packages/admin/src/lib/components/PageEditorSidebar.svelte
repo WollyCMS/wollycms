@@ -41,6 +41,9 @@
     onRevisionsReload,
     onPageReload,
     onA11yNavigate,
+    translations,
+    supportedLocales,
+    onTranslate,
   }: {
     pageData: any;
     id: string;
@@ -56,6 +59,9 @@
     onRevisionsReload: () => Promise<void>;
     onPageReload: () => void;
     onA11yNavigate?: (pbId: number, code?: string) => void;
+    translations?: Array<{ id: number; locale: string; title: string; slug: string; status: string }>;
+    supportedLocales?: string[];
+    onTranslate?: (locale: string) => void;
   } = $props();
 
   let showSerpPreview = $state(false);
@@ -224,6 +230,35 @@
     </p>
   </div>
 </div>
+
+<!-- Translations -->
+{#if supportedLocales && supportedLocales.length > 1}
+<div class="card" style="margin-bottom: 1rem;">
+  <h3 style="font-size: 0.95rem; margin-bottom: 0.75rem;">Translations</h3>
+  <p style="font-size: 0.85rem; color: var(--c-text-light); margin-bottom: 0.5rem;">
+    Current: <span class="badge" style="font-size: 0.7rem; background: var(--c-bg-subtle); color: var(--c-text-light);">{pageData.locale?.toUpperCase() || 'EN'}</span>
+  </p>
+  {#if translations && translations.length > 0}
+    <div style="display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.75rem;">
+      {#each translations.filter(t => t.id !== pageData.id) as t}
+        <a href="/admin/pages/{t.id}" style="display: flex; align-items: center; justify-content: space-between; padding: 0.35rem 0.5rem; background: var(--c-bg-subtle); border-radius: var(--radius); font-size: 0.8rem; text-decoration: none; color: var(--c-text);">
+          <span><strong>{t.locale.toUpperCase()}</strong> — {t.title}</span>
+          <span class="badge badge-{t.status}" style="font-size: 0.65rem;">{t.status}</span>
+        </a>
+      {/each}
+    </div>
+  {/if}
+  {#each supportedLocales.filter(loc => loc !== pageData.locale && (!translations || !translations.some(t => t.locale === loc))) as loc}
+    <button
+      class="btn btn-sm btn-outline"
+      style="margin-right: 0.25rem; margin-bottom: 0.25rem;"
+      onclick={() => onTranslate?.(loc)}
+    >
+      Translate to {loc.toUpperCase()}
+    </button>
+  {/each}
+</div>
+{/if}
 
 <div class="card" style="margin-bottom: 1rem;">
   <h3 style="font-size: 0.95rem; margin-bottom: 0.75rem;">SEO & Meta</h3>

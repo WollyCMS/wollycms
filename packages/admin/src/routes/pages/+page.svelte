@@ -23,10 +23,13 @@
   let search = $state('');
   let statusFilter = $state('');
   let typeFilter = $state('');
+  let localeFilter = $state('');
+  let supportedLocales = $state<string[]>(['en']);
+  let defaultLocale = $state('en');
   let sortBy = $state('updated_at:desc');
   let showCreate = $state(false);
   let contentTypes = $state<any[]>([]);
-  let newPage = $state({ title: '', slug: '', typeId: 0, status: 'draft' as string });
+  let newPage = $state({ title: '', slug: '', typeId: 0, status: 'draft' as string, locale: '' });
   let slugManuallyEdited = $state(false);
   let selected = $state<Set<number>>(new Set());
   let pageSize = 20;
@@ -46,6 +49,7 @@
       if (search) params.set('search', search);
       if (statusFilter) params.set('status', statusFilter);
       if (typeFilter) params.set('type', typeFilter);
+      if (localeFilter) params.set('locale', localeFilter);
       if (sortBy) params.set('sort', sortBy);
       params.set('limit', String(pageSize));
       params.set('offset', String(offset));
@@ -66,7 +70,15 @@
     if (contentTypes.length > 0) newPage.typeId = contentTypes[0].id;
   }
 
-  onMount(() => { load(); loadTypes(); });
+  async function loadLocaleConfig() {
+    try {
+      const res = await api.get<{ data: any }>('/config');
+      supportedLocales = res.data.supportedLocales || ['en'];
+      defaultLocale = res.data.defaultLocale || 'en';
+    } catch { /* use defaults */ }
+  }
+
+  onMount(() => { load(); loadTypes(); loadLocaleConfig(); });
 
   let createError = $state('');
 
@@ -91,9 +103,10 @@
         status: newPage.status,
       };
       if (newPage.slug.trim()) payload.slug = newPage.slug.trim();
+      if (newPage.locale) payload.locale = newPage.locale;
       const res = await api.post<{ data: { id: number } }>('/pages', payload);
       showCreate = false;
-      newPage = { title: '', slug: '', typeId: contentTypes[0]?.id || 0, status: 'draft' };
+      newPage = { title: '', slug: '', typeId: contentTypes[0]?.id || 0, status: 'draft', locale: '' };
       slugManuallyEdited = false;
       goto(`${base}/pages/${res.data.id}`);
     } catch (err: any) {
@@ -188,6 +201,14 @@
     <option value="draft">Draft</option>
     <option value="archived">Archived</option>
   </select>
+  {#if supportedLocales.length > 1}
+    <select class="form-control" bind:value={localeFilter} onchange={() => { offset = 0; load(); }} style="max-width: 120px;">
+      <option value="">All locales</option>
+      {#each supportedLocales as loc}
+        <option value={loc}>{loc.toUpperCase()}</option>
+      {/each}
+    </select>
+  {/if}
   <select class="form-control" bind:value={sortBy} onchange={() => { offset = 0; load(); }} style="max-width: 180px;">
     <option value="updated_at:desc">Last updated</option>
     <option value="updated_at:asc">Oldest updated</option>
@@ -210,7 +231,7 @@
     <thead>
       <tr>
         <th style="width: 32px;"><input type="checkbox" checked={allSelected} onchange={toggleAll} aria-label="Select all pages" /></th>
-        <th>Title</th><th>Slug</th><th>Type</th><th>Status</th>
+        <th>Title</th><th>Slug</th><th>Locale</th><th>Type</th><th>Status</th>
         <th aria-sort={updatedSortDirection}>
           <button
             type="button"
@@ -231,6 +252,7 @@
             <td><div class="skeleton" style="width: 16px; height: 16px; border-radius: 3px;"></div></td>
             <td><div class="skeleton skeleton-text" style="width: 70%;"></div></td>
             <td><div class="skeleton skeleton-text" style="width: 50%;"></div></td>
+            <td><div class="skeleton" style="width: 28px; height: 18px; border-radius: 4px;"></div></td>
             <td><div class="skeleton skeleton-text" style="width: 80%;"></div></td>
             <td><div class="skeleton" style="width: 72px; height: 22px; border-radius: 999px;"></div></td>
             <td><div class="skeleton skeleton-text" style="width: 60%;"></div></td>
@@ -239,7 +261,7 @@
         {/each}
       {:else if pages.length === 0}
         <tr>
-          <td colspan="7">
+          <td colspan="8">
             <div class="empty-state">
               <div class="empty-state-title">No pages found</div>
               <p>{search || statusFilter || typeFilter ? 'Try adjusting your filters.' : 'Create your first page to get started.'}</p>
@@ -252,6 +274,7 @@
             <td><input type="checkbox" checked={selected.has(page.id)} onchange={() => toggleSelect(page.id)} aria-label={"Select page " + page.title} /></td>
             <td class="td-title"><span class="type-bar"></span><a href="{base}/pages/{page.id}"><strong>{page.title}</strong></a></td>
             <td class="mono" style="color: var(--c-text-light);">/{page.slug}</td>
+            <td><span class="badge" style="font-size: 0.7rem; background: var(--c-bg-subtle); color: var(--c-text-light);">{page.locale?.toUpperCase() || 'EN'}</span></td>
             <td>{page.typeName}</td>
             <td><span class="badge badge-{page.status}">{page.status}</span></td>
             <td>{new Date(page.meta.updated_at).toLocaleDateString()}</td>
@@ -311,6 +334,17 @@
             {/each}
           </select>
         </div>
+        {#if supportedLocales.length > 1}
+          <div class="form-group">
+            <label for="np-locale">Locale</label>
+            <select id="np-locale" class="form-control" bind:value={newPage.locale}>
+              <option value="">Default ({defaultLocale})</option>
+              {#each supportedLocales as loc}
+                <option value={loc}>{loc.toUpperCase()}</option>
+              {/each}
+            </select>
+          </div>
+        {/if}
         <div class="form-group">
           <label for="np-status">Status</label>
           <select id="np-status" class="form-control" bind:value={newPage.status}>
