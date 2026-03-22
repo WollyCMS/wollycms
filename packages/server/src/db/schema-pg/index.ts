@@ -5,6 +5,6 @@ export { blocks, pageBlocks } from './blocks.ts';
 export { taxonomies, terms, contentTerms } from './taxonomies.ts';
 export { menus, menuItems } from './menus.ts';
 export { media } from './media.ts';
-export { siteConfig, redirects, users, userTotp, trustedDevices, userRecoveryCodes } from './system.ts';
+export { siteConfig, redirects, users, userTotp, trustedDevices, userRecoveryCodes, userOauth } from './system.ts';
 export { webhooks, apiKeys, auditLogs } from './webhooks.ts';
 export { trackingScripts } from './tracking-scripts.ts';

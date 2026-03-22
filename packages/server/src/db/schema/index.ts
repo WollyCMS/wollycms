@@ -11,7 +11,7 @@ export const { blocks, pageBlocks } = mod;
 export const { taxonomies, terms, contentTerms } = mod;
 export const { menus, menuItems } = mod;
 export const { media } = mod;
-export const { siteConfig, redirects, users, userTotp, trustedDevices, userRecoveryCodes } = mod;
+export const { siteConfig, redirects, users, userTotp, trustedDevices, userRecoveryCodes, userOauth } = mod;
 export const { webhooks, apiKeys, auditLogs } = mod;
 export const { trackingScripts } = mod;
 export type { FieldDefinition, RegionDefinition, DefaultBlockDefinition } from './_sqlite.js';

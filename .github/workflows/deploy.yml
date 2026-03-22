@@ -43,7 +43,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        environment: [production, catalog, shdcms, wollycms-site]
+        environment: ${{ fromJSON(
+          (github.event_name == 'push' || inputs.environment == 'all')
+            && '["production","catalog","shdcms","wollycms-site"]'
+            || format('["{0}"]', inputs.environment)
+          ) }}
     environment: ${{ matrix.environment }}
     steps:
       - name: Checkout
@@ -98,6 +102,10 @@ jobs:
           MEDIA_STORAGE = "r2"
           CORS_ORIGINS = "${{ vars.CORS_ORIGINS }}"
           SITE_URL = "${{ vars.SITE_URL }}"
+          GOOGLE_CLIENT_ID = "${{ secrets.GOOGLE_CLIENT_ID }}"
+          GOOGLE_CLIENT_SECRET = "${{ secrets.GOOGLE_CLIENT_SECRET }}"
+          GOOGLE_REDIRECT_URI = "${{ vars.GOOGLE_REDIRECT_URI }}"
+          GOOGLE_AUTO_CREATE = "${{ vars.GOOGLE_AUTO_CREATE }}"
           TOML
 
       - name: Backup D1 before migrations

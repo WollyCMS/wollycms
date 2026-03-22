@@ -6,6 +6,8 @@ interface User {
   name: string;
   role: string;
   twoFactorEnabled?: boolean;
+  hasPassword?: boolean;
+  oauthProviders?: string[];
 }
 
 let user = $state<User | null>(null);

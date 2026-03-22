@@ -116,7 +116,7 @@ app.delete('/', async (c) => {
   const [user] = await db.select().from(users)
     .where(eq(users.id, payload.sub)).limit(1);
 
-  if (!user || !verifyPassword(parsed.data.password, user.passwordHash)) {
+  if (!user || !user.passwordHash || !verifyPassword(parsed.data.password, user.passwordHash)) {
     return c.json({ errors: [{ code: 'UNAUTHORIZED', message: 'Invalid password' }] }, 401);
   }
 
@@ -142,7 +142,7 @@ app.post('/recovery-codes', async (c) => {
   const [user] = await db.select().from(users)
     .where(eq(users.id, payload.sub)).limit(1);
 
-  if (!user || !verifyPassword(parsed.data.password, user.passwordHash)) {
+  if (!user || !user.passwordHash || !verifyPassword(parsed.data.password, user.passwordHash)) {
     return c.json({ errors: [{ code: 'UNAUTHORIZED', message: 'Invalid password' }] }, 401);
   }
 

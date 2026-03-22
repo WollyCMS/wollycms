@@ -4,7 +4,7 @@ import { setCookie, getCookie } from 'hono/cookie';
 import { eq, and, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 import { getDb } from '../../db/index.js';
-import { users, userTotp, userRecoveryCodes, trustedDevices } from '../../db/schema/index.js';
+import { users, userTotp, userRecoveryCodes, trustedDevices, userOauth } from '../../db/schema/index.js';
 import { verifyPassword } from '../../auth/password.js';
 import { hashApiKey } from '../../auth/api-key.js';
 import { env } from '../../env.js';
@@ -107,7 +107,7 @@ app.post('/login', async (c) => {
     .where(eq(users.email, parsed.data.email))
     .limit(1);
 
-  if (!user || !verifyPassword(parsed.data.password, user.passwordHash)) {
+  if (!user || !user.passwordHash || !verifyPassword(parsed.data.password, user.passwordHash)) {
     return c.json({ errors: [{ code: 'UNAUTHORIZED', message: 'Invalid email or password' }] }, 401);
   }
 
@@ -247,7 +247,10 @@ app.get('/me', authMiddleware, async (c) => {
   const payload = c.get('jwtPayload');
   const db = getDb();
   const [user] = await db
-    .select({ id: users.id, email: users.email, name: users.name, role: users.role })
+    .select({
+      id: users.id, email: users.email, name: users.name,
+      role: users.role, passwordHash: users.passwordHash,
+    })
     .from(users)
     .where(eq(users.id, payload.sub))
     .limit(1);
@@ -261,7 +264,21 @@ app.get('/me', authMiddleware, async (c) => {
     .where(and(eq(userTotp.userId, user.id), eq(userTotp.verified, true)))
     .limit(1);
 
-  return c.json({ data: { ...user, twoFactorEnabled: !!totp } });
+  // Check connected OAuth providers
+  const oauthLinks = await db.select({ provider: userOauth.provider }).from(userOauth)
+    .where(eq(userOauth.userId, user.id));
+
+  return c.json({
+    data: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      twoFactorEnabled: !!totp,
+      hasPassword: !!user.passwordHash,
+      oauthProviders: oauthLinks.map((l: { provider: string }) => l.provider),
+    },
+  });
 });
 
 app.post('/preview-session', authMiddleware, async (c) => {

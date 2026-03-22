@@ -24,6 +24,7 @@ import trackingScriptsRouter from './tracking-scripts.js';
 import ogImagesRouter from './og-images.js';
 import setupRouter from './setup.js';
 import twoFactorRouter from './two-factor.js';
+import oauthRouter from './oauth.js';
 
 const app = new Hono();
 
@@ -39,6 +40,11 @@ app.route('/auth', authRouter);
 
 // 2FA management routes (authenticated, mounted under /auth/2fa)
 app.route('/auth/2fa', twoFactorRouter);
+
+// OAuth routes (login flow is public, connection management is authenticated)
+app.use('/auth/oauth/google', rateLimiter());
+app.use('/auth/oauth/google/callback', rateLimiter());
+app.route('/auth/oauth', oauthRouter);
 
 // All other admin routes require authentication
 app.use('/*', authMiddleware);

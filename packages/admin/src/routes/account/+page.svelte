@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { api } from '$lib/api.js';
   import { getAuth } from '$lib/auth.svelte.js';
 
@@ -6,6 +7,7 @@
 
   // 2FA state
   let twoFactorEnabled = $derived(auth.user?.twoFactorEnabled ?? false);
+  let hasPassword = $derived(auth.user?.hasPassword ?? true);
   let setupStep = $state<'idle' | 'qr' | 'verify' | 'codes'>('idle');
   let totpSecret = $state('');
   let totpUri = $state('');
@@ -15,6 +17,57 @@
   let error = $state('');
   let success = $state('');
   let loading = $state(false);
+
+  // OAuth state
+  interface OAuthConnection {
+    id: number;
+    provider: string;
+    email: string | null;
+    name: string | null;
+    createdAt: string;
+  }
+  let oauthConnections = $state<OAuthConnection[]>([]);
+  let googleEnabled = $state(false);
+  let oauthLoading = $state(false);
+
+  onMount(async () => {
+    await Promise.all([loadOAuthConnections(), checkOAuthProviders()]);
+  });
+
+  async function checkOAuthProviders() {
+    try {
+      const res = await fetch('/api/admin/auth/oauth/providers');
+      const data = await res.json();
+      googleEnabled = data.data?.google ?? false;
+    } catch {
+      // Ignore
+    }
+  }
+
+  async function loadOAuthConnections() {
+    try {
+      const res = await api.get<{ data: OAuthConnection[] }>('/auth/oauth/connections');
+      oauthConnections = res.data;
+    } catch {
+      // Ignore — old server version without OAuth
+    }
+  }
+
+  async function disconnectOAuth(connectionId: number) {
+    oauthLoading = true;
+    error = '';
+    try {
+      await api.del(`/auth/oauth/connections/${connectionId}`);
+      oauthConnections = oauthConnections.filter((c) => c.id !== connectionId);
+      success = 'Account disconnected.';
+      // Refresh user to update oauthProviders
+      await auth.load();
+    } catch (err: any) {
+      error = err.message;
+    } finally {
+      oauthLoading = false;
+    }
+  }
 
   async function startSetup() {
     error = '';
@@ -110,6 +163,40 @@
   <div class="alert alert-success">{success}</div>
 {/if}
 
+<!-- Connected Accounts -->
+<div class="card">
+  <h2>Connected Accounts</h2>
+
+  {#if oauthConnections.length > 0}
+    <div class="oauth-list">
+      {#each oauthConnections as conn}
+        <div class="oauth-item">
+          <div class="oauth-item-info">
+            <span class="oauth-provider">{conn.provider === 'google' ? 'Google' : conn.provider}</span>
+            <span class="oauth-email">{conn.email || 'No email'}</span>
+          </div>
+          <button
+            class="btn btn-outline btn-sm"
+            onclick={() => disconnectOAuth(conn.id)}
+            disabled={oauthLoading}
+          >
+            Disconnect
+          </button>
+        </div>
+      {/each}
+    </div>
+  {:else}
+    <p class="muted">No connected accounts.</p>
+  {/if}
+
+  {#if googleEnabled && !oauthConnections.some((c) => c.provider === 'google')}
+    <a href="/api/admin/auth/oauth/google" class="btn btn-outline oauth-connect-btn">
+      Connect Google Account
+    </a>
+  {/if}
+</div>
+
+<!-- Two-Factor Authentication -->
 <div class="card">
   <h2>Two-Factor Authentication</h2>
 
@@ -117,23 +204,27 @@
     {#if twoFactorEnabled}
       <p>Two-factor authentication is <strong>enabled</strong>.</p>
 
-      <div class="two-factor-actions">
-        <form onsubmit={disable2fa} class="inline-form">
-          <div class="form-group">
-            <label for="disable-password">Current password to disable</label>
-            <input id="disable-password" type="password" class="form-control" bind:value={password} required />
-          </div>
-          <button type="submit" class="btn btn-danger" disabled={loading}>Disable 2FA</button>
-        </form>
+      {#if hasPassword}
+        <div class="two-factor-actions">
+          <form onsubmit={disable2fa} class="inline-form">
+            <div class="form-group">
+              <label for="disable-password">Current password to disable</label>
+              <input id="disable-password" type="password" class="form-control" bind:value={password} required />
+            </div>
+            <button type="submit" class="btn btn-danger" disabled={loading}>Disable 2FA</button>
+          </form>
 
-        <form onsubmit={regenerateCodes} class="inline-form">
-          <div class="form-group">
-            <label for="regen-password">Current password to regenerate codes</label>
-            <input id="regen-password" type="password" class="form-control" bind:value={password} required />
-          </div>
-          <button type="submit" class="btn btn-outline" disabled={loading}>Regenerate Recovery Codes</button>
-        </form>
-      </div>
+          <form onsubmit={regenerateCodes} class="inline-form">
+            <div class="form-group">
+              <label for="regen-password">Current password to regenerate codes</label>
+              <input id="regen-password" type="password" class="form-control" bind:value={password} required />
+            </div>
+            <button type="submit" class="btn btn-outline" disabled={loading}>Regenerate Recovery Codes</button>
+          </form>
+        </div>
+      {:else}
+        <p class="muted">Set a password to manage 2FA settings.</p>
+      {/if}
     {:else}
       <p>Add an extra layer of security to your account by enabling two-factor authentication with an authenticator app.</p>
       <button class="btn btn-primary" onclick={startSetup} disabled={loading}>
@@ -192,6 +283,55 @@
 </div>
 
 <style>
+  .oauth-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+
+  .oauth-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background: var(--c-bg);
+    border-radius: 6px;
+    border: 1px solid var(--c-border, #e2e8f0);
+  }
+
+  .oauth-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .oauth-provider {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .oauth-email {
+    color: var(--c-text-light);
+    font-size: 0.8rem;
+  }
+
+  .oauth-connect-btn {
+    margin-top: 0.75rem;
+    display: inline-block;
+    text-decoration: none;
+  }
+
+  .btn-sm {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .muted {
+    color: var(--c-text-light);
+    font-size: 0.9rem;
+  }
+
   .two-factor-actions {
     display: flex;
     flex-direction: column;

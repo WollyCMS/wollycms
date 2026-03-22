@@ -30,6 +30,10 @@ interface EnvConfig {
   S3_SECRET_KEY: string;
   S3_PUBLIC_URL: string;
   SITE_URL: string;
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
+  GOOGLE_REDIRECT_URI: string;
+  GOOGLE_AUTO_CREATE: boolean;
 }
 
 function readProcessEnv(): EnvConfig {
@@ -52,6 +56,10 @@ function readProcessEnv(): EnvConfig {
     S3_SECRET_KEY: p.S3_SECRET_KEY || '',
     S3_PUBLIC_URL: p.S3_PUBLIC_URL || '',
     SITE_URL: p.SITE_URL || 'http://localhost:4322',
+    GOOGLE_CLIENT_ID: p.GOOGLE_CLIENT_ID || '',
+    GOOGLE_CLIENT_SECRET: p.GOOGLE_CLIENT_SECRET || '',
+    GOOGLE_REDIRECT_URI: p.GOOGLE_REDIRECT_URI || '',
+    GOOGLE_AUTO_CREATE: p.GOOGLE_AUTO_CREATE === 'true',
   };
 }
 
@@ -97,6 +105,10 @@ export function initEnvFromBindings(bindings: Record<string, unknown>): void {
     S3_SECRET_KEY: b('S3_SECRET_KEY'),
     S3_PUBLIC_URL: b('S3_PUBLIC_URL'),
     SITE_URL: b('SITE_URL', 'http://localhost:4322'),
+    GOOGLE_CLIENT_ID: b('GOOGLE_CLIENT_ID'),
+    GOOGLE_CLIENT_SECRET: b('GOOGLE_CLIENT_SECRET'),
+    GOOGLE_REDIRECT_URI: b('GOOGLE_REDIRECT_URI'),
+    GOOGLE_AUTO_CREATE: b('GOOGLE_AUTO_CREATE') === 'true',
   };
 }
 
