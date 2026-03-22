@@ -1,6 +1,6 @@
 services:
   wollycms:
-    image: your-registry.example.com/your-user/wollycms:latest
+    image: ghcr.io/wollycms/wollycms:latest
     ports:
       - 4321:4321
     environment:
