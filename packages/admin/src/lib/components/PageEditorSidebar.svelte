@@ -206,6 +206,23 @@
       {pageData.scheduledAt ? 'Page will appear publicly after this date.' : 'No schedule — publishes immediately when status is Published.'}
     </p>
   </div>
+  <hr style="margin: 0.75rem 0; border: none; border-top: 1px solid var(--c-border);" />
+  <div class="form-group" style="margin-bottom: 0;">
+    <label style="font-size: 0.8rem; font-weight: 600;">Schedule Unpublish</label>
+    <input type="datetime-local" class="form-control" style="font-size: 0.85rem;"
+      value={pageData.unpublishAt ? pageData.unpublishAt.slice(0, 16) : ''}
+      onchange={(e) => {
+        const val = (e.target as HTMLInputElement).value;
+        pageData.unpublishAt = val ? new Date(val).toISOString() : null;
+      }}
+    />
+    {#if pageData.unpublishAt}
+      <button class="btn btn-sm btn-outline" style="margin-top: 0.25rem; font-size: 0.75rem;" onclick={() => { pageData.unpublishAt = null; }}>Clear</button>
+    {/if}
+    <p style="font-size: 0.75rem; color: var(--c-text-light); margin-top: 0.25rem;">
+      {pageData.unpublishAt ? 'Page will revert to draft after this date.' : 'No unpublish date — stays published until manually changed.'}
+    </p>
+  </div>
 </div>
 
 <div class="card" style="margin-bottom: 1rem;">

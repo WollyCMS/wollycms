@@ -26,6 +26,7 @@ const pageSchema = z.object({
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
   fields: z.record(z.unknown()).default({}),
   scheduledAt: z.string().nullable().optional(),
+  unpublishAt: z.string().nullable().optional(),
   metaTitle: z.string().nullable().optional(),
   metaDescription: z.string().nullable().optional(),
   ogImage: z.string().nullable().optional(),
@@ -64,6 +65,7 @@ app.get('/', async (c) => {
       updatedAt: pages.updatedAt,
       publishedAt: pages.publishedAt,
       scheduledAt: pages.scheduledAt,
+      unpublishAt: pages.unpublishAt,
     })
     .from(pages)
     .innerJoin(contentTypes, eq(pages.typeId, contentTypes.id))
@@ -99,6 +101,7 @@ app.get('/', async (c) => {
       id: r.id, type: r.typeSlug, typeName: r.typeName, title: r.title, slug: r.slug,
       status: r.status, fields: r.fields,
       scheduledAt: r.scheduledAt,
+      unpublishAt: r.unpublishAt,
       meta: { created_at: r.createdAt, updated_at: r.updatedAt, published_at: r.publishedAt },
     })),
     meta: { total: countResult[0].count, limit, offset },
@@ -186,6 +189,7 @@ app.get('/:id', async (c) => {
       id: page.id, typeId: page.typeId, type: page.typeSlug,
       title: page.title, slug: page.slug, status: page.status, fields: page.fields,
       scheduledAt: page.scheduledAt,
+      unpublishAt: page.unpublishAt,
       metaTitle: page.metaTitle, metaDescription: page.metaDescription,
       ogImage: page.ogImage, canonicalUrl: page.canonicalUrl, robots: page.robots,
       regions,
@@ -215,6 +219,7 @@ app.post('/', async (c) => {
     status: parsed.data.status,
     fields: parsed.data.fields,
     scheduledAt: parsed.data.scheduledAt ?? null,
+    unpublishAt: parsed.data.unpublishAt ?? null,
     createdAt: now,
     updatedAt: now,
     publishedAt: parsed.data.status === 'published' ? now : null,
@@ -376,6 +381,7 @@ app.post('/upsert', async (c) => {
     status: parsed.data.status,
     fields: parsed.data.fields,
     scheduledAt: parsed.data.scheduledAt ?? null,
+    unpublishAt: parsed.data.unpublishAt ?? null,
     metaTitle: parsed.data.metaTitle ?? null,
     metaDescription: parsed.data.metaDescription ?? null,
     ogImage: parsed.data.ogImage ?? null,

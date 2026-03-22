@@ -42,8 +42,12 @@ app.route('/auth', authRouter);
 app.route('/auth/2fa', twoFactorRouter);
 
 // OAuth routes (login flow is public, connection management is authenticated)
-app.use('/auth/oauth/google', rateLimiter());
-app.use('/auth/oauth/google/callback', rateLimiter());
+// Rate limit all provider redirects and callbacks
+const oauthLimiter = rateLimiter();
+for (const name of ['google', 'github', 'microsoft']) {
+  app.use(`/auth/oauth/${name}`, oauthLimiter);
+  app.use(`/auth/oauth/${name}/callback`, oauthLimiter);
+}
 app.route('/auth/oauth', oauthRouter);
 
 // All other admin routes require authentication

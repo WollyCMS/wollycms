@@ -27,7 +27,7 @@
     createdAt: string;
   }
   let oauthConnections = $state<OAuthConnection[]>([]);
-  let googleEnabled = $state(false);
+  let oauthProviders = $state<Record<string, boolean>>({});
   let oauthLoading = $state(false);
 
   onMount(async () => {
@@ -38,11 +38,17 @@
     try {
       const res = await fetch('/api/admin/auth/oauth/providers');
       const data = await res.json();
-      googleEnabled = data.data?.google ?? false;
+      oauthProviders = data.data ?? {};
     } catch {
       // Ignore
     }
   }
+
+  const providerLabels: Record<string, string> = {
+    google: 'Google',
+    github: 'GitHub',
+    microsoft: 'Microsoft',
+  };
 
   async function loadOAuthConnections() {
     try {
@@ -172,7 +178,7 @@
       {#each oauthConnections as conn}
         <div class="oauth-item">
           <div class="oauth-item-info">
-            <span class="oauth-provider">{conn.provider === 'google' ? 'Google' : conn.provider}</span>
+            <span class="oauth-provider">{providerLabels[conn.provider] || conn.provider}</span>
             <span class="oauth-email">{conn.email || 'No email'}</span>
           </div>
           <button
@@ -189,11 +195,13 @@
     <p class="muted">No connected accounts.</p>
   {/if}
 
-  {#if googleEnabled && !oauthConnections.some((c) => c.provider === 'google')}
-    <a href="/api/admin/auth/oauth/google" class="btn btn-outline oauth-connect-btn">
-      Connect Google Account
-    </a>
-  {/if}
+  {#each Object.entries(oauthProviders) as [name, configured]}
+    {#if configured && !oauthConnections.some((c) => c.provider === name)}
+      <a href="/api/admin/auth/oauth/{name}" class="btn btn-outline oauth-connect-btn">
+        Connect {providerLabels[name] || name}
+      </a>
+    {/if}
+  {/each}
 </div>
 
 <!-- Two-Factor Authentication -->

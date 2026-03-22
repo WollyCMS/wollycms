@@ -8,9 +8,12 @@ import { env } from '../../env.js';
 import { authMiddleware } from '../../auth/middleware.js';
 import { logAudit } from '../../audit.js';
 import {
-  buildGoogleAuthUrl,
-  exchangeGoogleCode,
-  fetchGoogleUserInfo,
+  providers,
+  getProvider,
+  isProviderConfigured,
+  buildAuthUrl,
+  exchangeCode,
+  fetchUserInfo,
   generateOAuthState,
   signOAuthState,
   verifyOAuthState,
@@ -36,22 +39,25 @@ async function issueSessionToken(user: {
 
 /** GET /providers — Public: which OAuth providers are configured. */
 app.get('/providers', (c) => {
-  return c.json({
-    data: {
-      google: !!env.GOOGLE_CLIENT_ID,
-    },
-  });
+  const configured: Record<string, boolean> = {};
+  for (const [name, provider] of Object.entries(providers)) {
+    configured[name] = isProviderConfigured(provider);
+  }
+  return c.json({ data: configured });
 });
 
-/** GET /google — Redirect to Google's OAuth2 consent screen. */
-app.get('/google', async (c) => {
-  if (!env.GOOGLE_CLIENT_ID) {
+/** GET /:provider — Redirect to provider's OAuth2 consent screen. */
+app.get('/:provider', async (c) => {
+  const providerName = c.req.param('provider') || '';
+  const provider = getProvider(providerName);
+
+  if (!provider) {
+    return c.json({ errors: [{ code: 'NOT_FOUND', message: 'Unknown OAuth provider' }] }, 404);
+  }
+
+  if (!isProviderConfigured(provider)) {
     return c.json(
-      {
-        errors: [
-          { code: 'NOT_CONFIGURED', message: 'Google OAuth is not configured' },
-        ],
-      },
+      { errors: [{ code: 'NOT_CONFIGURED', message: `${provider.name} OAuth is not configured` }] },
       501,
     );
   }
@@ -67,11 +73,18 @@ app.get('/google', async (c) => {
     sameSite: 'Lax',
   });
 
-  return c.redirect(buildGoogleAuthUrl(state));
+  return c.redirect(buildAuthUrl(provider, state));
 });
 
-/** GET /google/callback — Handle the OAuth2 callback from Google. */
-app.get('/google/callback', async (c) => {
+/** GET /:provider/callback — Handle the OAuth2 callback. */
+app.get('/:provider/callback', async (c) => {
+  const providerName = c.req.param('provider') || '';
+  const provider = getProvider(providerName);
+
+  if (!provider) {
+    return c.redirect('/admin/login#oauth_error=unknown_provider');
+  }
+
   const code = c.req.query('code');
   const state = c.req.query('state');
   const errorParam = c.req.query('error');
@@ -80,9 +93,7 @@ app.get('/google/callback', async (c) => {
   setCookie(c, OAUTH_STATE_COOKIE, '', { path: '/', maxAge: 0 });
 
   if (errorParam) {
-    return c.redirect(
-      '/admin/login#oauth_error=' + encodeURIComponent(errorParam),
-    );
+    return c.redirect('/admin/login#oauth_error=' + encodeURIComponent(errorParam));
   }
 
   if (!code || !state) {
@@ -109,35 +120,35 @@ app.get('/google/callback', async (c) => {
   // Exchange code for tokens
   let tokens: { access_token: string };
   try {
-    tokens = await exchangeGoogleCode(code);
+    tokens = await exchangeCode(provider, code);
   } catch {
-    console.error('OAuth token exchange failed');
+    console.error(`OAuth token exchange failed for ${provider.name}`);
     return c.redirect('/admin/login#oauth_error=token_exchange_failed');
   }
 
-  // Fetch user info from Google
-  let googleUser: Awaited<ReturnType<typeof fetchGoogleUserInfo>>;
+  // Fetch user info
+  let oauthUser;
   try {
-    googleUser = await fetchGoogleUserInfo(tokens.access_token);
+    oauthUser = await fetchUserInfo(provider, tokens.access_token);
   } catch {
-    console.error('OAuth userinfo fetch failed');
+    console.error(`OAuth userinfo fetch failed for ${provider.name}`);
     return c.redirect('/admin/login#oauth_error=userinfo_failed');
   }
 
-  if (!googleUser.email || !googleUser.verified_email) {
+  if (!oauthUser.email || !oauthUser.emailVerified) {
     return c.redirect('/admin/login#oauth_error=email_not_verified');
   }
 
   const db = getDb();
 
-  // Check if this Google account is already linked to a user
+  // Check if this provider account is already linked to a user
   const [existingOauth] = await db
     .select()
     .from(userOauth)
     .where(
       and(
-        eq(userOauth.provider, 'google'),
-        eq(userOauth.providerId, googleUser.id),
+        eq(userOauth.provider, provider.name),
+        eq(userOauth.providerId, oauthUser.id),
       ),
     )
     .limit(1);
@@ -161,19 +172,19 @@ app.get('/google/callback', async (c) => {
     const [existingUser] = await db
       .select()
       .from(users)
-      .where(eq(users.email, googleUser.email))
+      .where(eq(users.email, oauthUser.email))
       .limit(1);
 
     if (existingUser) {
       // Auto-link OAuth to existing user
       user = existingUser;
-    } else if (env.GOOGLE_AUTO_CREATE) {
+    } else if (provider.autoCreate()) {
       // Auto-create new user (OAuth-only, no password)
       const [newUser] = await db
         .insert(users)
         .values({
-          email: googleUser.email,
-          name: googleUser.name || googleUser.email.split('@')[0],
+          email: oauthUser.email,
+          name: oauthUser.name || oauthUser.email.split('@')[0],
           passwordHash: '',
           role: 'editor',
           createdAt: new Date().toISOString(),
@@ -188,15 +199,15 @@ app.get('/google/callback', async (c) => {
     // Create the OAuth link
     await db.insert(userOauth).values({
       userId: user.id,
-      provider: 'google',
-      providerId: googleUser.id,
-      email: googleUser.email,
-      name: googleUser.name || null,
+      provider: provider.name,
+      providerId: oauthUser.id,
+      email: oauthUser.email,
+      name: oauthUser.name || null,
       createdAt: new Date().toISOString(),
     });
   }
 
-  // OAuth login skips 2FA (identity proven by Google)
+  // OAuth login skips 2FA (identity proven by provider)
   const token = await issueSessionToken(user);
 
   // Set jwtPayload so logAudit can read it
@@ -205,7 +216,7 @@ app.get('/google/callback', async (c) => {
     action: 'oauth-login',
     entity: 'user',
     entityId: user.id,
-    details: { provider: 'google' },
+    details: { provider: provider.name },
   });
 
   // Redirect to admin with token in URL fragment (not sent to server)

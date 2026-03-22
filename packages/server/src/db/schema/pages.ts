@@ -15,6 +15,7 @@ export const pages = sqliteTable('pages', {
   updatedAt: text('updated_at').notNull(),
   publishedAt: text('published_at'),
   scheduledAt: text('scheduled_at'),
+  unpublishAt: text('unpublish_at'),
   metaTitle: text('meta_title'),
   metaDescription: text('meta_description'),
   ogImage: text('og_image'),

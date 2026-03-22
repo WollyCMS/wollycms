@@ -1,0 +1,1 @@
+ALTER TABLE `pages` ADD `unpublish_at` text;
