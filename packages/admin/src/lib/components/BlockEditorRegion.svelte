@@ -738,7 +738,7 @@
   .region-section {
     border: 1px solid var(--c-border, #e2e8f0);
     border-radius: var(--radius, 6px);
-    background: #fff;
+    background: var(--c-surface);
     transition: box-shadow 0.2s, border-color 0.2s;
   }
 
@@ -856,7 +856,7 @@
     height: 10px;
     border-radius: 50%;
     background: var(--c-primary, #2563eb);
-    border: 2px solid #fff;
+    border: 2px solid var(--c-surface);
     box-shadow: 0 0 0 1px var(--c-primary, #2563eb);
   }
 
@@ -868,17 +868,17 @@
   .block-card {
     border: 1px solid var(--c-border, #e2e8f0);
     border-radius: var(--radius, 6px);
-    background: #fff;
+    background: var(--c-surface);
     transition: border-color 0.15s, box-shadow 0.15s, opacity 0.15s;
     overflow: hidden;
   }
 
   .block-card:hover {
-    border-color: #cbd5e1;
+    border-color: var(--c-border);
   }
 
   .block-card.is-expanded {
-    border-color: #cbd5e1;
+    border-color: var(--c-border);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   }
 
@@ -888,8 +888,8 @@
   }
 
   @keyframes flash-drop {
-    0% { background: #dbeafe; border-color: var(--c-primary, #2563eb); box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-primary, #2563eb) 20%, transparent); }
-    100% { background: #fff; border-color: var(--c-border, #e2e8f0); box-shadow: none; }
+    0% { background: color-mix(in srgb, var(--c-accent), transparent 80%); border-color: var(--c-primary, #2563eb); box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-primary, #2563eb) 20%, transparent); }
+    100% { background: var(--c-surface); border-color: var(--c-border, #e2e8f0); box-shadow: none; }
   }
 
   .block-card.just-dropped {
@@ -920,7 +920,7 @@
     width: 28px;
     flex-shrink: 0;
     cursor: grab;
-    color: #cbd5e1;
+    color: var(--c-border);
     font-size: 1.1rem;
     user-select: none;
     align-self: stretch;
@@ -928,7 +928,7 @@
   }
 
   .block-drag-handle:hover {
-    color: #64748b;
+    color: var(--c-text-light);
     background: var(--c-bg-alt, #f8fafc);
   }
 
@@ -989,8 +989,8 @@
     font-weight: 600;
     padding: 0.1rem 0.35rem;
     border-radius: 3px;
-    background: #dbeafe;
-    color: #2563eb;
+    background: color-mix(in srgb, var(--c-accent), transparent 80%);
+    color: var(--c-accent);
     flex-shrink: 0;
     text-transform: uppercase;
     letter-spacing: 0.03em;
@@ -1040,12 +1040,12 @@
 
   .block-action-btn:hover {
     color: var(--c-accent, #3182ce);
-    background: rgba(49, 130, 206, 0.06);
+    background: color-mix(in srgb, var(--c-accent), transparent 94%);
   }
 
   .block-action-btn.block-action-danger:hover {
-    color: #ef4444;
-    background: #fef2f2;
+    color: var(--c-danger);
+    background: color-mix(in srgb, var(--c-danger), transparent 90%);
   }
 
   /* Inline icon next to block type badge */
@@ -1099,7 +1099,7 @@
 
   .picker-item:hover {
     border-color: var(--c-accent, #3182ce);
-    background: rgba(49, 130, 206, 0.04);
+    background: color-mix(in srgb, var(--c-accent), transparent 96%);
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
@@ -1117,7 +1117,7 @@
   }
 
   .picker-item:hover .picker-icon {
-    background: rgba(49, 130, 206, 0.1);
+    background: color-mix(in srgb, var(--c-accent), transparent 90%);
     color: var(--c-accent, #3182ce);
   }
 
@@ -1154,7 +1154,7 @@
 
   .move-region-option:hover {
     border-color: var(--c-accent, #3182ce);
-    background: rgba(49, 130, 206, 0.04);
+    background: color-mix(in srgb, var(--c-accent), transparent 96%);
   }
 
   .block-card-body {
@@ -1170,6 +1170,6 @@
 
   @keyframes a11y-flash-pulse {
     0%, 100% { outline: 2px solid transparent; background-color: transparent; }
-    50% { outline: 2px solid #f59e0b; background-color: rgba(245, 158, 11, 0.15); }
+    50% { outline: 2px solid var(--c-warning); background-color: color-mix(in srgb, var(--c-warning), transparent 85%); }
   }
 </style>

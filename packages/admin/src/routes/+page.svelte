@@ -6,13 +6,18 @@
 
   let stats = $state<any>(null);
   let recentPages = $state<any[]>([]);
+  let siteUrl = $state('');
   let error = $state('');
 
   onMount(async () => {
     try {
-      const res = await api.get<{ data: any }>('/dashboard');
-      stats = res.data.stats;
-      recentPages = res.data.recentPages;
+      const [dashRes, configRes] = await Promise.all([
+        api.get<{ data: any }>('/dashboard'),
+        api.get<{ data: any }>('/config'),
+      ]);
+      stats = dashRes.data.stats;
+      recentPages = dashRes.data.recentPages;
+      siteUrl = configRes.data.siteUrl || '';
     } catch (err: any) {
       error = err.message;
     }
@@ -36,10 +41,12 @@
     <span class="qa-icon"><Upload size={22} /></span>
     <span class="qa-label">Upload Media</span>
   </a>
-  <a href="http://localhost:4322" target="_blank" rel="noopener" class="quick-action-card" style="--qa-color: var(--c-warning, #d69e2e);">
-    <span class="qa-icon"><ExternalLink size={22} /></span>
-    <span class="qa-label">View Site</span>
-  </a>
+  {#if siteUrl}
+    <a href={siteUrl} target="_blank" rel="noopener" class="quick-action-card" style="--qa-color: var(--c-warning, #d69e2e);">
+      <span class="qa-icon"><ExternalLink size={22} /></span>
+      <span class="qa-label">View Site</span>
+    </a>
+  {/if}
 </div>
 
 {#if stats}
@@ -73,11 +80,20 @@
       <div class="stat-label">Users</div>
     </div>
   </div>
+{:else if !error}
+  <div class="stats-grid">
+    {#each Array(7) as _}
+      <div class="stat-card">
+        <div class="skeleton skeleton-title" style="width: 50%;"></div>
+        <div class="skeleton skeleton-text" style="width: 70%;"></div>
+      </div>
+    {/each}
+  </div>
 {/if}
 
 <div class="card">
   <h2 style="margin-bottom: 1rem; font-size: 1.1rem;">Recently Updated Pages</h2>
-  {#if recentPages.length > 0}
+  {#if stats && recentPages.length > 0}
     <div class="table-wrap">
       <table>
         <thead>
@@ -102,8 +118,19 @@
         </tbody>
       </table>
     </div>
-  {:else}
-    <div class="empty-state"><p>No pages yet. Create your first page to get started.</p></div>
+  {:else if stats && recentPages.length === 0}
+    <div class="empty-state">
+      <div class="empty-state-icon"><FilePlus size={40} /></div>
+      <div class="empty-state-title">No pages yet</div>
+      <p>Create your first page to get started.</p>
+      <a href="{base}/pages" class="btn btn-primary" style="margin-top: 0.5rem;">Go to Pages</a>
+    </div>
+  {:else if !error}
+    <div>
+      {#each Array(5) as _}
+        <div class="skeleton skeleton-row" style="margin-bottom: 1px;"></div>
+      {/each}
+    </div>
   {/if}
 </div>
 

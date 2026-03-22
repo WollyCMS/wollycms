@@ -441,7 +441,7 @@
 
   .upload-zone.drag-over {
     border-color: var(--c-primary, #2563eb);
-    background: #eff6ff;
+    background: color-mix(in srgb, var(--c-accent), transparent 90%);
     color: var(--c-primary, #2563eb);
   }
 
@@ -496,7 +496,7 @@
     padding: 0.4rem;
     border: 2px solid var(--c-border, #e2e8f0);
     border-radius: var(--radius, 6px);
-    background: #fff;
+    background: var(--c-surface);
     cursor: pointer;
     transition: border-color 0.15s, box-shadow 0.15s;
   }
@@ -562,7 +562,7 @@
     gap: 0.25rem;
     font-size: 0.7rem;
     font-weight: 500;
-    color: #d69e2e;
+    color: var(--c-warning);
     margin-bottom: 0.2rem;
   }
 
@@ -573,8 +573,8 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #d69e2e;
-    border: 1.5px solid white;
-    box-shadow: 0 0 0 1px rgba(214, 158, 46, 0.3);
+    background: var(--c-warning);
+    border: 1.5px solid var(--c-surface);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--c-warning), transparent 70%);
   }
 </style>

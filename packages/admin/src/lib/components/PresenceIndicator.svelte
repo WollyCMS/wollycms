@@ -79,8 +79,8 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.35rem 0.75rem;
-    background: #fefce8;
-    border: 1px solid #fde68a;
+    background: color-mix(in srgb, var(--c-warning), transparent 85%);
+    border: 1px solid color-mix(in srgb, var(--c-warning), transparent 60%);
     border-radius: var(--radius, 6px);
     font-size: 0.78rem;
   }
@@ -89,7 +89,7 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #22c55e;
+    background: var(--c-success);
     flex-shrink: 0;
     animation: pulse-dot 2s ease-in-out infinite;
   }
@@ -111,10 +111,10 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    color: #fff;
+    color: white;
     font-size: 0.6rem;
     font-weight: 700;
-    border: 2px solid #fefce8;
+    border: 2px solid var(--c-surface);
     margin-right: -6px;
   }
 
@@ -123,7 +123,7 @@
   }
 
   .presence-text {
-    color: #92400e;
+    color: var(--c-warning);
     font-weight: 500;
     white-space: nowrap;
   }

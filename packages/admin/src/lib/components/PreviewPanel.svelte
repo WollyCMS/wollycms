@@ -226,7 +226,7 @@
     flex: 1;
     position: relative;
     overflow: hidden;
-    background: #e5e7eb;
+    background: var(--c-bg-subtle);
   }
   .preview-loading {
     position: absolute;
@@ -242,7 +242,7 @@
     width: 100%;
     height: 100%;
     border: none;
-    background: white;
+    background: var(--c-surface);
     display: block;
     transition: width 0.3s ease;
   }

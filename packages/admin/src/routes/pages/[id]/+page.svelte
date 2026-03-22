@@ -63,9 +63,9 @@
 
   const statusConfig = $derived.by(() => {
     switch (pageData?.status) {
-      case 'published': return { label: 'Published', color: '#38a169', icon: CheckCircle };
-      case 'archived': return { label: 'Archived', color: '#718096', icon: Archive };
-      default: return { label: 'Draft', color: '#d69e2e', icon: Circle };
+      case 'published': return { label: 'Published', color: 'var(--c-success)', icon: CheckCircle };
+      case 'archived': return { label: 'Archived', color: 'var(--c-text-light)', icon: Archive };
+      default: return { label: 'Draft', color: 'var(--c-warning)', icon: Circle };
     }
   });
 
@@ -457,11 +457,11 @@
   }
 
   .page-title:hover {
-    background: rgba(0, 0, 0, 0.03);
+    background: var(--c-bg-subtle);
   }
 
   .page-title:focus {
-    background: rgba(0, 0, 0, 0.03);
+    background: var(--c-bg-subtle);
     border-bottom-color: var(--c-accent);
   }
 
@@ -500,7 +500,7 @@
 
   .slug-display:hover {
     color: var(--c-accent);
-    background: rgba(49, 130, 206, 0.06);
+    background: color-mix(in srgb, var(--c-accent), transparent 94%);
   }
 
   .slug-prefix {
@@ -545,9 +545,9 @@
     width: 180px;
     padding: 0.35rem 0.5rem;
     font-size: 0.8rem;
-    border: 1px solid var(--c-border, #e2e8f0);
-    border-radius: var(--radius, 6px);
-    background: var(--c-bg, #fff);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background: var(--c-surface);
     color: var(--c-text);
     font-family: var(--font);
     outline: none;
@@ -570,7 +570,7 @@
   .dirty-dot {
     width: 7px;
     height: 7px;
-    background: #fbbf24;
+    background: var(--c-warning);
     border-radius: 50%;
     display: inline-block;
     margin-right: 0.15rem;

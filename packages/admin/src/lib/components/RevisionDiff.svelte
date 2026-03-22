@@ -146,12 +146,12 @@
     word-break: break-all;
   }
   .diff-changed {
-    background: #fff3cd;
+    background: color-mix(in srgb, var(--c-warning), transparent 80%);
   }
   .diff-changed .diff-val:first-of-type {
-    color: #b91c1c;
+    color: var(--c-danger);
   }
   .diff-changed .diff-val:last-child {
-    color: #15803d;
+    color: var(--c-success);
   }
 </style>

@@ -95,7 +95,7 @@
     align-items: stretch;
     border: 1px solid var(--c-border, #e2e8f0);
     border-radius: var(--radius, 6px);
-    background: #fff;
+    background: var(--c-surface);
     transition: border-color 0.15s, background 0.15s, opacity 0.15s;
   }
 
@@ -105,7 +105,7 @@
 
   .sortable-item.drag-over {
     border-color: var(--c-primary, #2563eb);
-    background: #eff6ff;
+    background: color-mix(in srgb, var(--c-accent), transparent 90%);
     box-shadow: 0 0 0 1px var(--c-primary, #2563eb);
   }
 
@@ -116,7 +116,7 @@
     width: 2rem;
     flex-shrink: 0;
     cursor: grab;
-    color: #cbd5e1;
+    color: var(--c-border);
     font-size: 1.2rem;
     user-select: none;
     border-right: 1px solid var(--c-border, #e2e8f0);
@@ -124,7 +124,7 @@
   }
 
   .drag-handle:hover {
-    color: #64748b;
+    color: var(--c-text-light);
     background: var(--c-bg-alt, #f8fafc);
   }
 

@@ -48,14 +48,14 @@
     border: 1px solid var(--c-border, #e2e8f0);
     border-radius: var(--radius, 6px);
     overflow: hidden;
-    background: #f0f2f5;
+    background: var(--c-bg-subtle);
   }
 
   .og-image {
     width: 100%;
     aspect-ratio: 1.91 / 1;
     overflow: hidden;
-    background: #e4e6eb;
+    background: var(--c-bg-subtle);
   }
 
   .og-image img {
@@ -70,18 +70,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #8a8d91;
+    color: var(--c-text-light);
     font-size: 0.8rem;
   }
 
   .og-body {
     padding: 0.6rem 0.75rem;
-    background: #f0f2f5;
+    background: var(--c-bg-subtle);
   }
 
   .og-domain {
     font-size: 0.7rem;
-    color: #606770;
+    color: var(--c-text-light);
     text-transform: uppercase;
     letter-spacing: 0.02em;
   }
@@ -89,7 +89,7 @@
   .og-title {
     font-size: 0.9rem;
     font-weight: 600;
-    color: #1d2129;
+    color: var(--c-text);
     line-height: 1.3;
     margin-top: 0.15rem;
     overflow: hidden;
@@ -99,7 +99,7 @@
 
   .og-desc {
     font-size: 0.78rem;
-    color: #606770;
+    color: var(--c-text-light);
     line-height: 1.4;
     margin-top: 0.1rem;
     overflow: hidden;

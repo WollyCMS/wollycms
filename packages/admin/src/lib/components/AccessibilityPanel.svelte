@@ -102,13 +102,13 @@
   }
 
   .a11y-pass {
-    background: #dcfce7;
-    color: #16a34a;
+    background: color-mix(in srgb, var(--c-success), transparent 80%);
+    color: var(--c-success);
   }
 
   .a11y-warn {
-    background: #fef3c7;
-    color: #d97706;
+    background: color-mix(in srgb, var(--c-warning), transparent 80%);
+    color: var(--c-warning);
   }
 
   .a11y-chevron {
@@ -130,7 +130,7 @@
 
   .a11y-ok {
     font-size: 0.8rem;
-    color: #16a34a;
+    color: var(--c-success);
     margin: 0;
   }
 
@@ -157,8 +157,8 @@
   .a11y-group-count {
     font-size: 0.65rem;
     font-weight: 700;
-    background: #fef3c7;
-    color: #d97706;
+    background: color-mix(in srgb, var(--c-warning), transparent 80%);
+    color: var(--c-warning);
     border-radius: 10px;
     padding: 0.05rem 0.35rem;
     min-width: 1rem;
@@ -177,12 +177,12 @@
     cursor: pointer;
     font-family: inherit;
     text-align: left;
-    color: #92400e;
+    color: var(--c-warning);
     transition: background 0.12s;
   }
 
   .a11y-issue:not(:disabled):hover {
-    background: #fef3c7;
+    background: color-mix(in srgb, var(--c-warning), transparent 80%);
   }
 
   .a11y-issue:disabled {

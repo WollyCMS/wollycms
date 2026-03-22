@@ -12,8 +12,12 @@
     LayoutDashboard, FileText, Blocks, Image, Menu, Tags,
     CornerDownRight, ClipboardList, Square, Users, Settings,
     Webhook, KeyRound, ScrollText, Code, Shield,
+    Sun, Moon, Monitor,
   } from 'lucide-svelte';
+  import { getTheme } from '$lib/theme.svelte.js';
   import '../app.css';
+
+  const theme = getTheme();
 
   let { children } = $props();
   const auth = getAuth();
@@ -154,18 +158,26 @@
 <svelte:window onkeydown={handleGlobalKeydown} />
 
 {#if !auth.loaded && !needsSetup}
-  <div class="loading">Loading...</div>
+  <div class="loading"><div class="loading-spinner"></div></div>
 {:else if isPublicPage || needsSetup}
   {@render children()}
 {:else if !auth.user}
-  <div class="loading">Redirecting...</div>
+  <div class="loading"><div class="loading-spinner"></div></div>
 {:else}
   <a href="#main-content" class="skip-link">Skip to main content</a>
   <div class="admin-layout">
     <aside class="sidebar" aria-label="Admin navigation">
       <div class="sidebar-header">
         <a href="{base}/" class="logo" aria-label="{brandName} Dashboard">
-          <span class="logo-icon" aria-hidden="true">{brandName[0].toUpperCase()}</span>
+          <span class="logo-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 512 512" fill="none">
+              <rect width="512" height="512" rx="128" fill="#10B981"/>
+              <rect x="110" y="110" width="292" height="55" rx="18" fill="white"/>
+              <rect x="110" y="195" width="180" height="207" rx="18" fill="white"/>
+              <rect x="320" y="195" width="82" height="91" rx="18" fill="white"/>
+              <rect x="320" y="311" width="82" height="91" rx="18" fill="white"/>
+            </svg>
+          </span>
           <span class="logo-text">{brandName}</span>
         </a>
       </div>
@@ -197,6 +209,20 @@
           <span class="user-role">{auth.user.role}</span>
         </div>
         <div class="sidebar-footer-actions">
+          <button
+            class="btn-theme-toggle"
+            onclick={() => theme.cycle()}
+            title="{theme.preference === 'light' ? 'Light' : theme.preference === 'dark' ? 'Dark' : 'System'} theme"
+            aria-label="Toggle theme"
+          >
+            {#if theme.preference === 'light'}
+              <Sun size={14} />
+            {:else if theme.preference === 'dark'}
+              <Moon size={14} />
+            {:else}
+              <Monitor size={14} />
+            {/if}
+          </button>
           <button class="btn-shortcut-hint" onclick={() => showShortcuts = true} title="Keyboard shortcuts">
             <kbd>?</kbd>
           </button>

@@ -10,6 +10,7 @@
   let searchQuery = $state('');
   let searchDebounce: ReturnType<typeof setTimeout>;
   let error = $state('');
+  let loading = $state(true);
   let uploading = $state(false);
   let editItem = $state<any>(null);
   let newFolderName = $state('');
@@ -23,6 +24,7 @@
   const totalPages = $derived(Math.max(1, Math.ceil(total / pageSize)));
 
   async function load() {
+    loading = true;
     try {
       const params = new URLSearchParams();
       if (searchQuery) params.set('search', searchQuery);
@@ -36,7 +38,7 @@
       const res = await api.get<{ data: any[]; meta: { total: number } }>(`/media${qs ? '?' + qs : ''}`);
       items = res.data;
       total = res.meta.total;
-    } catch (err: any) { error = err.message; }
+    } catch (err: any) { error = err.message; } finally { loading = false; }
   }
 
   function goToPage(page: number) {
@@ -253,40 +255,51 @@
     </div>
 
     <div class="media-grid">
-      {#each items as item}
-        <div class="card media-card" onclick={() => editItem = { ...item }} role="button" tabindex="0" onkeydown={(e) => { if (e.key === 'Enter') editItem = { ...item }; }}>
-          <div class="media-thumb">
-            {#if item.mimeType?.startsWith('image/')}
-              <img src="/api/content/media/{item.id}/thumbnail" alt={item.altText || ''} />
-              {#if !item.altText}
-                <span class="alt-badge" title="Missing alt text">No alt text</span>
-              {/if}
-            {:else if item.mimeType?.startsWith('video/')}
-              <div class="media-file-icon">
-                <span class="icon">&#127916;</span>
-                <span class="ext">{item.mimeType.split('/')[1].toUpperCase()}</span>
-              </div>
-            {:else}
-              <div class="media-file-icon">
-                <span class="icon">&#128196;</span>
-                <span class="ext">{item.originalName?.split('.').pop()?.toUpperCase() || 'FILE'}</span>
-              </div>
-            {/if}
-          </div>
-          <div class="media-info">
-            <p class="media-title">{item.title || item.originalName}</p>
-            <p class="media-meta">{formatSize(item.size)}{item.folder ? ` \u00B7 ${item.folder}` : ''}</p>
-            <div class="media-actions">
-              <button class="btn btn-sm btn-outline" onclick={(e) => { e.stopPropagation(); editItem = { ...item }; }}>Edit</button>
-              <button class="btn btn-sm btn-danger" onclick={(e) => { e.stopPropagation(); deleteItem(item.id); }}>Delete</button>
+      {#if loading}
+        {#each Array(8) as _}
+          <div class="card media-card">
+            <div class="media-thumb"><div class="skeleton" style="width: 100%; height: 100%;"></div></div>
+            <div class="media-info">
+              <div class="skeleton skeleton-text" style="width: 80%;"></div>
+              <div class="skeleton skeleton-text" style="width: 50%;"></div>
             </div>
           </div>
-        </div>
-      {/each}
-      {#if items.length === 0}
+        {/each}
+      {:else if items.length === 0}
         <div class="media-empty">
-          <p>No media found{searchQuery ? ` matching "${searchQuery}"` : ''}.</p>
+          <p>No media found{searchQuery ? ` matching "${searchQuery}"` : ''}. Upload files to get started.</p>
         </div>
+      {:else}
+        {#each items as item}
+          <div class="card media-card" onclick={() => editItem = { ...item }} role="button" tabindex="0" onkeydown={(e) => { if (e.key === 'Enter') editItem = { ...item }; }}>
+            <div class="media-thumb">
+              {#if item.mimeType?.startsWith('image/')}
+                <img src="/api/content/media/{item.id}/thumbnail" alt={item.altText || ''} />
+                {#if !item.altText}
+                  <span class="alt-badge" title="Missing alt text">No alt text</span>
+                {/if}
+              {:else if item.mimeType?.startsWith('video/')}
+                <div class="media-file-icon">
+                  <span class="icon">&#127916;</span>
+                  <span class="ext">{item.mimeType.split('/')[1].toUpperCase()}</span>
+                </div>
+              {:else}
+                <div class="media-file-icon">
+                  <span class="icon">&#128196;</span>
+                  <span class="ext">{item.originalName?.split('.').pop()?.toUpperCase() || 'FILE'}</span>
+                </div>
+              {/if}
+            </div>
+            <div class="media-info">
+              <p class="media-title">{item.title || item.originalName}</p>
+              <p class="media-meta">{formatSize(item.size)}{item.folder ? ` \u00B7 ${item.folder}` : ''}</p>
+              <div class="media-actions">
+                <button class="btn btn-sm btn-outline" onclick={(e) => { e.stopPropagation(); editItem = { ...item }; }}>Edit</button>
+                <button class="btn btn-sm btn-danger" onclick={(e) => { e.stopPropagation(); deleteItem(item.id); }}>Delete</button>
+              </div>
+            </div>
+          </div>
+        {/each}
       {/if}
     </div>
 
@@ -380,8 +393,8 @@
   }
   .folder-item:hover { background: var(--c-bg); }
   .folder-item.active {
-    background: var(--c-primary);
-    color: #fff;
+    background: var(--c-accent);
+    color: white;
     font-weight: 500;
   }
 
@@ -450,7 +463,7 @@
     font-family: inherit;
     border: 1px solid var(--c-border, #e2e8f0);
     border-radius: var(--radius, 6px);
-    background: #fff;
+    background: var(--c-surface);
     color: var(--c-text, #2d3748);
     cursor: pointer;
     transition: all 0.12s;
@@ -464,7 +477,7 @@
   .pagination-btn.active {
     background: var(--c-accent, #3182ce);
     border-color: var(--c-accent, #3182ce);
-    color: #fff;
+    color: white;
   }
 
   .pagination-btn:disabled {
@@ -513,8 +526,8 @@
     font-size: 0.6rem;
     font-weight: 600;
     padding: 0.15rem 0.4rem;
-    background: #fbbf24;
-    color: #78350f;
+    background: var(--c-warning);
+    color: var(--c-surface);
     border-radius: 3px;
     line-height: 1;
   }

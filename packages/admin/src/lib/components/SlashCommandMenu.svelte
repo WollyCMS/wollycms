@@ -30,7 +30,7 @@
   .slash-menu {
     display: flex;
     flex-direction: column;
-    background: #fff;
+    background: var(--c-surface);
     border: 1px solid var(--c-border, #e2e8f0);
     border-radius: var(--radius, 6px);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);

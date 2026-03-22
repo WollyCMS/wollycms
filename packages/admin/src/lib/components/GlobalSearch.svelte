@@ -219,7 +219,7 @@
 
   .search-input-wrapper:focus-within {
     border-color: var(--c-primary, #3182ce);
-    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15);
+    box-shadow: 0 0 0 3px var(--c-focus-ring);
   }
 
   .search-input-wrapper input {
