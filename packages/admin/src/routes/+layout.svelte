@@ -12,7 +12,7 @@
     LayoutDashboard, FileText, Blocks, Image, Menu, Tags,
     CornerDownRight, ClipboardList, Square, Users, Settings,
     Webhook, KeyRound, ScrollText, Code, Shield,
-    Sun, Moon, Monitor,
+    Sun, Moon, Monitor, PanelLeft, X,
   } from 'lucide-svelte';
   import { getTheme } from '$lib/theme.svelte.js';
   import '../app.css';
@@ -26,6 +26,7 @@
   );
   let needsSetup = $state(false);
   let showShortcuts = $state(false);
+  let mobileNavOpen = $state(false);
   let navCounts = $state<Record<string, number>>({});
   let brandName = $state('WollyCMS');
 
@@ -165,8 +166,34 @@
   <div class="loading"><div class="loading-spinner"></div></div>
 {:else}
   <a href="#main-content" class="skip-link">Skip to main content</a>
+  <!-- Mobile header bar -->
+  <div class="mobile-header">
+    <button class="mobile-menu-btn" onclick={() => mobileNavOpen = true} aria-label="Open navigation">
+      <PanelLeft size={20} />
+    </button>
+    <a href="{base}/" class="logo" aria-label="{brandName} Dashboard">
+      <span class="logo-icon" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 512 512" fill="none">
+          <rect width="512" height="512" rx="128" fill="#10B981"/>
+          <rect x="110" y="110" width="292" height="55" rx="18" fill="white"/>
+          <rect x="110" y="195" width="180" height="207" rx="18" fill="white"/>
+          <rect x="320" y="195" width="82" height="91" rx="18" fill="white"/>
+          <rect x="320" y="311" width="82" height="91" rx="18" fill="white"/>
+        </svg>
+      </span>
+      <span class="mobile-brand">{brandName}</span>
+    </a>
+    <div style="width: 36px;"></div>
+  </div>
+  <!-- Mobile overlay -->
+  {#if mobileNavOpen}
+    <div class="mobile-overlay" onclick={() => mobileNavOpen = false} role="presentation"></div>
+  {/if}
   <div class="admin-layout">
-    <aside class="sidebar" aria-label="Admin navigation">
+    <aside class="sidebar" class:mobile-open={mobileNavOpen} aria-label="Admin navigation">
+      <button class="mobile-close-btn" onclick={() => mobileNavOpen = false} aria-label="Close navigation">
+        <X size={18} />
+      </button>
       <div class="sidebar-header">
         <a href="{base}/" class="logo" aria-label="{brandName} Dashboard">
           <span class="logo-icon" aria-hidden="true">
@@ -193,6 +220,7 @@
               class:active={page.url.pathname === `${base}${item.href}` || (page.url.pathname.startsWith(`${base}${item.href}/`) && item.href !== '/')}
               title={item.label}
               aria-current={page.url.pathname === `${base}${item.href}` ? 'page' : undefined}
+              onclick={() => mobileNavOpen = false}
             >
               <span class="nav-icon" aria-hidden="true"><item.icon size={18} /></span>
               <span class="nav-label">{item.label}</span>

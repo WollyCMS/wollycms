@@ -358,7 +358,7 @@
 
   <div class="editor-layout" class:with-preview={showPreview}>
     <div class="editor-main">
-      <div style="display: grid; grid-template-columns: 1fr 320px; gap: 1.5rem;">
+      <div class="editor-grid">
         <div>
           {#if contentType?.fieldsSchema?.length > 0}
             <div class="card" style="margin-bottom: 1.5rem;">
@@ -580,5 +580,22 @@
   @keyframes pulse-dot {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.4; }
+  }
+
+  .editor-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .editor-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .revision-note-input {
+      width: 120px;
+      font-size: 0.75rem;
+    }
   }
 </style>
