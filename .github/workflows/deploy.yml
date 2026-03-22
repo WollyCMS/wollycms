@@ -108,27 +108,8 @@ jobs:
           GOOGLE_AUTO_CREATE = "${{ vars.GOOGLE_AUTO_CREATE }}"
           TOML
 
-      - name: Backup D1 before migrations
-        continue-on-error: true
-        id: d1_backup
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: '4.71.0'
-          command: d1 export ${{ vars.D1_DATABASE_NAME }} --remote --output d1-pre-deploy-backup.sql
-
-      - name: Upload backup artifact
-        if: steps.d1_backup.outcome == 'success'
-        uses: actions/upload-artifact@v4
-        with:
-          name: d1-backup-${{ matrix.environment }}-${{ github.sha }}
-          path: d1-pre-deploy-backup.sql
-          retention-days: 30
-
-      - name: Wait for D1 export to complete
-        if: steps.d1_backup.outcome == 'success'
-        run: sleep 15
+      # D1 has built-in point-in-time recovery — manual backups removed
+      # (d1 export locks the database and blocks migrations on large DBs)
 
       - name: Apply D1 migrations
         uses: cloudflare/wrangler-action@v3
