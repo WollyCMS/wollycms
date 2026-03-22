@@ -25,6 +25,7 @@ import ogImagesRouter from './og-images.js';
 import setupRouter from './setup.js';
 import twoFactorRouter from './two-factor.js';
 import oauthRouter from './oauth.js';
+import aiRouter from './ai.js';
 
 const app = new Hono();
 
@@ -59,6 +60,7 @@ app.use('/media/*', writeLimiter);
 app.use('/export', rateLimiter({ max: 10, windowMs: 60_000 }));
 app.use('/import', rateLimiter({ max: 10, windowMs: 60_000 }));
 
+app.route('/ai', aiRouter);
 app.route('/pages', pagesRouter);
 app.route('/pages', revisionsRouter);
 app.route('/blocks', blocksRouter);

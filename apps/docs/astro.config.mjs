@@ -57,6 +57,7 @@ export default defineConfig({
 						{ label: 'Lifecycle Hooks', slug: 'concepts/lifecycle-hooks' },
 						{ label: 'Tracking Scripts', slug: 'concepts/tracking' },
 						{ label: 'Localization (i18n)', slug: 'concepts/i18n' },
+						{ label: 'AI Helpers', slug: 'concepts/ai-helpers' },
 						{ label: 'Admin UI', slug: 'concepts/admin-ui' },
 						{ label: 'Block Type Recipes', slug: 'concepts/block-recipes' },
 					],

@@ -12,6 +12,9 @@
     try {
       const res = await api.get<{ data: any }>('/config');
       config = res.data;
+      // Ensure nested objects exist for binding
+      if (!config.ai) config.ai = { provider: '', apiKey: '', model: '', baseUrl: '' };
+      if (!config.workflow) config.workflow = { stages: [] };
     } catch (err: any) { error = err.message; }
   });
 
@@ -61,6 +64,46 @@
         Displayed in the top-left corner of the admin panel. Leave empty to use "WollyCMS".
       </p>
     </div>
+
+    <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--c-border);" />
+    <h2 style="font-size: 1.1rem; margin-bottom: 1rem;">AI Provider</h2>
+    <p style="font-size: 0.85rem; color: var(--c-text-light); margin-bottom: 0.75rem;">
+      Connect an AI model for content suggestions, alt text generation, and SEO descriptions.
+    </p>
+    <div class="form-group">
+      <label>Provider</label>
+      <select class="form-control" style="max-width: 200px;" bind:value={config.ai.provider}>
+        <option value="">None (disabled)</option>
+        <option value="openai">OpenAI</option>
+        <option value="anthropic">Anthropic (Claude)</option>
+        <option value="gemini">Google Gemini</option>
+        <option value="ollama">Ollama (local)</option>
+        <option value="custom">Custom (OpenAI-compatible)</option>
+      </select>
+    </div>
+    {#if config.ai?.provider}
+      {#if config.ai.provider !== 'ollama'}
+        <div class="form-group">
+          <label>API Key</label>
+          <input class="form-control" type="password" bind:value={config.ai.apiKey} placeholder="sk-..." autocomplete="off" />
+        </div>
+      {/if}
+      <div class="form-group">
+        <label>Model</label>
+        <input class="form-control" bind:value={config.ai.model} placeholder={
+          config.ai.provider === 'openai' ? 'gpt-4o' :
+          config.ai.provider === 'anthropic' ? 'claude-sonnet-4-20250514' :
+          config.ai.provider === 'gemini' ? 'gemini-2.0-flash' :
+          config.ai.provider === 'ollama' ? 'llama3.2' : 'model-name'
+        } />
+      </div>
+      {#if config.ai.provider === 'ollama' || config.ai.provider === 'custom'}
+        <div class="form-group">
+          <label>Base URL</label>
+          <input class="form-control" bind:value={config.ai.baseUrl} placeholder={config.ai.provider === 'ollama' ? 'http://localhost:11434' : 'https://api.example.com'} />
+        </div>
+      {/if}
+    {/if}
 
     <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--c-border);" />
     <h2 style="font-size: 1.1rem; margin-bottom: 1rem;">Localization</h2>

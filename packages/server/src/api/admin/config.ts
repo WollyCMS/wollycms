@@ -24,6 +24,12 @@ const defaultConfig = {
   },
   defaultLocale: 'en',
   supportedLocales: ['en'] as string[],
+  ai: {
+    provider: '' as string,
+    apiKey: '' as string,
+    model: '' as string,
+    baseUrl: '' as string,
+  },
   workflow: {
     stages: [
       { slug: 'draft', label: 'Draft', color: '#d69e2e' as string | undefined, transitions: ['published'], requiredRole: null as string | null | undefined },
@@ -86,6 +92,12 @@ app.put('/', async (c) => {
     }).optional(),
     defaultLocale: z.string().min(2).max(10).optional(),
     supportedLocales: z.array(z.string().min(2).max(10)).min(1).optional(),
+    ai: z.object({
+      provider: z.string().optional(),
+      apiKey: z.string().optional(),
+      model: z.string().optional(),
+      baseUrl: z.string().optional(),
+    }).optional(),
     workflow: z.object({
       stages: z.array(z.object({
         slug: z.string().min(1),
