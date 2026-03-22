@@ -129,8 +129,13 @@
         { href: '/api-keys', label: 'API Keys', icon: KeyRound },
         { href: '/tracking-scripts', label: 'Tracking', icon: Code },
         { href: '/audit-logs', label: 'Audit Log', icon: ScrollText },
-        { href: '/account', label: 'Account', icon: Shield },
         { href: '/settings', label: 'Settings', icon: Settings },
+      ],
+    },
+    {
+      label: 'Account',
+      items: [
+        { href: '/account', label: 'My Account', icon: Shield },
       ],
     },
   ];
