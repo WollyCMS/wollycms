@@ -545,9 +545,9 @@
     width: 180px;
     padding: 0.35rem 0.5rem;
     font-size: 0.8rem;
-    border: 1px solid var(--c-border, #e2e8f0);
-    border-radius: var(--radius, 6px);
-    background: var(--c-bg, #fff);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background: var(--c-surface);
     color: var(--c-text);
     font-family: var(--font);
     outline: none;
