@@ -1,21 +1,34 @@
 ---
 title: Block Type Recipes
-description: Copy-paste block type configurations and matching Astro components for common content patterns.
+description: Copy-paste JSON schemas and matching Astro components for common block types.
 ---
 
-WollyCMS lets you create any block type with any field schema. These recipes are starting points — create them via **Schema → Block Types** in the admin, then build the matching Astro component in your frontend.
+WollyCMS lets you create any block type with any field schema. These recipes give you the **JSON to paste directly into the Block Type editor** and a matching Astro component for your frontend.
+
+To use a recipe:
+1. Go to **Schema → Block Types → + New Block Type**
+2. Enter the name, slug, and description
+3. Paste the **Fields Schema JSON** below into the JSON editor
+4. Save the block type
+5. Copy the **Astro component** into your frontend project
+
+---
 
 ## Code Block
 
-Display syntax-highlighted code snippets with an optional filename and language selector.
+Syntax-highlighted code snippets with optional filename and language.
 
-### Block type config
+**Name:** Code Block | **Slug:** `code` | **Icon:** `code`
 
-| Field | Type | Required | Settings |
-|---|---|---|---|
-| `language` | select | No | Options: `javascript`, `typescript`, `python`, `bash`, `html`, `css`, `json`, `yaml`, `sql`, `go`, `rust` |
-| `filename` | text | No | |
-| `code` | textarea | Yes | |
+### Fields Schema JSON
+
+```json
+[
+  { "name": "language", "label": "Language", "type": "select", "settings": { "options": ["javascript", "typescript", "python", "bash", "html", "css", "json", "yaml", "sql", "go", "rust"] } },
+  { "name": "filename", "label": "Filename", "type": "text" },
+  { "name": "code", "label": "Code", "type": "textarea", "required": true }
+]
+```
 
 ### Astro component
 
@@ -39,34 +52,33 @@ const { language, filename, code } = fields;
 ```
 
 :::tip
-For syntax highlighting, add [Shiki](https://shiki.style/) or [Prism](https://prismjs.com/) to your Astro project and apply it to the `<code>` element.
+Add [Shiki](https://shiki.style/) or [Prism](https://prismjs.com/) to your Astro project for syntax highlighting.
 :::
 
 ---
 
 ## Table Block
 
-Structured tabular data with an optional header row and caption.
+Simple tabular data with a caption. Uses pipe-separated text for easy editing.
 
-### Block type config
+**Name:** Table | **Slug:** `table` | **Icon:** `table`
 
-| Field | Type | Required | Settings |
-|---|---|---|---|
-| `caption` | text | No | |
-| `has_header` | boolean | No | Default: true |
-| `rows` | repeater | Yes | Sub-fields: `cells` (text) |
+### Fields Schema JSON
 
-For a simpler approach, use a single `content` textarea field with Markdown table syntax and parse it in the component.
+```json
+[
+  { "name": "caption", "label": "Caption", "type": "text" },
+  { "name": "content", "label": "Table Content", "type": "textarea", "required": true, "settings": { "placeholder": "Name | Role | Email\nJane | Editor | jane@example.com\nBob | Writer | bob@example.com" } }
+]
+```
 
-### Astro component (simple Markdown approach)
+### Astro component
 
 ```astro
 ---
 // src/components/blocks/TableBlock.astro
 const { fields } = Astro.props;
 const { caption, content } = fields;
-
-// Parse simple CSV-style table: first line is header, | separated
 const lines = (content || '').trim().split('\n').filter(Boolean);
 const rows = lines.map(line => line.split('|').map(cell => cell.trim()));
 const header = rows[0];
@@ -75,9 +87,7 @@ const body = rows.slice(1);
 <figure>
   <table>
     {header && <thead><tr>{header.map(cell => <th>{cell}</th>)}</tr></thead>}
-    <tbody>
-      {body.map(row => <tr>{row.map(cell => <td>{cell}</td>)}</tr>)}
-    </tbody>
+    <tbody>{body.map(row => <tr>{row.map(cell => <td>{cell}</td>)}</tr>)}</tbody>
   </table>
   {caption && <figcaption>{caption}</figcaption>}
 </figure>
@@ -89,13 +99,17 @@ const body = rows.slice(1);
 
 Info, warning, success, or tip callout boxes.
 
-### Block type config
+**Name:** Alert | **Slug:** `alert` | **Icon:** `alert-circle`
 
-| Field | Type | Required | Settings |
-|---|---|---|---|
-| `type` | select | Yes | Options: `info`, `warning`, `success`, `tip` |
-| `title` | text | No | |
-| `body` | richtext | Yes | |
+### Fields Schema JSON
+
+```json
+[
+  { "name": "type", "label": "Type", "type": "select", "required": true, "settings": { "options": ["info", "warning", "success", "tip"] }, "default": "info" },
+  { "name": "title", "label": "Title", "type": "text" },
+  { "name": "body", "label": "Body", "type": "richtext", "required": true }
+]
+```
 
 ### Astro component
 
@@ -109,7 +123,7 @@ const icons = { info: 'ℹ️', warning: '⚠️', success: '✅', tip: '💡' }
 ---
 <div class={`alert alert-${type}`}>
   <div class="alert-header">
-    <span class="alert-icon">{icons[type] || icons.info}</span>
+    <span>{icons[type] || icons.info}</span>
     {title && <strong>{title}</strong>}
   </div>
   <div class="alert-body"><RichText content={body} /></div>
@@ -122,7 +136,6 @@ const icons = { info: 'ℹ️', warning: '⚠️', success: '✅', tip: '💡' }
   .alert-success { background: #f0fdf4; border-color: #22c55e; }
   .alert-tip { background: #f5f3ff; border-color: #8b5cf6; }
   .alert-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
-  .alert-icon { font-size: 1.2rem; }
 </style>
 ```
 
@@ -130,15 +143,22 @@ const icons = { info: 'ℹ️', warning: '⚠️', success: '✅', tip: '💡' }
 
 ## Image Gallery Block
 
-Multiple images in a responsive grid with optional captions.
+Responsive image grid with captions.
 
-### Block type config
+**Name:** Gallery | **Slug:** `gallery` | **Icon:** `layout-grid`
 
-| Field | Type | Required | Settings |
-|---|---|---|---|
-| `layout` | select | No | Options: `grid`, `masonry`, `carousel`. Default: `grid` |
-| `columns` | select | No | Options: `2`, `3`, `4`. Default: `3` |
-| `images` | repeater | Yes | Sub-fields: `image` (media), `caption` (text), `alt` (text) |
+### Fields Schema JSON
+
+```json
+[
+  { "name": "columns", "label": "Columns", "type": "select", "settings": { "options": ["2", "3", "4"] }, "default": "3" },
+  { "name": "images", "label": "Images", "type": "repeater", "required": true, "fields": [
+    { "name": "image", "label": "Image", "type": "media", "required": true },
+    { "name": "alt", "label": "Alt Text", "type": "text" },
+    { "name": "caption", "label": "Caption", "type": "text" }
+  ] }
+]
+```
 
 ### Astro component
 
@@ -146,7 +166,7 @@ Multiple images in a responsive grid with optional captions.
 ---
 // src/components/blocks/GalleryBlock.astro
 const { fields } = Astro.props;
-const { layout = 'grid', columns = '3', images = [] } = fields;
+const { columns = '3', images = [] } = fields;
 ---
 <div class="gallery" style={`--cols: ${columns}`}>
   {images.map(item => (
@@ -170,15 +190,21 @@ const { layout = 'grid', columns = '3', images = [] } = fields;
 
 ## Columns / Layout Block
 
-Multi-column content layout with nested rich text.
+Multi-column content layout.
 
-### Block type config
+**Name:** Columns | **Slug:** `columns` | **Icon:** `columns`
 
-| Field | Type | Required | Settings |
-|---|---|---|---|
-| `layout` | select | Yes | Options: `50-50`, `33-67`, `67-33`, `33-33-33`, `25-75` |
-| `gap` | select | No | Options: `small`, `medium`, `large`. Default: `medium` |
-| `columns` | repeater | Yes | Sub-fields: `content` (richtext) |
+### Fields Schema JSON
+
+```json
+[
+  { "name": "layout", "label": "Layout", "type": "select", "required": true, "settings": { "options": ["50-50", "33-67", "67-33", "33-33-33", "25-75"] }, "default": "50-50" },
+  { "name": "gap", "label": "Gap", "type": "select", "settings": { "options": ["small", "medium", "large"] }, "default": "medium" },
+  { "name": "columns", "label": "Columns", "type": "repeater", "required": true, "fields": [
+    { "name": "content", "label": "Content", "type": "richtext", "required": true }
+  ], "min": 2, "max": 4 }
+]
+```
 
 ### Astro component
 
@@ -188,20 +214,11 @@ Multi-column content layout with nested rich text.
 import RichText from '@wollycms/astro/RichText.astro';
 const { fields } = Astro.props;
 const { layout = '50-50', gap = 'medium', columns = [] } = fields;
-
 const gapMap = { small: '1rem', medium: '2rem', large: '3rem' };
-const templateMap = {
-  '50-50': '1fr 1fr',
-  '33-67': '1fr 2fr',
-  '67-33': '2fr 1fr',
-  '33-33-33': '1fr 1fr 1fr',
-  '25-75': '1fr 3fr',
-};
+const templateMap = { '50-50': '1fr 1fr', '33-67': '1fr 2fr', '67-33': '2fr 1fr', '33-33-33': '1fr 1fr 1fr', '25-75': '1fr 3fr' };
 ---
 <div class="columns" style={`grid-template-columns: ${templateMap[layout] || '1fr 1fr'}; gap: ${gapMap[gap] || '2rem'}`}>
-  {columns.map(col => (
-    <div class="column"><RichText content={col.content} /></div>
-  ))}
+  {columns.map(col => <div class="column"><RichText content={col.content} /></div>)}
 </div>
 
 <style>
@@ -214,16 +231,20 @@ const templateMap = {
 
 ## Quote / Testimonial Block
 
-Blockquote with attribution.
+Blockquote with attribution and optional avatar.
 
-### Block type config
+**Name:** Quote | **Slug:** `quote` | **Icon:** `quote`
 
-| Field | Type | Required | Settings |
-|---|---|---|---|
-| `quote` | textarea | Yes | |
-| `author` | text | No | |
-| `role` | text | No | e.g., "CEO, Acme Corp" |
-| `avatar` | media | No | |
+### Fields Schema JSON
+
+```json
+[
+  { "name": "quote", "label": "Quote", "type": "textarea", "required": true },
+  { "name": "author", "label": "Author", "type": "text" },
+  { "name": "role", "label": "Role / Title", "type": "text" },
+  { "name": "avatar", "label": "Avatar", "type": "media" }
+]
+```
 
 ### Astro component
 
@@ -236,11 +257,11 @@ const { quote, author, role, avatar } = fields;
 <blockquote class="testimonial">
   <p>{quote}</p>
   {author && (
-    <footer class="testimonial-footer">
-      {avatar && <img src={`/api/content/media/${avatar}/thumbnail`} alt="" class="testimonial-avatar" />}
+    <footer>
+      {avatar && <img src={`/api/content/media/${avatar}/thumbnail`} alt="" class="avatar" />}
       <div>
         <cite>{author}</cite>
-        {role && <span class="testimonial-role">{role}</span>}
+        {role && <span class="role">{role}</span>}
       </div>
     </footer>
   )}
@@ -249,10 +270,10 @@ const { quote, author, role, avatar } = fields;
 <style>
   .testimonial { border-left: 3px solid #3b82f6; padding: 1rem 1.5rem; margin: 1.5rem 0; font-style: italic; }
   .testimonial p { font-size: 1.1rem; line-height: 1.6; margin-bottom: 1rem; }
-  .testimonial-footer { display: flex; align-items: center; gap: 0.75rem; font-style: normal; }
-  .testimonial-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+  footer { display: flex; align-items: center; gap: 0.75rem; font-style: normal; }
+  .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
   cite { font-weight: 600; font-style: normal; display: block; }
-  .testimonial-role { font-size: 0.85rem; color: #64748b; }
+  .role { font-size: 0.85rem; color: #64748b; }
 </style>
 ```
 
@@ -260,14 +281,18 @@ const { quote, author, role, avatar } = fields;
 
 ## Divider Block
 
-Simple visual separator with style options.
+Visual separator with style options.
 
-### Block type config
+**Name:** Divider | **Slug:** `divider` | **Icon:** `minus`
 
-| Field | Type | Required | Settings |
-|---|---|---|---|
-| `style` | select | No | Options: `line`, `dots`, `space`. Default: `line` |
-| `spacing` | select | No | Options: `small`, `medium`, `large`. Default: `medium` |
+### Fields Schema JSON
+
+```json
+[
+  { "name": "style", "label": "Style", "type": "select", "settings": { "options": ["line", "dots", "space"] }, "default": "line" },
+  { "name": "spacing", "label": "Spacing", "type": "select", "settings": { "options": ["small", "medium", "large"] }, "default": "medium" }
+]
+```
 
 ### Astro component
 
@@ -292,42 +317,27 @@ const spacingMap = { small: '1rem', medium: '2rem', large: '3rem' };
 
 ---
 
-## FAQ / Accordion Block
+## FAQ / Accordion
 
-WollyCMS includes an **Accordion** block type by default. This is already available — just add it to your pages from the block picker. The fields are:
+WollyCMS includes an **Accordion** block type by default — no need to create it. Just add it to your pages from the block picker.
 
-| Field | Description |
-|---|---|
-| `title` | The question or section heading |
-| `body` | The answer (rich text or plain text) |
-| `open` | Whether the section starts expanded |
-
-Use the built-in Accordion block for FAQ sections. Multiple accordion blocks in the same region create a collapsible FAQ list.
+**Built-in fields:** `title` (question), `body` (answer, rich text), `open` (start expanded).
 
 ---
 
 ## Creating your own
 
-To create a custom block type:
+The field schema is a JSON array of field definitions. Each field has:
 
-1. Go to **Schema → Block Types** in the admin
-2. Click **+ New Block Type**
-3. Define a name, slug, and field schema (JSON)
-4. Create the matching Astro component in your frontend project
-5. Register it in your `BlockRenderer` component
+| Property | Required | Description |
+|---|---|---|
+| `name` | Yes | Machine name (used in API responses and Astro components) |
+| `label` | Yes | Human-readable label shown in the editor |
+| `type` | Yes | Field type (see below) |
+| `required` | No | Whether the field must be filled |
+| `default` | No | Default value |
+| `settings` | No | Type-specific options (e.g., `options` array for select) |
+| `fields` | No | Sub-field definitions (for repeater type) |
+| `min` / `max` | No | Min/max items (for repeater type) |
 
-The field schema format:
-
-```json
-[
-  { "name": "title", "label": "Title", "type": "text", "required": true },
-  { "name": "body", "label": "Body", "type": "richtext" },
-  { "name": "style", "label": "Style", "type": "select", "settings": { "options": ["default", "highlight"] } },
-  { "name": "items", "label": "Items", "type": "repeater", "fields": [
-    { "name": "label", "label": "Label", "type": "text" },
-    { "name": "value", "label": "Value", "type": "text" }
-  ]}
-]
-```
-
-Available field types: `text`, `textarea`, `richtext`, `number`, `boolean`, `select`, `media`, `url`, `email`, `date`, `repeater`.
+**Available field types:** `text`, `textarea`, `richtext`, `number`, `boolean`, `select`, `media`, `url`, `email`, `date`, `repeater`
