@@ -13,6 +13,7 @@ import pageBlocksRouter from './page-blocks.js';
 import pageTermsRouter from './page-terms.js';
 import { requireRole } from '../../auth/rbac.js';
 import { loadConfig } from './config.js';
+import { hooks } from '../../hooks.js';
 
 const app = new Hono();
 
@@ -225,6 +226,12 @@ app.post('/', async (c) => {
   const existing = await db.select({ id: pages.id }).from(pages).where(and(eq(pages.slug, slug), eq(pages.locale, pageLocale))).limit(1);
   if (existing.length > 0) return c.json({ errors: [{ code: 'CONFLICT', message: 'Slug already exists' }] }, 409);
 
+  // Lifecycle hook: beforeCreate (can throw to abort, can modify data)
+  const hookCtx = { data: parsed.data as Record<string, unknown>, user: { id: payload.sub, email: payload.email, role: payload.role } };
+  try { await hooks.runBefore('beforeCreate', hookCtx); } catch (err: any) {
+    return c.json({ errors: [{ code: 'HOOK_REJECTED', message: err.message || 'Blocked by beforeCreate hook' }] }, 400);
+  }
+
   const [row] = await db.insert(pages).values({
     typeId: parsed.data.typeId,
     title: parsed.data.title,
@@ -281,6 +288,9 @@ app.post('/', async (c) => {
   }
   cacheInvalidate('pages:');
   clearOgCache();
+
+  // Lifecycle hook: afterCreate
+  hooks.runAfter('afterCreate', { entity: row as unknown as Record<string, unknown>, id: row.id, user: { id: payload.sub, email: payload.email, role: payload.role } });
 
   return c.json({ data: row }, 201);
 });
@@ -493,6 +503,27 @@ app.put('/:id', async (c) => {
     createdBy: payload.sub,
   });
 
+  // Lifecycle hook: beforeUpdate
+  const updateHookCtx = { data: parsed.data as Record<string, unknown>, entity: existing as unknown as Record<string, unknown>, id, user: { id: payload.sub, email: payload.email, role: payload.role } };
+  try { await hooks.runBefore('beforeUpdate', updateHookCtx); } catch (err: any) {
+    return c.json({ errors: [{ code: 'HOOK_REJECTED', message: err.message || 'Blocked by beforeUpdate hook' }] }, 400);
+  }
+
+  // Detect publish/unpublish transitions for hooks
+  const isPublishing = parsed.data.status === 'published' && existing.status !== 'published';
+  const isUnpublishing = parsed.data.status && parsed.data.status !== 'published' && existing.status === 'published';
+
+  if (isPublishing) {
+    try { await hooks.runBefore('beforePublish', updateHookCtx); } catch (err: any) {
+      return c.json({ errors: [{ code: 'HOOK_REJECTED', message: err.message || 'Blocked by beforePublish hook' }] }, 400);
+    }
+  }
+  if (isUnpublishing) {
+    try { await hooks.runBefore('beforeUnpublish', updateHookCtx); } catch (err: any) {
+      return c.json({ errors: [{ code: 'HOOK_REJECTED', message: err.message || 'Blocked by beforeUnpublish hook' }] }, 400);
+    }
+  }
+
   const { revisionNote: _note, ...pageFields } = parsed.data;
   const updates: Record<string, unknown> = { ...pageFields, updatedAt: now };
   if (parsed.data.translationGroupId !== undefined) {
@@ -508,9 +539,9 @@ app.put('/:id', async (c) => {
   await logAudit(c, { action: 'update', entity: 'page', entityId: id, details: { title: updated.title } });
   fireWebhooks('page.updated', { id, title: updated.title, slug: updated.slug });
 
-  // Detect publish/unpublish transitions
-  if (parsed.data.status === 'published' && existing.status !== 'published') {
+  if (isPublishing) {
     fireWebhooks('page.published', { id, title: updated.title, slug: updated.slug });
+    hooks.runAfter('afterPublish', { entity: updated as unknown as Record<string, unknown>, id, user: { id: payload.sub, email: payload.email, role: payload.role } });
 
     // Auto-generate OG image on first publish if none exists
     if (!updated.ogImage) {
@@ -524,9 +555,13 @@ app.put('/:id', async (c) => {
         }, updated.slug).catch(() => { /* best-effort */ });
       }).catch(() => {});
     }
-  } else if (parsed.data.status && parsed.data.status !== 'published' && existing.status === 'published') {
+  } else if (isUnpublishing) {
     fireWebhooks('page.unpublished', { id, title: updated.title, slug: updated.slug });
+    hooks.runAfter('afterUnpublish', { entity: updated as unknown as Record<string, unknown>, id, user: { id: payload.sub, email: payload.email, role: payload.role } });
   }
+
+  // Lifecycle hook: afterUpdate
+  hooks.runAfter('afterUpdate', { entity: updated as unknown as Record<string, unknown>, id, user: { id: payload.sub, email: payload.email, role: payload.role } });
 
   cacheInvalidate('pages:');
   clearOgCache();
@@ -537,14 +572,25 @@ app.put('/:id', async (c) => {
 app.delete('/:id', async (c) => {
   const db = getDb();
   const id = parseInt(c.req.param('id'), 10);
+  const payload = c.get('jwtPayload');
   const [existing] = await db.select().from(pages).where(eq(pages.id, id)).limit(1);
   if (!existing) return c.json({ errors: [{ code: 'NOT_FOUND', message: 'Page not found' }] }, 404);
+
+  // Lifecycle hook: beforeDelete
+  try { await hooks.runBefore('beforeDelete', { entity: existing as unknown as Record<string, unknown>, id, user: { id: payload.sub, email: payload.email, role: payload.role } }); } catch (err: any) {
+    return c.json({ errors: [{ code: 'HOOK_REJECTED', message: err.message || 'Blocked by beforeDelete hook' }] }, 400);
+  }
+
   await db.delete(pageBlocks).where(eq(pageBlocks.pageId, id));
   await db.delete(pages).where(eq(pages.id, id));
   await logAudit(c, { action: 'delete', entity: 'page', entityId: id, details: { title: existing.title } });
   fireWebhooks('page.deleted', { id, title: existing.title, slug: existing.slug });
   cacheInvalidate('pages:');
   clearOgCache();
+
+  // Lifecycle hook: afterDelete
+  hooks.runAfter('afterDelete', { entity: existing as unknown as Record<string, unknown>, id, user: { id: payload.sub, email: payload.email, role: payload.role } });
+
   return c.json({ data: { deleted: true } });
 });
 
