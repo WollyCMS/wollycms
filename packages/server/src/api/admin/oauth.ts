@@ -174,7 +174,7 @@ app.get('/google/callback', async (c) => {
         .values({
           email: googleUser.email,
           name: googleUser.name || googleUser.email.split('@')[0],
-          passwordHash: null,
+          passwordHash: '',
           role: 'editor',
           createdAt: new Date().toISOString(),
         })
