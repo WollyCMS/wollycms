@@ -206,14 +206,24 @@
 
   async function loadAllPages() {
     try {
-      const params = new URLSearchParams();
-      if (statusFilter) params.set('status', statusFilter);
-      if (typeFilter) params.set('type', typeFilter);
-      if (localeFilter) params.set('locale', localeFilter);
-      params.set('limit', '200');
-      params.set('sort', 'title:asc');
-      const res = await api.get<{ data: any[] }>(`/pages?${params}`);
-      allPages = res.data;
+      const limit = 100;
+      let offset = 0;
+      let accumulated: any[] = [];
+      let total = Infinity;
+      while (offset < total) {
+        const params = new URLSearchParams();
+        if (statusFilter) params.set('status', statusFilter);
+        if (typeFilter) params.set('type', typeFilter);
+        if (localeFilter) params.set('locale', localeFilter);
+        params.set('limit', String(limit));
+        params.set('offset', String(offset));
+        params.set('sort', 'title:asc');
+        const res = await api.get<{ data: any[]; meta: { total: number } }>(`/pages?${params}`);
+        accumulated = accumulated.concat(res.data);
+        total = res.meta.total;
+        offset += limit;
+      }
+      allPages = accumulated;
     } catch { /* ignore */ }
   }
 
