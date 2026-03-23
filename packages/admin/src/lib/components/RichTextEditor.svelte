@@ -85,7 +85,7 @@
       bulletList: editor.isActive('bulletList'),
       orderedList: editor.isActive('orderedList'),
       blockquote: editor.isActive('blockquote'),
-      link: editor.isActive('link'),
+      link: editor.isActive('link') || (editor.isActive('image') && !!editor.getAttributes('image').href),
       alignLeft: !editor.isActive({ textAlign: 'center' }) && !editor.isActive({ textAlign: 'right' }),
       alignCenter: editor.isActive({ textAlign: 'center' }),
       alignRight: editor.isActive({ textAlign: 'right' }),
@@ -114,7 +114,7 @@
     else if (format === 'h5') editor.chain().focus().toggleHeading({ level: 5 }).run();
   }
 
-  // --- Custom Image with width, float (incl. center), caption ---
+  // --- Custom Image with width, float (incl. center), caption, link ---
   const CustomImage = Image.extend({
     addAttributes() {
       return {
@@ -128,10 +128,12 @@
           },
         },
         caption: { default: '', parseHTML: (el: HTMLElement) => el.getAttribute('data-caption') || null },
+        href: { default: null, parseHTML: (el: HTMLElement) => el.getAttribute('data-href') || null },
+        linkTarget: { default: null, parseHTML: (el: HTMLElement) => el.getAttribute('data-link-target') || null },
       };
     },
     renderHTML({ node }) {
-      const { src, alt, title, width, float: f, caption } = node.attrs;
+      const { src, alt, title, width, float: f, caption, href, linkTarget } = node.attrs;
       const st: string[] = [];
       if (width) st.push(`width: ${width}`);
       if (f === 'center') {
@@ -146,6 +148,8 @@
       if (title) a.title = title;
       if (st.length) a.style = st.join('; ');
       if (caption) a['data-caption'] = caption;
+      if (href) a['data-href'] = href;
+      if (linkTarget) a['data-link-target'] = linkTarget;
       return ['img', a];
     },
   });
@@ -324,7 +328,12 @@
   // --- Link dialog ---
   function openLinkDialog() {
     if (!editor) return;
-    if (editor.isActive('link')) {
+    if (editor.isActive('image')) {
+      const attrs = editor.getAttributes('image');
+      linkUrl = attrs.href || '';
+      linkNewTab = attrs.linkTarget === '_blank';
+      linkText = '';
+    } else if (editor.isActive('link')) {
       const attrs = editor.getAttributes('link');
       linkUrl = attrs.href || '';
       linkNewTab = attrs.target === '_blank';
@@ -333,13 +342,23 @@
       linkNewTab = false;
     }
     const { from, to } = editor.state.selection;
-    linkText = from !== to ? editor.state.doc.textBetween(from, to, ' ') : '';
+    if (!editor.isActive('image')) {
+      linkText = from !== to ? editor.state.doc.textBetween(from, to, ' ') : '';
+    }
     if (linkTab !== 'media') linkTab = 'url';
     showLinkDialog = true;
   }
 
   function insertLink() {
     if (!editor || !linkUrl) return;
+    if (editor.isActive('image')) {
+      editor.chain().focus().updateAttributes('image', {
+        href: linkUrl,
+        linkTarget: linkNewTab ? '_blank' : null,
+      }).run();
+      showLinkDialog = false;
+      return;
+    }
     const linkAttrs: Record<string, any> = { href: linkUrl };
     if (linkNewTab) linkAttrs.target = '_blank';
     else linkAttrs.target = null;
@@ -353,7 +372,15 @@
     showLinkDialog = false;
   }
 
-  function removeLink() { editor?.chain().focus().unsetLink().run(); showLinkDialog = false; }
+  function removeLink() {
+    if (editor?.isActive('image')) {
+      editor.chain().focus().updateAttributes('image', { href: null, linkTarget: null }).run();
+      showLinkDialog = false;
+      return;
+    }
+    editor?.chain().focus().unsetLink().run();
+    showLinkDialog = false;
+  }
 
   function onLinkMediaSelect(mediaId: number | null) {
     if (mediaId) linkUrl = `/api/content/media/${mediaId}/original`;
@@ -551,7 +578,7 @@
   <div class="modal-overlay" onclick={() => showLinkDialog = false} role="dialog" aria-modal="true" aria-labelledby="link-dialog-title">
     <div class="modal" onclick={(e) => e.stopPropagation()} style="max-width: 700px;" use:focusTrap onescape={() => showLinkDialog = false}>
       <div class="modal-header">
-        <h2 id="link-dialog-title">{editor?.isActive('link') ? 'Edit Link' : 'Insert Link'}</h2>
+        <h2 id="link-dialog-title">{editor?.isActive('link') || (editor?.isActive('image') && editor?.getAttributes('image').href) ? 'Edit Link' : 'Insert Link'}</h2>
         <button class="btn-icon" onclick={() => showLinkDialog = false} aria-label="Close">&#10005;</button>
       </div>
       <div class="link-tabs">
@@ -574,13 +601,13 @@
           onSelect={onLinkMediaSelect} onSelectItem={onLinkMediaSelectItem} />
       {/if}
       <div class="link-footer">
-        {#if editor?.isActive('link')}
+        {#if editor?.isActive('link') || (editor?.isActive('image') && editor?.getAttributes('image').href)}
           <button class="btn btn-danger-outline" onclick={removeLink}>Remove Link</button>
         {/if}
         <div style="flex: 1;"></div>
         <button class="btn btn-outline" onclick={() => showLinkDialog = false}>Cancel</button>
         <button class="btn btn-primary" onclick={insertLink} disabled={!linkUrl}>
-          {editor?.isActive('link') ? 'Update Link' : 'Insert Link'}
+          {editor?.isActive('link') || (editor?.isActive('image') && editor?.getAttributes('image').href) ? 'Update Link' : 'Insert Link'}
         </button>
       </div>
     </div>

@@ -92,7 +92,13 @@ function renderNode(node: TipTapNode): string {
       const src = escapeHtml(String(node.attrs?.src ?? ''));
       const alt = escapeHtml(String(node.attrs?.alt ?? ''));
       const title = node.attrs?.title ? ` title="${escapeHtml(String(node.attrs.title))}"` : '';
-      return `<img src="${src}" alt="${alt}"${title} />`;
+      const img = `<img src="${src}" alt="${alt}"${title} />`;
+      if (node.attrs?.href) {
+        const href = escapeHtml(String(node.attrs.href));
+        const target = node.attrs.linkTarget ? ` target="${escapeHtml(String(node.attrs.linkTarget))}"` : '';
+        return `<a href="${href}"${target}>${img}</a>`;
+      }
+      return img;
     }
     case 'table':
       return `<table>${children}</table>`;
