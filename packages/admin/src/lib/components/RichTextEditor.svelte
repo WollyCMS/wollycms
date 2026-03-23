@@ -356,6 +356,8 @@
         href: linkUrl,
         linkTarget: linkNewTab ? '_blank' : null,
       }).run();
+      onUpdate(editor.getJSON());
+      hasUserEdit = false;
       showLinkDialog = false;
       return;
     }
@@ -375,6 +377,8 @@
   function removeLink() {
     if (editor?.isActive('image')) {
       editor.chain().focus().updateAttributes('image', { href: null, linkTarget: null }).run();
+      onUpdate(editor.getJSON());
+      hasUserEdit = false;
       showLinkDialog = false;
       return;
     }
