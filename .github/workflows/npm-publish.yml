@@ -32,20 +32,17 @@ jobs:
 
       - run: npm ci
 
+      - name: Configure npm auth
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
       - name: Build server
         run: npm run build --workspace=packages/server
 
       - name: Publish @wollycms/server
         run: npm publish --workspace=packages/server --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @wollycms/astro
         run: npm publish --workspace=packages/astro --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish create-wolly
         run: npm publish --workspace=packages/create-wolly --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
