@@ -6,6 +6,7 @@
   let config = $state<any>(null);
   let error = $state('');
   let saving = $state(false);
+  let importing = $state(false);
 
   onMount(async () => {
     try {
@@ -213,6 +214,41 @@
     >+ Add Stage</button>
     <p class="field-hint" style="margin-top: 0.5rem;">
       "draft" and "published" are required. Add custom stages between them (e.g., In Review, Approved).
+    </p>
+  </div>
+
+  <!-- Export / Import -->
+  <div class="card settings-card">
+    <h2>Backup & Export</h2>
+    <p class="section-hint">Export your entire site as JSON for backups or migration to another WollyCMS instance.</p>
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+      <a href="/api/admin/export" class="btn btn-outline" target="_blank" rel="noopener">Download Full Export</a>
+      <label class="btn btn-outline" style="cursor: pointer;">
+        {importing ? 'Importing...' : 'Import from File'}
+        <input type="file" accept=".json" style="display: none;" onchange={async (e) => {
+          const file = (e.target as HTMLInputElement).files?.[0];
+          if (!file) return;
+          importing = true;
+          error = '';
+          try {
+            const text = await file.text();
+            const data = JSON.parse(text);
+            const res = await api.post<{ data: any }>('/import', data);
+            const stats = res.data.stats;
+            const summary = Object.entries(stats).map(([k, v]) => `${k}: ${v}`).join(', ');
+            toast.success(`Import complete — ${summary}`);
+          } catch (err: any) {
+            error = err.message || 'Import failed';
+          } finally {
+            importing = false;
+            (e.target as HTMLInputElement).value = '';
+          }
+        }} />
+      </label>
+    </div>
+    <p class="field-hint">
+      Includes all content, pages, blocks, menus, taxonomies, revisions, media metadata, and site settings.
+      Import skips existing records — no duplicates.
     </p>
   </div>
 {/if}
