@@ -147,6 +147,53 @@ The `defaultBlocks` field is an array of block definitions that are auto-created
 
 Roles: `admin`, `editor`, `viewer`.
 
+## Export / Import
+
+Full site export and import for backups, migrations, and staging data sync.
+Requires **admin** role.
+
+### Export — `GET /export`
+
+Returns a JSON file containing all site content and configuration.
+Use for backups, site migration, or syncing content to a staging environment.
+
+**Included:** content types, block types, pages, blocks, page blocks, page revisions,
+taxonomies, terms, content-term assignments, menus, menu items, redirects,
+media metadata, site config, tracking scripts, webhooks.
+
+**Not included (recreate on target):** users, API keys, OAuth tokens, 2FA settings, audit logs.
+
+**Not included (copy separately):** media files (R2/S3 storage). The export contains media
+metadata (filenames, paths, dimensions) but not the actual binary files.
+
+```bash
+curl -s "https://your-cms.example.com/api/admin/export" \
+  -H "X-API-Key: sk_..." \
+  -o backup.json
+```
+
+Response: JSON file with `version: 2` and all content tables.
+
+### Import — `POST /import`
+
+Imports content from a JSON export. Supports both v1 (legacy) and v2 (full) exports.
+Uses slug/ID-based deduplication — **existing records are not overwritten**.
+
+```bash
+curl -X POST "https://your-cms.example.com/api/admin/import" \
+  -H "X-API-Key: sk_..." \
+  -H "Content-Type: application/json" \
+  -d @backup.json
+```
+
+Response: `{ "data": { "imported": true, "stats": { "pages": 42, "blocks": 120, ... } } }`
+
+:::note
+Import respects foreign key dependencies (content types before pages, taxonomies before terms, etc.).
+For a full restore to a clean instance, create a new CMS deployment and import there.
+Importing into an existing site only adds missing records — it will not update or delete anything.
+:::
+
 ## Error format
 
 ```json

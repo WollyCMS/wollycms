@@ -656,10 +656,17 @@ describe('Admin Export/Import', () => {
     const res = await authed('/export');
     expect(res.status).toBe(200);
     exportData = await res.json();
-    expect(exportData.version).toBe(1);
+    expect(exportData.version).toBe(2);
     expect(exportData.pages.length).toBeGreaterThan(0);
     expect(exportData.contentTypes.length).toBeGreaterThan(0);
     expect(exportData.menus.length).toBeGreaterThan(0);
+    // v2 additions
+    expect(exportData).toHaveProperty('contentTerms');
+    expect(exportData).toHaveProperty('media');
+    expect(exportData).toHaveProperty('pageRevisions');
+    expect(exportData).toHaveProperty('siteConfig');
+    expect(exportData).toHaveProperty('trackingScripts');
+    expect(exportData).toHaveProperty('webhooks');
   });
 
   it('POST /import with invalid format returns 400', async () => {
