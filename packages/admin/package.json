@@ -24,7 +24,7 @@
     "@tiptap/extension-table-header": "^2.11.0",
     "@tiptap/extension-table-row": "^2.11.0",
     "@tiptap/extension-text-align": "^3.20.1",
-    "@tiptap/extension-underline": "^2.11.0",
+    "@tiptap/extension-underline": "^3.20.5",
     "@tiptap/extensions": "^3.20.1",
     "@tiptap/pm": "^2.11.0",
     "@tiptap/starter-kit": "^2.11.0",
