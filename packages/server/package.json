@@ -50,7 +50,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1004.0",
     "@hono/node-server": "^1.13.0",
-    "better-sqlite3": "^11.7.0",
+    "better-sqlite3": "^12.8.0",
     "dotenv": "^16.4.0",
     "drizzle-orm": "^0.38.0",
     "graphql": "^16.13.1",
