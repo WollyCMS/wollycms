@@ -26,7 +26,7 @@
     "@tiptap/extension-text-align": "^3.20.1",
     "@tiptap/extension-underline": "^2.11.0",
     "@tiptap/extensions": "^3.20.1",
-    "@tiptap/pm": "^2.11.0",
+    "@tiptap/pm": "^3.20.5",
     "@tiptap/starter-kit": "^2.11.0",
     "@tiptap/suggestion": "^3.20.1",
     "lucide-svelte": "^0.577.0",
