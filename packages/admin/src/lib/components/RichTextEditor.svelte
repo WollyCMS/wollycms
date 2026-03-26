@@ -10,10 +10,7 @@
   import Superscript from '@tiptap/extension-superscript';
   import TextAlign from '@tiptap/extension-text-align';
   import { focusTrap } from '$lib/focusTrap.js';
-  import Table from '@tiptap/extension-table';
-  import TableRow from '@tiptap/extension-table-row';
-  import TableCell from '@tiptap/extension-table-cell';
-  import TableHeader from '@tiptap/extension-table-header';
+  import { Table, TableRow, TableCell, TableHeader } from '@tiptap/extension-table';
   import Placeholder from '@tiptap/extension-placeholder';
   import MediaPicker from './MediaPicker.svelte';
 
@@ -216,12 +213,15 @@
     editor = new Editor({
       element: editorEl!,
       extensions: [
-        StarterKit,
+        StarterKit.configure({
+          link: false,       // configured separately below
+          underline: false,  // configured separately below
+        }),
         Underline,
         Subscript,
         Superscript,
         TextAlign.configure({ types: ['heading', 'paragraph'] }),
-        Link.configure({ openOnClick: false }),
+        Link.configure({ openOnClick: false, enableClickSelection: true }),
         CustomImage,
         Table.configure({ resizable: false }),
         TableRow, TableCell, TableHeader,
