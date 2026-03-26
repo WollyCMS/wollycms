@@ -20,7 +20,7 @@
     "@tiptap/extension-subscript": "^3.20.1",
     "@tiptap/extension-superscript": "^3.20.1",
     "@tiptap/extension-table": "^2.11.0",
-    "@tiptap/extension-table-cell": "^2.11.0",
+    "@tiptap/extension-table-cell": "^3.20.5",
     "@tiptap/extension-table-header": "^2.11.0",
     "@tiptap/extension-table-row": "^2.11.0",
     "@tiptap/extension-text-align": "^3.20.1",
