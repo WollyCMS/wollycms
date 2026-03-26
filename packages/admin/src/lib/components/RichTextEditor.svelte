@@ -247,11 +247,18 @@
       },
     });
     editorEl!.addEventListener('keydown', handleSlashKey);
+    editorEl!.addEventListener('click', handleLinkClick);
   });
+
+  function handleLinkClick(e: MouseEvent) {
+    const link = (e.target as HTMLElement).closest?.('a');
+    if (link && editorEl?.contains(link)) e.preventDefault();
+  }
 
   onDestroy(() => {
     isDestroying = true;
     editorEl?.removeEventListener('keydown', handleSlashKey);
+    editorEl?.removeEventListener('click', handleLinkClick);
     editor?.destroy();
   });
 
