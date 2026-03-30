@@ -88,7 +88,7 @@ The key (`sk_...`) is returned once. Use via `X-API-Key` header or `Authorizatio
 | `GET /media` | List media. Filters: `?type=`, `?search=`, `?folder=`, `?sort=`, `?order=` |
 | `GET /media/folders` | List distinct folders |
 | `GET /media/:id` | Get single media with URLs |
-| `POST /media` | Upload. Multipart: `file` (required), `title`, `altText`, `folder`. Max 50 MB |
+| `POST /media` | Upload. Multipart: `file` (required), `title`, `altText`, `folder`, `variant_thumbnail`, `variant_medium`, `variant_large` (optional pre-generated WebP variants). Max 50 MB |
 | `PUT /media/:id` | Update metadata: `{ altText?, title?, folder?, metadata? }` |
 | `DELETE /media/:id` | Delete file and all variants from storage |
 

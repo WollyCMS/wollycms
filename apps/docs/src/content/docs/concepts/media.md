@@ -33,20 +33,32 @@ Maximum upload size is 50 MB.
 
 ## Image processing
 
-When you upload an image (JPEG, PNG, GIF, WebP, or AVIF), Sharp automatically generates optimized variants:
+When you upload an image (JPEG, PNG, GIF, WebP, or AVIF), optimized variants are automatically generated:
 
-| Variant | Description |
-|---|---|
-| `original` | The uploaded file, unchanged |
-| `thumbnail` | Small preview (suitable for admin grids) |
-| `medium` | Mid-size for content areas |
-| `large` | Full-width for hero sections |
+| Variant | Dimensions | Fit | Description |
+|---|---|---|---|
+| `original` | Unchanged | — | The uploaded file, preserved in its original format |
+| `thumbnail` | 150 &times; 150 | Cover (crop) | Small preview for admin grids and directory cards |
+| `medium` | 600 &times; 600 | Inside (no crop) | Mid-size for content areas |
+| `large` | 1200 &times; 1200 | Inside (no crop) | Full-width for hero sections and inline images |
 
-All generated variants are converted to **WebP** format for optimal file size. The original file is preserved in its uploaded format.
+All generated variants are converted to **WebP** format for optimal file size. The original file is preserved in its uploaded format. Variants smaller than the original are skipped (images are never enlarged).
 
-:::note
-Image processing requires Sharp, which runs on Node.js. When running on Cloudflare Workers (where Sharp is unavailable), uploads are stored as originals only — no variants are generated.
-:::
+### How variants are generated
+
+The admin UI generates variants **in the browser** before uploading, using the Canvas API. This ensures variants are created regardless of the server environment — including Cloudflare Workers where native image libraries like Sharp are unavailable.
+
+If client-generated variants are not present (e.g., images uploaded via the API), the server falls back to **Sharp** for server-side processing. Sharp is available in Node.js and Docker deployments but not in Cloudflare Workers.
+
+### Variant status in the admin
+
+When you click on an image in the media library, the edit modal shows:
+
+- An **image preview** using the medium variant (or original if no medium exists)
+- **Variant badges** indicating which variants have been generated (green check) or are missing (gray dash)
+- **File metadata** including filename, size, dimensions, and MIME type
+
+If you see missing variants on older images that were uploaded before client-side generation was available, see the [migration guide](/migration/overview/) for bulk regeneration options.
 
 ## Storage backends
 
