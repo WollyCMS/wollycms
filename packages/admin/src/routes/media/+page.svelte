@@ -15,6 +15,8 @@
   let editItem = $state<any>(null);
   let newFolderName = $state('');
   let showNewFolder = $state(false);
+  let editingFolder = $state<string | null>(null);
+  let editingFolderName = $state('');
   let total = $state(0);
   let pageSize = $state(50);
   let currentPage = $state(1);
@@ -138,6 +140,34 @@
     load();
   }
 
+  function startEditFolder(folder: string) {
+    editingFolder = folder;
+    editingFolderName = folder;
+  }
+
+  async function saveEditFolder() {
+    if (!editingFolder || !editingFolderName.trim()) return;
+    const newName = editingFolderName.trim();
+    if (newName === editingFolder) { editingFolder = null; return; }
+    try {
+      await api.put(`/media/folders/${encodeURIComponent(editingFolder)}`, { name: newName });
+      if (activeFolder === editingFolder) activeFolder = newName;
+      editingFolder = null;
+      loadFolders();
+      load();
+    } catch (err: any) { error = err.message; }
+  }
+
+  async function deleteFolder(folder: string) {
+    if (!confirm(`Move all media in "${folder}" to uncategorized?`)) return;
+    try {
+      await api.del(`/media/folders/${encodeURIComponent(folder)}`);
+      if (activeFolder === folder) activeFolder = null;
+      loadFolders();
+      load();
+    } catch (err: any) { error = err.message; }
+  }
+
   function formatSize(bytes: number): string {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
@@ -175,12 +205,24 @@
           >Uncategorized</button>
         </li>
         {#each folders as folder}
-          <li>
-            <button
-              class="folder-item"
-              class:active={activeFolder === folder}
-              onclick={() => selectFolder(folder)}
-            >{folder}</button>
+          <li class="folder-row">
+            {#if editingFolder === folder}
+              <form class="folder-edit-form" onsubmit={(e) => { e.preventDefault(); saveEditFolder(); }}>
+                <input class="form-control form-control-sm" bind:value={editingFolderName} autofocus />
+                <button type="submit" class="btn btn-sm btn-primary" title="Save">&#10003;</button>
+                <button type="button" class="btn btn-sm btn-outline" onclick={() => editingFolder = null} title="Cancel">&#10005;</button>
+              </form>
+            {:else}
+              <button
+                class="folder-item"
+                class:active={activeFolder === folder}
+                onclick={() => selectFolder(folder)}
+              >{folder}</button>
+              <div class="folder-actions">
+                <button class="folder-action-btn" onclick={() => startEditFolder(folder)} title="Rename folder">&#9998;</button>
+                <button class="folder-action-btn folder-action-delete" onclick={() => deleteFolder(folder)} title="Delete folder">&#128465;</button>
+              </div>
+            {/if}
           </li>
         {/each}
       </ul>
@@ -416,6 +458,56 @@
     background: var(--c-accent);
     color: white;
     font-weight: 500;
+  }
+
+  .folder-row {
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+  .folder-row .folder-item {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .folder-actions {
+    display: none;
+    gap: 0.15rem;
+    flex-shrink: 0;
+  }
+  .folder-row:hover .folder-actions {
+    display: flex;
+  }
+  .folder-action-btn {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 0.15rem 0.3rem;
+    border-radius: 3px;
+    color: var(--c-text-light);
+    transition: all 0.15s;
+    line-height: 1;
+  }
+  .folder-action-btn:hover {
+    background: var(--c-bg);
+    color: var(--c-text);
+  }
+  .folder-action-delete:hover {
+    color: var(--c-danger, #dc2626);
+  }
+  .folder-edit-form {
+    display: flex;
+    gap: 0.25rem;
+    width: 100%;
+    padding: 0.2rem 0;
+  }
+  .folder-edit-form .form-control-sm {
+    flex: 1;
+    min-width: 0;
+    padding: 0.25rem 0.4rem;
+    font-size: 0.82rem;
   }
 
   .new-folder-form {

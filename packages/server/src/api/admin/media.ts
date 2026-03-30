@@ -113,6 +113,28 @@ app.get('/folders', async (c) => {
   return c.json({ data: rows.map((r: typeof rows[0]) => r.folder) });
 });
 
+/** PUT /folders/:name - Rename a folder (updates all media in that folder) */
+app.put('/folders/:name', async (c) => {
+  const db = getDb();
+  const oldName = decodeURIComponent(c.req.param('name'));
+  const body = await c.req.json().catch(() => null);
+  const parsed = z.object({ name: z.string().min(1).trim() }).safeParse(body);
+  if (!parsed.success) return c.json({ errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message })) }, 400);
+  const newName = parsed.data.name;
+
+  const result = await db.update(media).set({ folder: newName }).where(eq(media.folder, oldName));
+  return c.json({ data: { renamed: true, from: oldName, to: newName } });
+});
+
+/** DELETE /folders/:name - Remove a folder (moves all media to uncategorized) */
+app.delete('/folders/:name', async (c) => {
+  const db = getDb();
+  const folderName = decodeURIComponent(c.req.param('name'));
+
+  await db.update(media).set({ folder: null }).where(eq(media.folder, folderName));
+  return c.json({ data: { deleted: true, folder: folderName } });
+});
+
 /** GET /:id - Get single media */
 app.get('/:id', async (c) => {
   const db = getDb();
