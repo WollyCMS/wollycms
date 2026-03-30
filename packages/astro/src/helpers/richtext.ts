@@ -92,13 +92,33 @@ function renderNode(node: TipTapNode): string {
       const src = escapeHtml(String(node.attrs?.src ?? ''));
       const alt = escapeHtml(String(node.attrs?.alt ?? ''));
       const title = node.attrs?.title ? ` title="${escapeHtml(String(node.attrs.title))}"` : '';
-      const img = `<img src="${src}" alt="${alt}"${title} />`;
-      if (node.attrs?.href) {
-        const href = escapeHtml(String(node.attrs.href));
-        const target = node.attrs.linkTarget ? ` target="${escapeHtml(String(node.attrs.linkTarget))}"` : '';
-        return `<a href="${href}"${target}>${img}</a>`;
+      const width = node.attrs?.width ? String(node.attrs.width) : '';
+      const float = node.attrs?.float ? String(node.attrs.float) : 'none';
+      const caption = node.attrs?.caption ? String(node.attrs.caption) : '';
+
+      const styles: string[] = [];
+      if (width) styles.push(`width: ${escapeHtml(width)}`);
+      if (float === 'center') {
+        styles.push('display: block', 'margin-left: auto', 'margin-right: auto');
+      } else if (float === 'left') {
+        styles.push('float: left', 'margin: 0 1rem 0.5rem 0');
+      } else if (float === 'right') {
+        styles.push('float: right', 'margin: 0 0 0.5rem 1rem');
+      } else if (width) {
+        styles.push('display: inline-block', 'vertical-align: top');
       }
-      return img;
+      const style = styles.length ? ` style="${styles.join('; ')}"` : '';
+
+      const imgTag = `<img src="${src}" alt="${alt}"${title}${style} />`;
+      const href = node.attrs?.href ? escapeHtml(String(node.attrs.href)) : '';
+      const linkTarget = node.attrs?.linkTarget ? ` target="${escapeHtml(String(node.attrs.linkTarget))}"` : '';
+      const wrapLink = (html: string) => href ? `<a href="${href}"${linkTarget}>${html}</a>` : html;
+      if (caption) {
+        const figStyle = width ? ` style="width: ${escapeHtml(width)}"` : '';
+        const figClass = float === 'left' ? ' class="fig-left"' : float === 'right' ? ' class="fig-right"' : float === 'center' ? ' class="fig-center"' : '';
+        return `<figure${figClass}${figStyle}>${wrapLink(`<img src="${src}" alt="${alt}"${title} style="width: 100%" />`)}<figcaption>${escapeHtml(caption)}</figcaption></figure>`;
+      }
+      return wrapLink(imgTag);
     }
     case 'table':
       return `<table>${children}</table>`;
