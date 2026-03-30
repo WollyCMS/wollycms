@@ -26,6 +26,8 @@
   let selected = $state<any>(null);
   let searchQuery = $state('');
   let typeFilter = $state<'all' | 'image' | 'video' | 'document'>('all');
+  let folderFilter = $state<string | null>(null);
+  let folders = $state<string[]>([]);
   let total = $state(0);
   let offset = $state(0);
   const PAGE_SIZE = 30;
@@ -47,11 +49,19 @@
       params.set('offset', String(offset));
       if (searchQuery) params.set('search', searchQuery);
       if (typeFilter !== 'all') params.set('type', typeFilter);
+      if (folderFilter !== null) params.set('folder', folderFilter);
       const res = await api.get<{ data: any[]; meta: { total: number } }>(`/media?${params}`);
       mediaList = res.data;
       total = res.meta?.total ?? res.data.length;
     } catch { /* ignore */ }
     loading = false;
+  }
+
+  async function loadFolders() {
+    try {
+      const res = await api.get<{ data: string[] }>('/media/folders');
+      folders = res.data;
+    } catch { /* ignore */ }
   }
 
   async function loadSelected() {
@@ -69,6 +79,7 @@
     if (inline) {
       typeFilter = initialTypeFilter;
       loadMedia();
+      loadFolders();
     }
   });
 
@@ -76,8 +87,10 @@
     open = true;
     searchQuery = '';
     typeFilter = initialTypeFilter;
+    folderFilter = null;
     offset = 0;
     loadMedia();
+    loadFolders();
   }
 
   function pick(item: any) {
@@ -170,6 +183,25 @@
         oninput={(e) => onSearch((e.target as HTMLInputElement).value)}
       />
     </div>
+    {#if folders.length > 0}
+      <select
+        class="picker-folder-select"
+        value={folderFilter ?? '__all__'}
+        onchange={(e) => {
+          const val = (e.target as HTMLSelectElement).value;
+          folderFilter = val === '__all__' ? null : val;
+          offset = 0;
+          loadMedia();
+        }}
+        aria-label="Filter by folder"
+      >
+        <option value="__all__">All Folders</option>
+        <option value="">Uncategorized</option>
+        {#each folders as f}
+          <option value={f}>{f}</option>
+        {/each}
+      </select>
+    {/if}
     <div class="picker-filters">
       <button class="filter-btn" class:active={typeFilter === 'all'} onclick={() => onTypeChange('all')}>All</button>
       <button class="filter-btn" class:active={typeFilter === 'image'} onclick={() => onTypeChange('image')}>Images</button>
@@ -387,6 +419,23 @@
     flex: 1;
     font-size: 0.85rem;
     color: var(--c-text, #1e293b);
+  }
+
+  .picker-folder-select {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid var(--c-border, #e2e8f0);
+    border-radius: var(--radius, 6px);
+    background: var(--c-bg, #fff);
+    color: var(--c-text, #1e293b);
+    cursor: pointer;
+    max-width: 160px;
+    font-family: inherit;
+  }
+  .picker-folder-select:focus {
+    outline: none;
+    border-color: var(--c-primary, #2563eb);
   }
 
   .picker-filters {
