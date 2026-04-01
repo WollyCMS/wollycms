@@ -41,7 +41,7 @@
   ],
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "tsc && cp -r src/og/fonts dist/og/fonts",
     "start": "node dist/index.js",
     "test": "vitest run",
     "test:watch": "vitest",
