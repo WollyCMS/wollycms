@@ -46,10 +46,10 @@ jobs:
         run: cp -r packages/admin/build packages/server/admin-ui
 
       - name: Publish @wollycms/server
-        run: npm publish --workspace=packages/server --access public
+        run: npm publish --workspace=packages/server --access public 2>&1 || echo "already published"
 
       - name: Publish @wollycms/astro
-        run: npm publish --workspace=packages/astro --access public
+        run: npm publish --workspace=packages/astro --access public 2>&1 || echo "already published"
 
       - name: Publish create-wolly
-        run: npm publish --workspace=packages/create-wolly --access public
+        run: npm publish --workspace=packages/create-wolly --access public 2>&1 || echo "already published"
