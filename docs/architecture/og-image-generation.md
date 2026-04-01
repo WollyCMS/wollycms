@@ -15,6 +15,20 @@ existing pages.
 - Current template: burgundy gradient with gold accent, title + description
 - Admin UI has a plain text input for OG image URL in PageEditorSidebar
 
+### Cloudflare Workers limitation
+
+PNG generation depends on Sharp (native image processing), which is not available
+on Cloudflare Workers. On Workers:
+
+- **Auto-generate on publish**: silently skips (best-effort, no error)
+- **`GET /api/content/og/:slug`**: returns an SVG fallback instead of PNG
+- **Admin "Generate OG Image" button**: returns 503 "Image generation unavailable"
+- **CLI `wolly og:generate`**: works only when running on Node.js (not Workers)
+
+To get OG images on a Workers deployment, either generate them offline on a
+Node.js machine (`wolly og:generate`), use an external OG image service, or
+set custom OG image URLs manually in the admin UI.
+
 ## Design
 
 ### Generation Flow

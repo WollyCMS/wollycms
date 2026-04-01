@@ -178,6 +178,10 @@ WollyCMS auto-generates Open Graph images when a page is first published (if no 
 
 Auto-generated OG images are served at `/api/content/og/:slug.png`.
 
+:::note[Cloudflare Workers limitation]
+PNG generation requires Sharp, which is not available on Cloudflare Workers. On Workers deployments, the OG endpoint returns an SVG fallback instead of a PNG. To get PNG OG images on Workers, generate them offline using the CLI (`wolly og:generate`) on a Node.js machine and upload to R2, or set custom OG image URLs in the admin UI.
+:::
+
 ## Canonical URLs
 
 If a page does not have an explicit `canonical_url` set, you can construct one in your layout:
