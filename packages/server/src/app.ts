@@ -191,9 +191,9 @@ if (getStorage().isExternal) {
   });
 }
 
-// Serve admin SPA (production: built static files, Node.js only)
+// Serve admin SPA (built static files, Node.js only)
 // On Workers, admin assets are served via wrangler [assets] config.
-if (env.NODE_ENV === 'production' && typeof process !== 'undefined' && process.release?.name === 'node') {
+if (typeof process !== 'undefined' && process.release?.name === 'node') {
   const { serveStatic } = await import('@hono/node-server/serve-static');
   const { dirname, resolve } = await import('node:path');
   const { fileURLToPath } = await import('node:url');
