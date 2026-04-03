@@ -419,6 +419,9 @@
                   {#if field.type === 'media'}
                     <MediaPicker value={pageData.fields?.[field.name] || null}
                       onSelect={(mediaId) => { if (!pageData.fields) pageData.fields = {}; pageData.fields[field.name] = mediaId; }} />
+                  {:else if field.type === 'date'}
+                    <input type="date" class="form-control" value={pageData.fields?.[field.name] || ''}
+                      oninput={(e) => { if (!pageData.fields) pageData.fields = {}; pageData.fields[field.name] = (e.target as HTMLInputElement).value; }} />
                   {:else if field.type === 'url'}
                     <input type="url" class="form-control" value={pageData.fields?.[field.name] || ''} placeholder="https://..."
                       oninput={(e) => { if (!pageData.fields) pageData.fields = {}; pageData.fields[field.name] = (e.target as HTMLInputElement).value; }} />

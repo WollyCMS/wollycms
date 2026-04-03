@@ -115,6 +115,9 @@
             {:else if sf.type === 'number'}
               <input type="number" class="form-control" value={item[sf.name] || ''}
                 oninput={(e) => updateSubField(i, sf.name, Number((e.target as HTMLInputElement).value))} />
+            {:else if sf.type === 'date'}
+              <input type="date" class="form-control" value={item[sf.name] || ''}
+                oninput={(e) => updateSubField(i, sf.name, (e.target as HTMLInputElement).value)} />
             {:else if sf.type === 'url'}
               <input type="url" class="form-control" value={item[sf.name] || ''} placeholder="https://..."
                 oninput={(e) => updateSubField(i, sf.name, (e.target as HTMLInputElement).value)} />
