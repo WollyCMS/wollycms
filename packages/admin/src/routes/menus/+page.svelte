@@ -107,10 +107,12 @@
     } catch (err: any) { error = err.message; }
   }
 
+  const MAX_DEPTH = 4;
+
   function renderItems(items: any[], depth: number = 0): any[] {
     const flat: any[] = [];
     for (const item of items) {
-      flat.push({ ...item, depth });
+      flat.push({ ...item, depth, hasChildren: !!(item.children?.length) });
       if (item.children?.length > 0) flat.push(...renderItems(item.children, depth + 1));
     }
     return flat;
@@ -135,6 +137,98 @@
       error = err.message;
       loadMenu(selectedMenu.id);
     }
+  }
+
+  /** Get the max depth of an item and all its descendants in the flat list */
+  function subtreeMaxDepth(flat: any[], index: number): number {
+    const baseDepth = flat[index].depth;
+    let max = baseDepth;
+    for (let j = index + 1; j < flat.length; j++) {
+      if (flat[j].depth <= baseDepth) break;
+      if (flat[j].depth > max) max = flat[j].depth;
+    }
+    return max;
+  }
+
+  function canIndent(flat: any[], index: number): boolean {
+    const item = flat[index];
+    // Find previous sibling (same parentId and same depth)
+    let hasPrevSibling = false;
+    for (let j = index - 1; j >= 0; j--) {
+      if (flat[j].depth < item.depth) break; // went above our level
+      if (flat[j].depth === item.depth && flat[j].parentId === item.parentId) {
+        hasPrevSibling = true;
+        break;
+      }
+    }
+    if (!hasPrevSibling) return false;
+    // Check depth limit for entire subtree
+    const maxD = subtreeMaxDepth(flat, index);
+    return (maxD + 1) <= MAX_DEPTH;
+  }
+
+  function canOutdent(flat: any[], index: number): boolean {
+    return flat[index].depth > 0;
+  }
+
+  function indentItem(flat: any[], index: number) {
+    const item = flat[index];
+    const origDepth = item.depth;
+    // Find previous sibling
+    let prevSiblingIdx = -1;
+    for (let j = index - 1; j >= 0; j--) {
+      if (flat[j].depth < origDepth) break;
+      if (flat[j].depth === origDepth && flat[j].parentId === item.parentId) {
+        prevSiblingIdx = j;
+        break;
+      }
+    }
+    if (prevSiblingIdx < 0) return;
+
+    const mutated = flat.map(i => ({ ...i }));
+    mutated[index].parentId = mutated[prevSiblingIdx].id;
+    mutated[index].depth = origDepth + 1;
+    // Adjust descendants
+    for (let j = index + 1; j < mutated.length; j++) {
+      if (mutated[j].depth <= origDepth) break;
+      mutated[j].depth += 1;
+    }
+    reorderMenuItems(mutated);
+  }
+
+  function outdentItem(flat: any[], index: number) {
+    const item = flat[index];
+    const origDepth = item.depth;
+    if (origDepth === 0) return;
+    // Find current parent
+    const parent = flat.find(i => i.id === item.parentId);
+    if (!parent) return;
+
+    const mutated = flat.map(i => ({ ...i }));
+    mutated[index].parentId = parent.parentId ?? null;
+    mutated[index].depth = origDepth - 1;
+    // Adjust descendants
+    for (let j = index + 1; j < mutated.length; j++) {
+      if (mutated[j].depth <= origDepth) break;
+      mutated[j].depth -= 1;
+    }
+    reorderMenuItems(mutated);
+  }
+
+  function editableParentOptions(): any[] {
+    const flat = flatMenuItems();
+    if (!editingItemId) return flat;
+    const excluded = new Set<number>();
+    excluded.add(editingItemId);
+    const editIdx = flat.findIndex(i => i.id === editingItemId);
+    if (editIdx >= 0) {
+      const editDepth = flat[editIdx].depth;
+      for (let j = editIdx + 1; j < flat.length; j++) {
+        if (flat[j].depth <= editDepth) break;
+        excluded.add(flat[j].id);
+      }
+    }
+    return flat.filter(i => !excluded.has(i.id));
   }
 </script>
 
@@ -193,15 +287,54 @@
                   <input class="form-control" bind:value={editItem.url} placeholder="/path or https://..." />
                 </div>
               {/if}
+              <div class="form-group" style="margin-bottom: 0.5rem;">
+                <label style="font-size: 0.75rem;">Parent Item</label>
+                <select class="form-control" value={editItem.parentId ?? ''} onchange={(e) => {
+                  const val = (e.target as HTMLSelectElement).value;
+                  editItem.parentId = val ? parseInt(val, 10) : null;
+                }}>
+                  <option value="">— Top Level —</option>
+                  {#each editableParentOptions() as opt}
+                    <option value={opt.id}>{'—'.repeat(opt.depth)} {opt.title}</option>
+                  {/each}
+                </select>
+              </div>
               <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
                 <button class="btn btn-sm btn-outline" onclick={cancelEdit}>Cancel</button>
                 <button class="btn btn-sm btn-primary" onclick={saveEdit}>Save</button>
               </div>
             </div>
           {:else}
-            <div style="display: flex; align-items: center; padding: 0.6rem 0.75rem; gap: 0.75rem;">
-              <span style="flex: 1; padding-left: {item.depth * 1.5}rem; font-size: 0.9rem;">{item.title}</span>
-              <span style="color: var(--c-text-light); font-size: 0.85rem; min-width: 120px;">
+            {@const flat = flatMenuItems()}
+            <div class="menu-item-row" style="background: {item.depth > 0 ? `color-mix(in srgb, var(--c-accent, #2563eb), transparent ${97 - item.depth * 2}%)` : 'transparent'};">
+              <div class="menu-item-nesting">
+                <button
+                  class="btn-icon menu-nest-btn"
+                  disabled={!canOutdent(flat, i)}
+                  onclick={() => outdentItem(flat, i)}
+                  aria-label="Outdent {item.title}"
+                  title="Move left (outdent)"
+                >&larr;</button>
+                <button
+                  class="btn-icon menu-nest-btn"
+                  disabled={!canIndent(flat, i)}
+                  onclick={() => indentItem(flat, i)}
+                  aria-label="Indent {item.title}"
+                  title="Move right (indent)"
+                >&rarr;</button>
+              </div>
+              <span class="menu-item-label" style="padding-left: {item.depth * 2}rem;">
+                {#if item.hasChildren}
+                  <span class="menu-tree-icon">&#9656;</span>
+                {:else if item.depth > 0}
+                  <span class="menu-tree-icon" style="color: var(--c-border);">&middot;</span>
+                {/if}
+                {item.title}
+                {#if item.depth > 0}
+                  <span class="menu-depth-badge">L{item.depth}</span>
+                {/if}
+              </span>
+              <span class="menu-item-url">
                 {#if item.pageSlug}
                   /{item.pageSlug}
                 {:else}
@@ -279,3 +412,77 @@
     </div>
   </div>
 {/if}
+
+<style>
+  .menu-item-row {
+    display: flex;
+    align-items: center;
+    padding: 0.6rem 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .menu-item-nesting {
+    display: flex;
+    gap: 0.15rem;
+    flex-shrink: 0;
+  }
+
+  .menu-nest-btn {
+    width: 1.6rem;
+    height: 1.6rem;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius, 4px);
+    background: var(--c-surface);
+    color: var(--c-text);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .menu-nest-btn:hover:not(:disabled) {
+    background: var(--c-bg-alt);
+    border-color: var(--c-text-light);
+  }
+
+  .menu-nest-btn:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+  }
+
+  .menu-item-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex: 1;
+    font-size: 0.9rem;
+    min-width: 0;
+  }
+
+  .menu-tree-icon {
+    font-size: 0.75rem;
+    width: 1rem;
+    text-align: center;
+    flex-shrink: 0;
+    color: var(--c-text-light);
+  }
+
+  .menu-depth-badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.35rem;
+    background: var(--c-bg-subtle, var(--c-bg-alt));
+    color: var(--c-text-light);
+    border-radius: 999px;
+    flex-shrink: 0;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .menu-item-url {
+    color: var(--c-text-light);
+    font-size: 0.85rem;
+    min-width: 120px;
+  }
+</style>
