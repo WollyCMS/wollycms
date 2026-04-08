@@ -1,5 +1,6 @@
 <script lang="ts">
   import { ChevronRight } from 'lucide-svelte';
+  import { base } from '$app/paths';
 
   interface Crumb {
     label: string;
@@ -15,7 +16,7 @@
       <ChevronRight size={14} class="breadcrumb-sep" />
     {/if}
     {#if crumb.href && i < crumbs.length - 1}
-      <a href={crumb.href} class="breadcrumb-link">{crumb.label}</a>
+      <a href="{base}{crumb.href}" class="breadcrumb-link">{crumb.label}</a>
     {:else}
       <span class="breadcrumb-current">{crumb.label}</span>
     {/if}
