@@ -399,7 +399,8 @@
         if (!block) continue;
         try {
           if (block.is_shared) {
-            await api.put(`/pages/${pageId}/blocks/${pbId}`, { overrides: block.fields });
+            // Update the shared block itself so changes propagate to all pages
+            await api.put(`/blocks/${block.block_id}`, { fields: block.fields });
           } else {
             await api.put(`/blocks/${block.block_id}`, { fields: block.fields });
           }
