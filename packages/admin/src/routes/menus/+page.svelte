@@ -171,6 +171,19 @@
     return flat[index].depth > 0;
   }
 
+  /** Send only changed items to the API instead of the full list */
+  async function updateChangedItems(changed: Array<{ id: number; parentId: number | null; depth: number }>) {
+    if (!selectedMenu || changed.length === 0) return;
+    try {
+      const items = changed.map((c, i) => ({ ...c, position: i }));
+      await api.put(`/menus/${selectedMenu.id}/items-order`, { items });
+      loadMenu(selectedMenu.id);
+    } catch (err: any) {
+      error = err.message;
+      loadMenu(selectedMenu.id);
+    }
+  }
+
   function indentItem(flat: any[], index: number) {
     const item = flat[index];
     const origDepth = item.depth;
@@ -185,34 +198,29 @@
     }
     if (prevSiblingIdx < 0) return;
 
-    const mutated = flat.map(i => ({ ...i }));
-    mutated[index].parentId = mutated[prevSiblingIdx].id;
-    mutated[index].depth = origDepth + 1;
-    // Adjust descendants
-    for (let j = index + 1; j < mutated.length; j++) {
-      if (mutated[j].depth <= origDepth) break;
-      mutated[j].depth += 1;
+    const changed: Array<{ id: number; parentId: number | null; depth: number }> = [];
+    changed.push({ id: item.id, parentId: flat[prevSiblingIdx].id, depth: origDepth + 1 });
+    for (let j = index + 1; j < flat.length; j++) {
+      if (flat[j].depth <= origDepth) break;
+      changed.push({ id: flat[j].id, parentId: flat[j].parentId, depth: flat[j].depth + 1 });
     }
-    reorderMenuItems(mutated);
+    updateChangedItems(changed);
   }
 
   function outdentItem(flat: any[], index: number) {
     const item = flat[index];
     const origDepth = item.depth;
     if (origDepth === 0) return;
-    // Find current parent
     const parent = flat.find(i => i.id === item.parentId);
     if (!parent) return;
 
-    const mutated = flat.map(i => ({ ...i }));
-    mutated[index].parentId = parent.parentId ?? null;
-    mutated[index].depth = origDepth - 1;
-    // Adjust descendants
-    for (let j = index + 1; j < mutated.length; j++) {
-      if (mutated[j].depth <= origDepth) break;
-      mutated[j].depth -= 1;
+    const changed: Array<{ id: number; parentId: number | null; depth: number }> = [];
+    changed.push({ id: item.id, parentId: parent.parentId ?? null, depth: origDepth - 1 });
+    for (let j = index + 1; j < flat.length; j++) {
+      if (flat[j].depth <= origDepth) break;
+      changed.push({ id: flat[j].id, parentId: flat[j].parentId, depth: flat[j].depth - 1 });
     }
-    reorderMenuItems(mutated);
+    updateChangedItems(changed);
   }
 
   function editableParentOptions(): any[] {
