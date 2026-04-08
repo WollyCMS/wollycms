@@ -24,6 +24,7 @@ A block type is a schema — it defines what fields a block has:
   "name": "Accordion",
   "slug": "accordion",
   "icon": "chevrons-down",
+  "category": "Text",
   "description": "Expandable content sections with title/body pairs",
   "fields_schema": [
     {
@@ -201,27 +202,27 @@ function resolveBlock(pageBlock) {
 
 These are the block types included by default. Sites can add custom types.
 
-| Block Type | Slug | Purpose | Shipped |
-|---|---|---|---|
-| Hero | `hero` | Hero banner with heading, image, CTA, multiple styles | Yes |
-| Rich Text | `rich_text` | Formatted text content (WYSIWYG) | Yes |
-| Image | `image` | Single image with caption and link | Yes |
-| Video | `video` | Embedded or uploaded video | Yes |
-| Accordion | `accordion` | Expandable content sections | Yes |
-| CTA Button | `cta_button` | Call-to-action button with link | Yes |
-| Contact List | `contact_list` | List of contact entries | Yes |
-| Location | `location` | Address, map, directions | Yes |
-| Link List | `link_list` | List of links (sidebar nav, resources) | Yes |
-| Content Listing | `content_listing` | Dynamic query: show N pages of type X | Yes |
-| Gallery | `gallery` | Image gallery/grid | Planned |
-| Tabs | `tabs` | Tabbed content sections | Planned |
-| Card | `card` | Title + image + text + link | Planned |
-| Card Grid | `card_grid` | Grid of card items | Planned |
-| Embed | `embed` | External embed (YouTube, iframe, etc.) | Planned |
-| Code Block | `code_block` | Syntax-highlighted code | Planned |
-| Alert/Notice | `alert` | Highlighted notice or warning | Planned |
-| Divider | `divider` | Visual separator | Planned |
-| Spacer | `spacer` | Vertical spacing | Planned |
+| Block Type | Slug | Category | Purpose | Shipped |
+|---|---|---|---|---|
+| Hero | `hero` | Layout | Hero banner with heading, image, CTA, multiple styles | Yes |
+| Rich Text | `rich_text` | Text | Formatted text content (WYSIWYG) | Yes |
+| Image | `image` | Media | Single image with caption and link | Yes |
+| Video | `video` | Media | Embedded or uploaded video | Yes |
+| Accordion | `accordion` | Text | Expandable content sections | Yes |
+| CTA Button | `cta_button` | Navigation | Call-to-action button with link | Yes |
+| Contact List | `contact_list` | Data | List of contact entries | Yes |
+| Location | `location` | Data | Address, map, directions | Yes |
+| Link List | `link_list` | Navigation | List of links (sidebar nav, resources) | Yes |
+| Content Listing | `content_listing` | Data | Dynamic query: show N pages of type X | Yes |
+| Embed | `embed` | Media | External embed (YouTube, iframe, etc.) | Yes |
+| Gallery | `gallery` | — | Image gallery/grid | Planned |
+| Tabs | `tabs` | — | Tabbed content sections | Planned |
+| Card | `card` | — | Title + image + text + link | Planned |
+| Card Grid | `card_grid` | — | Grid of card items | Planned |
+| Code Block | `code_block` | — | Syntax-highlighted code | Planned |
+| Alert/Notice | `alert` | — | Highlighted notice or warning | Planned |
+| Divider | `divider` | — | Visual separator | Planned |
+| Spacer | `spacer` | — | Vertical spacing | Planned |
 
 ---
 

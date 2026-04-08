@@ -8,6 +8,7 @@ interface BlockTypeSeed {
   description: string;
   fieldsSchema: FieldDefinition[];
   icon: string;
+  category: string | null;
   settings: Record<string, unknown>;
 }
 
@@ -21,6 +22,7 @@ export async function seedBlockTypes(db: AppDatabase) {
         { name: 'body', label: 'Body', type: 'richtext', required: true },
       ],
       icon: 'type',
+      category: 'Text',
       settings: {},
     },
     {
@@ -47,6 +49,7 @@ export async function seedBlockTypes(db: AppDatabase) {
         },
       ],
       icon: 'list',
+      category: 'Text',
       settings: {},
     },
     {
@@ -71,6 +74,7 @@ export async function seedBlockTypes(db: AppDatabase) {
         },
       ],
       icon: 'mouse-pointer',
+      category: 'Navigation',
       settings: {},
     },
     {
@@ -93,6 +97,7 @@ export async function seedBlockTypes(db: AppDatabase) {
         },
       ],
       icon: 'users',
+      category: 'Data',
       settings: {},
     },
     {
@@ -110,6 +115,7 @@ export async function seedBlockTypes(db: AppDatabase) {
         { name: 'map_url', label: 'Map URL', type: 'url' },
       ],
       icon: 'map-pin',
+      category: 'Data',
       settings: {},
     },
     {
@@ -131,6 +137,7 @@ export async function seedBlockTypes(db: AppDatabase) {
         },
       ],
       icon: 'link',
+      category: 'Navigation',
       settings: {},
     },
     {
@@ -144,6 +151,7 @@ export async function seedBlockTypes(db: AppDatabase) {
         { name: 'link_url', label: 'Link URL', type: 'url' },
       ],
       icon: 'image',
+      category: 'Media',
       settings: {},
     },
     {
@@ -194,6 +202,7 @@ export async function seedBlockTypes(db: AppDatabase) {
         { name: 'view_all_url', label: 'View All URL', type: 'url' },
       ],
       icon: 'grid',
+      category: 'Data',
       settings: {},
     },
     {
@@ -235,6 +244,7 @@ export async function seedBlockTypes(db: AppDatabase) {
         },
       ],
       icon: 'image',
+      category: 'Layout',
       settings: {},
     },
     {
@@ -271,6 +281,7 @@ export async function seedBlockTypes(db: AppDatabase) {
         },
       ],
       icon: 'code',
+      category: 'Media',
       settings: {},
     },
     {
@@ -298,6 +309,7 @@ export async function seedBlockTypes(db: AppDatabase) {
         { name: 'loop', label: 'Loop', type: 'boolean', default: false },
       ],
       icon: 'video',
+      category: 'Media',
       settings: {},
     },
     {
@@ -335,6 +347,7 @@ export async function seedBlockTypes(db: AppDatabase) {
         },
       ],
       icon: 'calendar',
+      category: null,
       settings: {},
     },
   ];

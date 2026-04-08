@@ -187,6 +187,7 @@ export interface BlockTypeSchema {
   description: string | null;
   fieldsSchema: FieldDefinition[];
   icon: string | null;
+  category: string | null;
 }
 
 /** Schemas response */

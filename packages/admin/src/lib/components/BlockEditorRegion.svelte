@@ -416,25 +416,14 @@
     }
   }
 
-  const blockCategories: Record<string, string[]> = {
-    'Text': ['rich_text', 'accordion'],
-    'Media': ['image', 'video'],
-    'Navigation': ['link_list', 'cta_button'],
-    'Data': ['contact_list', 'location', 'content_listing'],
-    'Layout': ['hero'],
-  };
-
-  function getBlockCategory(slug: string): string {
-    for (const [cat, slugs] of Object.entries(blockCategories)) {
-      if (slugs.includes(slug)) return cat;
-    }
-    return 'Other';
+  function getBlockCategory(bt: any): string {
+    return bt.category || 'Other';
   }
 
   const groupedBlockTypes = $derived.by(() => {
     const groups: Record<string, any[]> = {};
     for (const bt of blockTypes) {
-      const cat = getBlockCategory(bt.slug);
+      const cat = getBlockCategory(bt);
       if (!groups[cat]) groups[cat] = [];
       groups[cat].push(bt);
     }

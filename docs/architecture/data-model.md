@@ -25,7 +25,8 @@ The data model has four layers:
 │ description  │     │ description  │
 │ fields_schema│     │ fields_schema│
 │ regions      │     │ icon         │
-│ settings     │     │ settings     │
+│ settings     │     │ category     │
+│              │     │ settings     │
 └──────┬───────┘     └──────┬───────┘
        │                     │
        │ type_id             │ type_id

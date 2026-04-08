@@ -18,6 +18,7 @@ export const blockTypes = sqliteTable('block_types', {
   description: text('description'),
   fieldsSchema: text('fields_schema', { mode: 'json' }).$type<FieldDefinition[]>(),
   icon: text('icon'),
+  category: text('category'),
   settings: text('settings', { mode: 'json' }).$type<Record<string, unknown>>(),
 });
 

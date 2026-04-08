@@ -21,5 +21,6 @@ export const blockTypes = pgTable('block_types', {
   description: text('description'),
   fieldsSchema: jsonb('fields_schema').$type<FieldDefinition[]>(),
   icon: text('icon'),
+  category: text('category'),
   settings: jsonb('settings').$type<Record<string, unknown>>(),
 });

@@ -7,7 +7,7 @@ WollyCMS lets you create any block type with any field schema. These recipes giv
 
 To use a recipe:
 1. Go to **Schema → Block Types → + New Block Type**
-2. Enter the name, slug, and description
+2. Enter the name, slug, description, and category (e.g. Text, Media, Navigation, Data, Layout)
 3. Paste the **Fields Schema JSON** below into the JSON editor
 4. Save the block type
 5. Copy the **Astro component** into your frontend project

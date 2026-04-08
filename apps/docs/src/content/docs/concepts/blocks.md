@@ -45,6 +45,7 @@ curl -X POST http://localhost:4321/api/admin/block-types \
     "name": "Hero",
     "slug": "hero",
     "description": "Full-width hero section with heading and background image",
+    "category": "Layout",
     "fieldsSchema": [
       { "name": "heading", "label": "Heading", "type": "text", "required": true },
       { "name": "description", "label": "Description", "type": "textarea" },

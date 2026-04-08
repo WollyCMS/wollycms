@@ -30,6 +30,7 @@ const blockTypeSchema = z.object({
   description: z.string().nullable().default(null),
   fieldsSchema: z.array(fieldDefSchema).default([]),
   icon: z.string().nullable().default(null),
+  category: z.string().nullable().default(null),
   settings: z.record(z.unknown()).nullable().default(null),
 });
 

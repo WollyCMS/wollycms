@@ -31,6 +31,7 @@ app.get('/', async (c) => {
         description: blockTypes.description,
         fieldsSchema: blockTypes.fieldsSchema,
         icon: blockTypes.icon,
+        category: blockTypes.category,
       })
       .from(blockTypes),
   ]);

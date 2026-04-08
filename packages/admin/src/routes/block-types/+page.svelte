@@ -7,7 +7,7 @@
   let error = $state('');
   let showCreate = $state(false);
   let editType = $state<any>(null);
-  let newType = $state({ name: '', slug: '', description: '', icon: '', fieldsSchema: '[]' });
+  let newType = $state({ name: '', slug: '', description: '', icon: '', category: '', fieldsSchema: '[]' });
 
   async function load() {
     try {
@@ -25,7 +25,7 @@
         fieldsSchema: JSON.parse(newType.fieldsSchema),
       });
       showCreate = false;
-      newType = { name: '', slug: '', description: '', icon: '', fieldsSchema: '[]' };
+      newType = { name: '', slug: '', description: '', icon: '', category: '', fieldsSchema: '[]' };
       load();
     } catch (err: any) { error = err.message; }
   }
@@ -39,7 +39,7 @@
     try {
       await api.put(`/block-types/${editType.id}`, {
         name: editType.name, slug: editType.slug, description: editType.description,
-        icon: editType.icon, fieldsSchema: JSON.parse(editType.fieldsSchema),
+        icon: editType.icon, category: editType.category || null, fieldsSchema: JSON.parse(editType.fieldsSchema),
       });
       editType = null;
       load();
@@ -62,12 +62,13 @@
 
 <div class="table-wrap">
   <table>
-    <thead><tr><th>Name</th><th>Slug</th><th>Icon</th><th>Fields</th><th></th></tr></thead>
+    <thead><tr><th>Name</th><th>Slug</th><th>Category</th><th>Icon</th><th>Fields</th><th></th></tr></thead>
     <tbody>
       {#each types as t}
         <tr>
           <td><strong>{t.name}</strong></td>
           <td style="color: var(--c-text-light);">{t.slug}</td>
+          <td>{t.category || 'Other'}</td>
           <td>{t.icon || '-'}</td>
           <td>{t.fieldsSchema?.length || 0}</td>
           <td style="text-align: right;">
@@ -94,6 +95,9 @@
         <div class="form-grid">
           <div class="form-group"><label>Description</label><input class="form-control" bind:value={item.description} /></div>
           <div class="form-group"><label>Icon</label><input class="form-control" bind:value={item.icon} /></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>Category</label><input class="form-control" bind:value={item.category} placeholder="e.g. Text, Media, Navigation, Data, Layout" /></div>
         </div>
         <div class="form-group">
           <label>Fields Schema (JSON)</label>

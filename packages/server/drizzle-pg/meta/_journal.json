@@ -50,6 +50,13 @@
       "when": 1775138647330,
       "tag": "0006_greedy_lady_vermin",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1775649206477,
+      "tag": "0007_burly_legion",
+      "breakpoints": true
     }
   ]
 }
