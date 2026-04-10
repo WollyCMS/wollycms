@@ -33,7 +33,7 @@
     blockTypes: any[];
     activeRegion: string;
     error: string;
-    onReload: () => void;
+    onReload: () => Promise<void>;
     onBlockExpand?: (pbId: string) => void;
     onBlockDirty?: () => void;
   } = $props();
@@ -305,7 +305,7 @@
         await api.put(`/pages/${pageId}/blocks-order`, { region: targetRegion, order });
       } catch (err: any) {
         error = err.message;
-        onReload();
+        await reloadPreservingEdits();
       }
     } else {
       // Cross-region move — collapse editors before DOM changes
@@ -329,10 +329,10 @@
         }
         justDroppedPbId = pbId;
         setTimeout(() => { justDroppedPbId = null; }, 1200);
-        onReload();
+        await reloadPreservingEdits();
       } catch (err: any) {
         error = err.message;
-        onReload();
+        await reloadPreservingEdits();
       }
     }
   }
@@ -341,13 +341,57 @@
     return dropTargetRegion === region && dropTargetIndex === index;
   }
 
+  // === Reload with dirty-edit preservation ===
+
+  /** Reload page data while preserving any unsaved block field edits */
+  async function reloadPreservingEdits() {
+    // Snapshot dirty block fields before reload overwrites pageData
+    const pendingEdits = new Map<number, Record<string, unknown>>();
+    for (const pbId of dirtyBlockPbIds) {
+      for (const r of regions) {
+        const regionBlocks = pageData?.regions?.[r.name] || [];
+        const block = regionBlocks.find((b: any) => b.pb_id === pbId);
+        if (block?.fields) {
+          pendingEdits.set(pbId, structuredClone(block.fields));
+          break;
+        }
+      }
+    }
+
+    await onReload();
+
+    // Restore dirty fields onto the fresh pageData
+    if (pendingEdits.size === 0) return;
+
+    let restoredCount = 0;
+    for (const [pbId, fields] of pendingEdits) {
+      for (const r of regions) {
+        const regionBlocks = pageData?.regions?.[r.name] || [];
+        const block = regionBlocks.find((b: any) => b.pb_id === pbId);
+        if (block) {
+          block.fields = fields;
+          dirtyBlockPbIds.add(pbId);
+          restoredCount++;
+          break;
+        }
+      }
+    }
+
+    if (restoredCount > 0) {
+      dirtyBlockPbIds = dirtyBlockPbIds; // trigger reactivity
+      for (let i = 0; i < restoredCount; i++) {
+        onBlockDirty?.();
+      }
+    }
+  }
+
   // === Block CRUD ===
 
   async function addBlock(blockTypeId: number) {
     try {
       await api.post(`/pages/${pageId}/blocks`, { blockTypeId, region: activeRegion, fields: {} });
       showAddBlock = false;
-      onReload();
+      await reloadPreservingEdits();
     } catch (err: any) { error = err.message; }
   }
 
@@ -355,13 +399,13 @@
     try {
       await api.post(`/pages/${pageId}/blocks`, { blockId, region: activeRegion, isShared: true });
       showAddBlock = false;
-      onReload();
+      await reloadPreservingEdits();
     } catch (err: any) { error = err.message; }
   }
 
   async function removeBlock(pbId: number) {
     if (!confirm('Remove this block from this region?')) return;
-    try { await api.del(`/pages/${pageId}/blocks/${pbId}`); onReload(); }
+    try { await api.del(`/pages/${pageId}/blocks/${pbId}`); await reloadPreservingEdits(); }
     catch (err: any) { error = err.message; }
   }
 
@@ -444,7 +488,7 @@
         fields: { ...block.fields },
       });
       toast.success('Block duplicated.');
-      onReload();
+      await reloadPreservingEdits();
     } catch (err: any) { toast.error(err.message); }
   }
 
@@ -453,7 +497,7 @@
       await api.put(`/pages/${pageId}/blocks/${pbId}`, { region: targetRegion });
       toast.success(`Block moved to ${targetRegion}.`);
       moveRegionBlock = null;
-      onReload();
+      await reloadPreservingEdits();
     } catch (err: any) { toast.error(err.message); }
   }
 
