@@ -1,6 +1,6 @@
 {
   "name": "@wollycms/server",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "type": "module",
   "engines": {
     "node": ">=20.0.0"
