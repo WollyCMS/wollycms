@@ -52,26 +52,26 @@
     "build:worker": "node ../../scripts/build-worker.mjs"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1004.0",
-    "@hono/node-server": "^1.13.0",
+    "@aws-sdk/client-s3": "^3.1029.0",
+    "@hono/node-server": "^1.19.14",
     "better-sqlite3": "^11.7.0",
-    "dotenv": "^17.3.1",
-    "drizzle-orm": "^0.38.0",
-    "graphql": "^16.13.1",
-    "hono": "^4.6.0",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.2",
+    "graphql": "^16.13.2",
+    "hono": "^4.12.12",
     "pg": "^8.20.0",
-    "satori": "^0.25.0",
-    "sharp": "^0.33.0",
+    "satori": "^0.26.0",
+    "sharp": "^0.34.5",
     "zod": "^3.24.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260307.1",
+    "@cloudflare/workers-types": "^4.20260413.1",
     "@types/better-sqlite3": "^7.6.0",
-    "@types/node": "^25.5.0",
-    "@types/pg": "^8.18.0",
-    "drizzle-kit": "^0.30.0",
+    "@types/node": "^25.6.0",
+    "@types/pg": "^8.20.0",
+    "drizzle-kit": "^0.31.10",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0",
-    "vitest": "^4.1.2"
+    "vitest": "^4.1.4"
   }
 }
