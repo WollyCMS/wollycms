@@ -1,0 +1,112 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [staging]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare SvelteKit types
+        run: npx --workspace=packages/admin svelte-kit sync
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build admin UI
+        run: npm run build --workspace=packages/admin
+
+      - name: Check admin CSP (issue #65 regression guard)
+        run: node scripts/check-admin-csp.mjs
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build admin UI
+        run: npm run build:admin
+
+      - name: Prepare admin assets for Workers
+        run: |
+          mkdir -p packages/admin/build-assets/admin
+          cp -r packages/admin/build/* packages/admin/build-assets/admin/
+          cp packages/admin/build/index.html packages/admin/build-assets/index.html
+
+      - name: Build worker
+        run: npm run build:worker
+
+      - name: Generate wrangler.toml
+        run: |
+          cat > wrangler.toml <<'TOML'
+          name = "${{ vars.WORKER_NAME }}"
+          main = "packages/server/dist-worker/worker.js"
+          compatibility_date = "2024-12-01"
+          compatibility_flags = ["nodejs_compat"]
+
+          [assets]
+          directory = "packages/admin/build-assets"
+          not_found_handling = "single-page-application"
+          run_worker_first = ["/", "/sitemap.xml", "/api/*", "/media/*"]
+
+          [[d1_databases]]
+          binding = "DB"
+          database_name = "${{ vars.D1_DATABASE_NAME }}"
+          database_id = "${{ secrets.D1_DATABASE_ID }}"
+          migrations_dir = "packages/server/drizzle"
+
+          [[r2_buckets]]
+          binding = "R2_BUCKET"
+          bucket_name = "${{ vars.R2_BUCKET_NAME }}"
+
+          [vars]
+          NODE_ENV = "production"
+          DATABASE_URL = "d1:DB"
+          MEDIA_STORAGE = "r2"
+          CORS_ORIGINS = "${{ vars.CORS_ORIGINS }}"
+          SITE_URL = "${{ vars.SITE_URL }}"
+          GOOGLE_CLIENT_ID = "${{ secrets.GOOGLE_CLIENT_ID }}"
+          GOOGLE_CLIENT_SECRET = "${{ secrets.GOOGLE_CLIENT_SECRET }}"
+          GOOGLE_REDIRECT_URI = "${{ vars.GOOGLE_REDIRECT_URI }}"
+          GOOGLE_AUTO_CREATE = "${{ vars.GOOGLE_AUTO_CREATE }}"
+          TOML
+
+      - name: Apply D1 migrations
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.71.0'
+          command: d1 migrations apply ${{ vars.D1_DATABASE_NAME }} --remote
+
+      - name: Deploy to Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.71.0'
+          command: deploy
