@@ -1,14 +1,11 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
-import cloudflare from '@astrojs/cloudflare';
 
 const gaId = process.env.GA_MEASUREMENT_ID;
 
 export default defineConfig({
 	site: 'https://docs.wollycms.com',
-	output: 'server',
-	adapter: cloudflare(),
 	integrations: [
 		starlight({
 			title: 'WollyCMS Docs',
@@ -93,7 +90,7 @@ export default defineConfig({
 				},
 				{
 					label: 'API Reference',
-					autogenerate: { directory: 'api' },
+					items: [{ autogenerate: { directory: 'api' } }],
 				},
 			],
 		}),
