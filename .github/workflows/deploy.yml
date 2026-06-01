@@ -118,7 +118,7 @@ jobs:
       # (d1 export locks the database and blocks migrations on large DBs)
 
       - name: Apply D1 migrations
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -126,7 +126,7 @@ jobs:
           command: d1 migrations apply ${{ vars.D1_DATABASE_NAME }} --remote
 
       - name: Deploy to Cloudflare
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
