@@ -102,6 +102,9 @@ jobs:
           binding = "R2_BUCKET"
           bucket_name = "${{ vars.R2_BUCKET_NAME }}"
 
+          [triggers]
+          crons = ["* * * * *"]
+
           [vars]
           NODE_ENV = "production"
           DATABASE_URL = "d1:DB"

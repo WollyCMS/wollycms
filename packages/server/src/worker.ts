@@ -18,30 +18,30 @@ interface WorkerEnv {
 
 let initialized = false;
 
+async function ensureInitialized(workerEnv: WorkerEnv) {
+  if (initialized) return;
+
+  const { initEnvFromBindings } = await import('./env.js');
+  initEnvFromBindings(workerEnv);
+
+  if (workerEnv.DB) {
+    const { initD1 } = await import('./db/index.js');
+    await initD1(workerEnv.DB);
+  }
+
+  if (workerEnv.R2_BUCKET) {
+    const { initR2Storage } = await import('./media/storage.js');
+    initR2Storage(workerEnv.R2_BUCKET, workerEnv.R2_PUBLIC_URL);
+  }
+
+  initialized = true;
+}
+
 export default {
   async fetch(request: Request, workerEnv: WorkerEnv, ctx: any): Promise<Response> {
     try {
-      if (!initialized) {
-        // Initialize env FIRST from Workers bindings, before any other module loads
-        const { initEnvFromBindings } = await import('./env.js');
-        initEnvFromBindings(workerEnv);
+      await ensureInitialized(workerEnv);
 
-        // Now initialize D1 (env.DATABASE_URL is set, so getDialect() returns 'd1')
-        if (workerEnv.DB) {
-          const { initD1 } = await import('./db/index.js');
-          await initD1(workerEnv.DB);
-        }
-
-        // Initialize R2 storage
-        if (workerEnv.R2_BUCKET) {
-          const { initR2Storage } = await import('./media/storage.js');
-          initR2Storage(workerEnv.R2_BUCKET, workerEnv.R2_PUBLIC_URL);
-        }
-
-        initialized = true;
-      }
-
-      // All requests reaching the Worker are API routes (run_worker_first = ["/api/*"])
       const appModule = await import('./app.js');
       return appModule.default.fetch(request, workerEnv, ctx);
     } catch (err: any) {
@@ -50,5 +50,23 @@ export default {
         { status: 500, headers: { 'Content-Type': 'application/json' } }
       );
     }
+  },
+
+  async scheduled(event: ScheduledEvent, workerEnv: WorkerEnv, ctx: any): Promise<void> {
+    await ensureInitialized(workerEnv);
+
+    const { runScheduledPublishing } = await import('./scheduler.js');
+    const { runScheduledUnpublishing } = await import('./scheduler.js');
+
+    ctx.waitUntil(
+      Promise.all([
+        runScheduledPublishing(),
+        runScheduledUnpublishing(),
+      ]).then(([published, unpublished]) => {
+        if (published > 0 || unpublished > 0) {
+          console.log(`[cron] Published ${published}, unpublished ${unpublished}`);
+        }
+      })
+    );
   },
 };

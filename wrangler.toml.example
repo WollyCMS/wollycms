@@ -32,6 +32,12 @@ database_id = "<your-d1-database-id>"
 binding = "R2_BUCKET"
 bucket_name = "wollycms-media"
 
+# Cron trigger — runs the scheduled publish/unpublish check every minute.
+# Without this, pages with a scheduled publish date will stay in draft.
+# (Node.js deployments don't need this — the scheduler runs automatically.)
+[triggers]
+crons = ["* * * * *"]
+
 # Environment variables (non-secret)
 [vars]
 NODE_ENV = "production"

@@ -397,6 +397,41 @@ tar -czf media-backup.tar.gz uploads/
 
 ---
 
+## Scheduled Publishing
+
+WollyCMS lets editors schedule pages to publish or unpublish at a future
+date and time. A background process checks every minute for pages whose
+scheduled time has arrived, then automatically changes their status.
+
+How this works depends on your deployment:
+
+### Node.js (Docker, VPS, PM2)
+
+No extra configuration needed. The scheduler starts automatically when the
+server boots (`startScheduler()` in `src/index.ts`). It uses `setInterval`
+to check every 60 seconds.
+
+### Cloudflare Workers
+
+Workers are request-driven and cannot run persistent background intervals.
+Instead, WollyCMS uses a [Cron Trigger](https://developers.cloudflare.com/workers/configuration/cron-triggers/)
+to invoke a `scheduled` event handler every minute.
+
+Add this to your `wrangler.toml` (already included in `wrangler.toml.example`):
+
+```toml
+[triggers]
+crons = ["* * * * *"]
+```
+
+**Without this configuration, scheduled publishing will not work.** Pages
+will remain in draft status even after their scheduled time passes.
+
+If you don't need scheduled publishing, you can safely omit the `[triggers]`
+section — the rest of WollyCMS works normally without it.
+
+---
+
 ## Health Check
 
 ```bash
