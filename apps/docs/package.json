@@ -12,8 +12,8 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^13.1.1",
-    "@astrojs/starlight": "^0.38.1",
+    "@astrojs/cloudflare": "^13.6.1",
+    "@astrojs/starlight": "^0.39.3",
     "astro": "^6.0.4",
     "sharp": "^0.34.2",
     "vite": "^7.3.1",
