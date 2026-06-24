@@ -449,6 +449,7 @@
 </script>
 
 <div class="rte-wrap">
+  <div class="rte-toolbar-group">
   <div class="rte-toolbar">
     {#if showSource}
       <button type="button" class="rte-btn active" onclick={toggleSource} title="Visual editor">{@html ico.source}</button>
@@ -549,6 +550,7 @@
       {/each}
     </div>
   {/if}
+  </div>
 
   <div class="rte-editor-wrap">
     {#if showSource}
@@ -664,7 +666,8 @@
 
 <style>
   .rte-wrap { border: 1px solid var(--c-border, #e2e8f0); border-radius: var(--radius, 6px); background: var(--c-surface, #fff); }
-  .rte-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; padding: 6px 8px; background: var(--c-bg, #f7f8fa); border-bottom: 1px solid var(--c-border, #e2e8f0); position: sticky; top: 0; z-index: 10; border-radius: var(--radius, 6px) var(--radius, 6px) 0 0; }
+  .rte-toolbar-group { position: sticky; top: 0; z-index: 10; }
+  .rte-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; padding: 6px 8px; background: var(--c-bg, #f7f8fa); border-bottom: 1px solid var(--c-border, #e2e8f0); border-radius: var(--radius, 6px) var(--radius, 6px) 0 0; }
   .rte-format-select { height: 28px; padding: 0 4px; font-size: 0.75rem; font-weight: 600; font-family: var(--font, system-ui); color: var(--c-text, #2d3748); background: var(--c-surface, #fff); border: 1px solid var(--c-border, #e2e8f0); border-radius: 4px; cursor: pointer; outline: none; }
   .rte-format-select:focus { border-color: var(--c-accent, #3182ce); }
   .rte-source-label { font-size: 0.75rem; color: var(--c-text-light, #64748b); margin-left: 0.5rem; }
