@@ -12,7 +12,6 @@ on:
           - all
           - production
           - catalog
-          - shdcms
           - wollycms-site
         default: all
 
@@ -51,7 +50,7 @@ jobs:
       matrix:
         environment: ${{ fromJSON(
           (github.event_name == 'push' || inputs.environment == 'all')
-            && '["production","catalog","shdcms","wollycms-site"]'
+            && '["production","catalog","wollycms-site"]'
             || format('["{0}"]', inputs.environment)
           ) }}
     environment: ${{ matrix.environment }}
