@@ -142,6 +142,21 @@ const { heading, items, default_open } = Astro.props.fields;
 </div>
 ```
 
+### Content Delivery Normalization
+
+Draft blocks may be saved before every field is complete. The content APIs keep
+that editing workflow safe for consumers by normalizing schema-defined fields
+when pages are delivered:
+
+- Missing or malformed `repeater` fields are returned as empty arrays.
+- Explicit field defaults are applied when a value is absent.
+- Nested repeater items are normalized recursively.
+- Stored block content is not mutated by normalization.
+
+Renderers should still treat external CMS data defensively, but they can rely on
+schema-defined collections having an iterable shape in REST, Preview, batch, and
+GraphQL page responses.
+
 ---
 
 ## Reusable vs Inline Blocks

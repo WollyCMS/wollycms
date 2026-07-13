@@ -18,6 +18,7 @@ import {
 } from '../../db/schema/index.js';
 import { loadConfig } from '../admin/config.js';
 import { isProduction } from '../../env.js';
+import { normalizeContentFields } from '../../content-fields.js';
 
 const app = new Hono();
 
@@ -179,6 +180,7 @@ const root = {
     const rows = await db.select({
       id: pages.id, typeSlug: contentTypes.slug, title: pages.title, slug: pages.slug,
       status: pages.status, locale: pages.locale, fields: pages.fields,
+      pageFieldsSchema: contentTypes.fieldsSchema,
       createdAt: pages.createdAt, updatedAt: pages.updatedAt, publishedAt: pages.publishedAt,
     }).from(pages)
       .innerJoin(contentTypes, eq(pages.typeId, contentTypes.id))
@@ -189,7 +191,8 @@ const root = {
     return {
       data: rows.map((r: typeof rows[0]) => ({
         id: r.id, type: r.typeSlug, title: r.title, slug: r.slug,
-        status: r.status, locale: r.locale, fields: r.fields,
+        status: r.status, locale: r.locale,
+        fields: normalizeContentFields(r.fields, r.pageFieldsSchema),
         meta: { createdAt: r.createdAt, updatedAt: r.updatedAt, publishedAt: r.publishedAt },
       })),
       meta: { total, limit, offset },
@@ -206,6 +209,7 @@ const root = {
       id: pages.id, typeSlug: contentTypes.slug, title: pages.title, slug: pages.slug,
       status: pages.status, locale: pages.locale, translationGroupId: pages.translationGroupId,
       fields: pages.fields, metaTitle: pages.metaTitle, metaDescription: pages.metaDescription,
+      pageFieldsSchema: contentTypes.fieldsSchema,
       ogImage: pages.ogImage, canonicalUrl: pages.canonicalUrl, robots: pages.robots,
       createdAt: pages.createdAt, updatedAt: pages.updatedAt, publishedAt: pages.publishedAt,
     }).from(pages)
@@ -223,6 +227,7 @@ const root = {
       region: pageBlocks.region, position: pageBlocks.position,
       isShared: pageBlocks.isShared, overrides: pageBlocks.overrides,
       blockId: blocks.id, blockFields: blocks.fields, blockTypeSlug: blockTypes.slug,
+      blockFieldsSchema: blockTypes.fieldsSchema,
     }).from(pageBlocks)
       .innerJoin(blocks, eq(pageBlocks.blockId, blocks.id))
       .innerJoin(blockTypes, eq(blocks.typeId, blockTypes.id))
@@ -234,6 +239,7 @@ const root = {
       if (!regions[pb.region]) regions[pb.region] = [];
       let resolvedFields = pb.blockFields || {};
       if (pb.isShared && pb.overrides) resolvedFields = { ...resolvedFields, ...pb.overrides };
+      resolvedFields = normalizeContentFields(resolvedFields, pb.blockFieldsSchema);
       regions[pb.region].push({ block_type: pb.blockTypeSlug, fields: resolvedFields });
     }
 
@@ -252,7 +258,8 @@ const root = {
     return {
       id: row.id, type: row.typeSlug, title: row.title, slug: row.slug,
       status: row.status, locale: row.locale, translationGroupId: row.translationGroupId,
-      translations: translationsList, fields: row.fields,
+      translations: translationsList,
+      fields: normalizeContentFields(row.fields, row.pageFieldsSchema),
       seo: {
         metaTitle: row.metaTitle, metaDescription: row.metaDescription,
         ogImage: row.ogImage, canonicalUrl: row.canonicalUrl, robots: row.robots,

@@ -23,6 +23,17 @@ function get(path: string) {
   return app.request(path, { method: 'GET' });
 }
 
+function adminJson(path: string, method: string, data: unknown) {
+  return app.request(`/api/admin${path}`, {
+    method,
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+}
+
 describe('Health Check', () => {
   it('GET /api/health returns ok', async () => {
     const res = await get('/api/health');
@@ -112,6 +123,31 @@ describe('GET /api/content/pages/:slug', () => {
     const blockTypes = contentBlocks.map((b: any) => b.block_type);
     expect(blockTypes).toContain('rich_text');
     expect(blockTypes).toContain('accordion');
+  });
+
+  it('normalizes missing repeater fields before rendering', async () => {
+    const createRes = await adminJson('/pages', 'POST', {
+      title: 'Incomplete Repeater Test',
+      slug: 'incomplete-repeater-test',
+      typeId: 1,
+      status: 'published',
+    });
+    expect(createRes.status).toBe(201);
+    const pageId = (await createRes.json()).data.id;
+
+    const blockRes = await adminJson(`/pages/${pageId}/blocks`, 'POST', {
+      blockTypeId: 2,
+      region: 'content',
+      fields: {},
+    });
+    expect(blockRes.status).toBe(201);
+
+    const res = await get('/api/content/pages/incomplete-repeater-test');
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    const accordion = body.data.regions.content.find((block: any) => block.block_type === 'accordion');
+    expect(accordion.fields.items).toEqual([]);
+    expect(accordion.fields.default_open).toBe(false);
   });
 });
 

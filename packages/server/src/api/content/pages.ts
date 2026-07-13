@@ -13,6 +13,7 @@ import {
 } from '../../db/schema/index.js';
 import { cacheGet, cacheSet } from '../../cache.js';
 import { loadConfig } from '../admin/config.js';
+import { normalizeContentFields } from '../../content-fields.js';
 
 const app = new Hono();
 
@@ -104,6 +105,7 @@ app.get('/', async (c) => {
       typeId: pages.typeId,
       typeSlug: contentTypes.slug,
       typeName: contentTypes.name,
+      pageFieldsSchema: contentTypes.fieldsSchema,
       title: pages.title,
       slug: pages.slug,
       status: pages.status,
@@ -155,7 +157,7 @@ app.get('/', async (c) => {
     slug: row.slug,
     status: row.status,
     locale: row.locale,
-    fields: row.fields,
+    fields: normalizeContentFields(row.fields, row.pageFieldsSchema),
     terms: termsMap[row.id] || [],
     meta: {
       created_at: row.createdAt,
@@ -188,6 +190,7 @@ app.get('/:slug{.+}', async (c) => {
       id: pages.id,
       typeId: pages.typeId,
       typeSlug: contentTypes.slug,
+      pageFieldsSchema: contentTypes.fieldsSchema,
       title: pages.title,
       slug: pages.slug,
       status: pages.status,
@@ -231,6 +234,7 @@ app.get('/:slug{.+}', async (c) => {
       blockFields: blocks.fields,
       blockTitle: blocks.title,
       blockTypeSlug: blockTypes.slug,
+      blockFieldsSchema: blockTypes.fieldsSchema,
     })
     .from(pageBlocks)
     .innerJoin(blocks, eq(pageBlocks.blockId, blocks.id))
@@ -252,6 +256,7 @@ app.get('/:slug{.+}', async (c) => {
     if (pb.isShared && pb.overrides) {
       resolvedFields = { ...resolvedFields, ...pb.overrides };
     }
+    resolvedFields = normalizeContentFields(resolvedFields, pb.blockFieldsSchema);
 
     const blockEntry: Record<string, unknown> = {
       id: `pb_${pb.pbId}`,
@@ -305,7 +310,7 @@ app.get('/:slug{.+}', async (c) => {
     locale: page.locale,
     translationGroupId: page.translationGroupId,
     translations,
-    fields: page.fields,
+    fields: normalizeContentFields(page.fields, page.pageFieldsSchema),
     terms: termRows.map((tr: typeof termRows[0]) => ({ taxonomy: tr.taxonomySlug, term: tr.termSlug, weight: tr.weight })),
     seo: {
       meta_title: page.metaTitle,

@@ -8,6 +8,7 @@ import { env } from '../../env.js';
 import {
   pages, contentTypes, blocks, blockTypes, pageBlocks,
 } from '../../db/schema/index.js';
+import { normalizeContentFields } from '../../content-fields.js';
 
 /**
  * Preview auth middleware: accepts JWT from Authorization header
@@ -58,6 +59,7 @@ app.get('/pages/:slug{.+}', async (c) => {
     .select({
       id: pages.id,
       typeSlug: contentTypes.slug,
+      pageFieldsSchema: contentTypes.fieldsSchema,
       title: pages.title,
       slug: pages.slug,
       status: pages.status,
@@ -88,6 +90,7 @@ app.get('/pages/:slug{.+}', async (c) => {
       blockFields: blocks.fields,
       blockTitle: blocks.title,
       blockTypeSlug: blockTypes.slug,
+      blockFieldsSchema: blockTypes.fieldsSchema,
     })
     .from(pageBlocks)
     .innerJoin(blocks, eq(pageBlocks.blockId, blocks.id))
@@ -102,6 +105,7 @@ app.get('/pages/:slug{.+}', async (c) => {
     if (pb.isShared && pb.overrides) {
       resolvedFields = { ...resolvedFields, ...pb.overrides };
     }
+    resolvedFields = normalizeContentFields(resolvedFields, pb.blockFieldsSchema);
     const blockEntry: Record<string, unknown> = {
       id: `pb_${pb.pbId}`,
       block_type: pb.blockTypeSlug,
@@ -121,7 +125,7 @@ app.get('/pages/:slug{.+}', async (c) => {
       title: page.title,
       slug: page.slug,
       status: page.status,
-      fields: page.fields,
+      fields: normalizeContentFields(page.fields, page.pageFieldsSchema),
       regions,
       meta: {
         created_at: page.createdAt,

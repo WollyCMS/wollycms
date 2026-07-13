@@ -6,6 +6,8 @@ import {
   pages, contentTypes, blocks, blockTypes, pageBlocks,
   menus, menuItems,
 } from '../../db/schema/index.js';
+import type { FieldDefinition } from '../../db/schema/content-types.js';
+import { normalizeContentFields } from '../../content-fields.js';
 
 const app = new Hono();
 
@@ -36,6 +38,7 @@ app.post('/', async (c) => {
       .select({
         id: pages.id,
         typeSlug: contentTypes.slug,
+        pageFieldsSchema: contentTypes.fieldsSchema,
         title: pages.title,
         slug: pages.slug,
         status: pages.status,
@@ -62,6 +65,7 @@ app.post('/', async (c) => {
       blockId: number;
       blockFields: Record<string, unknown> | null;
       blockTypeSlug: string;
+      blockFieldsSchema: FieldDefinition[] | null;
     }>>();
 
     if (pageIds.length > 0) {
@@ -76,6 +80,7 @@ app.post('/', async (c) => {
           blockId: blocks.id,
           blockFields: blocks.fields,
           blockTypeSlug: blockTypes.slug,
+          blockFieldsSchema: blockTypes.fieldsSchema,
         })
         .from(pageBlocks)
         .innerJoin(blocks, eq(pageBlocks.blockId, blocks.id))
@@ -99,6 +104,7 @@ app.post('/', async (c) => {
         if (!regions[pb.region]) regions[pb.region] = [];
         let fields = pb.blockFields || {};
         if (pb.isShared && pb.overrides) fields = { ...fields, ...pb.overrides };
+        fields = normalizeContentFields(fields, pb.blockFieldsSchema);
         regions[pb.region].push({
           id: `pb_${pb.pbId}`,
           block_type: pb.blockTypeSlug,
@@ -113,7 +119,7 @@ app.post('/', async (c) => {
         title: page.title,
         slug: page.slug,
         status: page.status,
-        fields: page.fields,
+        fields: normalizeContentFields(page.fields, page.pageFieldsSchema),
         regions,
         meta: {
           created_at: page.createdAt,
