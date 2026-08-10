@@ -9,9 +9,9 @@
     "preview": "astro preview"
   },
   "dependencies": {
-    "@astrojs/node": "^11.0.3",
+    "@astrojs/node": "^11.1.0",
     "@wollycms/astro": "*",
-    "astro": "^7.1.6"
+    "astro": "^7.2.0"
   },
   "devDependencies": {
     "esbuild": "^0.28.1"
