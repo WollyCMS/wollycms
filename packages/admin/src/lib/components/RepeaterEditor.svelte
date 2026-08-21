@@ -119,7 +119,7 @@
               <input type="date" class="form-control" value={item[sf.name] || ''}
                 oninput={(e) => updateSubField(i, sf.name, (e.target as HTMLInputElement).value)} />
             {:else if sf.type === 'url'}
-              <input type="url" class="form-control" value={item[sf.name] || ''} placeholder="https://..."
+              <input type="text" inputmode="url" autocomplete="url" class="form-control" value={item[sf.name] || ''} placeholder="https://..., /page, or #section"
                 oninput={(e) => updateSubField(i, sf.name, (e.target as HTMLInputElement).value)} />
             {:else if sf.type === 'email'}
               <input type="email" class="form-control" value={item[sf.name] || ''} placeholder="email@example.com"

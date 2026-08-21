@@ -14,6 +14,7 @@
   import { TextStyle, Color } from '@tiptap/extension-text-style';
   import MediaPicker from './MediaPicker.svelte';
   import { CustomImage } from '$lib/editor/customImage.js';
+  import { HeadingAnchor, normalizeHeadingAnchorId } from '$lib/editor/headingAnchor.js';
 
   let { content, onUpdate }: { content: any; onUpdate: (json: any) => void } = $props();
 
@@ -74,6 +75,7 @@
       subscript: false, superscript: false,
       bulletList: false, orderedList: false, blockquote: false, link: false,
       alignLeft: true, alignCenter: false, alignRight: false,
+      textColor: '', isHeading: false, headingAnchorId: '',
       blockFormat: 'paragraph' as string,
     };
     return {
@@ -91,6 +93,8 @@
       alignCenter: editor.isActive({ textAlign: 'center' }),
       alignRight: editor.isActive({ textAlign: 'right' }),
       textColor: editor.getAttributes('textStyle').color || '',
+      isHeading: editor.isActive('heading'),
+      headingAnchorId: editor.isActive('heading') ? editor.getAttributes('heading').id || '' : '',
       blockFormat:
         editor.isActive('heading', { level: 2 }) ? 'h2'
         : editor.isActive('heading', { level: 3 }) ? 'h3'
@@ -186,6 +190,7 @@
         Subscript,
         Superscript,
         TextAlign.configure({ types: ['heading', 'paragraph'] }),
+        HeadingAnchor,
         Link.configure({ openOnClick: false, enableClickSelection: true }),
         CustomImage,
         Table.configure({ resizable: false }),
@@ -409,6 +414,23 @@
     const caption = prompt('Image caption:', editor.getAttributes('image').caption || '');
     if (caption !== null) editor.chain().focus().updateAttributes('image', { caption }).run();
   }
+
+  function selectedHeadingText(): string {
+    if (!editor || !editor.isActive('heading')) return '';
+    return editor.state.selection.$from.parent.textContent;
+  }
+
+  function setHeadingAnchor(value: string) {
+    if (!editor || !editor.isActive('heading')) return;
+    const id = normalizeHeadingAnchorId(value);
+    editor.chain().focus().updateAttributes('heading', { id: id || null }).run();
+    onUpdate(editor.getJSON());
+    hasUserEdit = false;
+  }
+
+  function generateHeadingAnchor() {
+    setHeadingAnchor(selectedHeadingText());
+  }
 </script>
 
 <div class="rte-wrap">
@@ -507,6 +529,35 @@
     {/if}
   {/if}
 
+  {#if active.isHeading && !showSource}
+    <div class="rte-anchor-toolbar">
+      <label class="rte-anchor-label">
+        <span>Heading anchor:</span>
+        <span aria-hidden="true">#</span>
+        <input
+          type="text"
+          class="rte-anchor-input"
+          value={active.headingAnchorId}
+          placeholder="section-name"
+          pattern="[a-z][a-z0-9-]*"
+          maxlength="80"
+          onchange={(e) => setHeadingAnchor((e.target as HTMLInputElement).value)}
+        />
+      </label>
+      <button type="button" class="rte-btn-sm" onclick={generateHeadingAnchor} disabled={!selectedHeadingText()}>
+        Use heading text
+      </button>
+      {#if active.headingAnchorId}
+        <button type="button" class="rte-btn-sm rte-btn-danger" onclick={() => setHeadingAnchor('')}>
+          Remove
+        </button>
+      {/if}
+      <span class="rte-anchor-hint">
+        Link here with #{active.headingAnchorId || 'section-name'}
+      </span>
+    </div>
+  {/if}
+
   {#if headingWarnings.length > 0 && !showSource}
     <div class="rte-heading-warn" role="status">
       {#each headingWarnings as warn}
@@ -593,7 +644,7 @@
       {#if linkTab === 'url'}
         <div class="link-form">
           <label class="link-label" for="link-url-input">URL</label>
-          <input id="link-url-input" type="text" class="link-input" bind:value={linkUrl} placeholder="https://example.com or /page-slug" />
+          <input id="link-url-input" type="text" class="link-input" bind:value={linkUrl} placeholder="https://example.com, /page-slug, or #section-name" />
           <label class="link-label link-label-spaced" for="link-text-input">Display Text</label>
           <input id="link-text-input" type="text" class="link-input" bind:value={linkText} placeholder="Link text (uses URL if empty)" />
           <label class="link-checkbox-label">
@@ -651,6 +702,12 @@
   .rte-image-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 3px; padding: 4px 8px; background: color-mix(in srgb, var(--c-success), transparent 90%); border-bottom: 1px solid color-mix(in srgb, var(--c-success), transparent 60%); }
   .rte-image-label { font-size: 0.7rem; font-weight: 600; color: var(--c-success); margin-right: 2px; margin-left: 2px; }
   .rte-image-caption-bar { padding: 4px 10px; background: color-mix(in srgb, var(--c-success), transparent 90%); border-bottom: 1px solid color-mix(in srgb, var(--c-success), transparent 60%); font-size: 0.72rem; color: var(--c-success); }
+
+  .rte-anchor-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; padding: 5px 8px; background: color-mix(in srgb, var(--c-accent), transparent 92%); border-bottom: 1px solid color-mix(in srgb, var(--c-accent), transparent 70%); }
+  .rte-anchor-label { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.7rem; font-weight: 600; color: var(--c-accent); }
+  .rte-anchor-input { width: 13rem; max-width: 45vw; height: 24px; padding: 0 6px; border: 1px solid var(--c-border); border-radius: 3px; font: 0.72rem var(--font, system-ui); color: var(--c-text); background: var(--c-surface); }
+  .rte-anchor-input:focus { outline: none; border-color: var(--c-accent); box-shadow: 0 0 0 2px var(--c-focus-ring); }
+  .rte-anchor-hint { font-size: 0.68rem; color: var(--c-text-light, #64748b); }
 
   .rte-btn-sm { display: inline-flex; align-items: center; justify-content: center; height: 24px; padding: 0 6px; font-size: 0.68rem; font-weight: 500; font-family: var(--font, system-ui); color: var(--c-text, #2d3748); background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 3px; cursor: pointer; transition: background 0.12s; }
   .rte-btn-sm:hover { background: var(--c-bg-subtle); }

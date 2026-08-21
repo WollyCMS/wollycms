@@ -337,6 +337,24 @@ import RichText from '@wollycms/astro/components/RichText.astro';
 <RichText content={block.fields.body} class="prose" />
 ```
 
+Headings can include an editor-managed fragment ID. The renderer emits a
+programmatically focusable target, so links such as `#student-stories` can move
+users directly to that heading without adding the heading to the normal Tab
+sequence.
+
+The component uses `--wolly-anchor-offset` for anchored-heading scroll margin.
+Sites with sticky headers should set it to at least the header height:
+
+```css
+:root {
+  --wolly-anchor-offset: 7rem;
+}
+```
+
+WollyCMS intentionally uses native fragment navigation and does not force
+smooth scrolling. If a site enables smooth scrolling, it should disable that
+motion when `prefers-reduced-motion: reduce` is active.
+
 ---
 
 ## Type Generation

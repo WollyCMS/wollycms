@@ -61,7 +61,7 @@ Without `baseUrl`, inline images will return 404s on the frontend because `/api/
 | Node type | HTML output |
 |---|---|
 | `paragraph` | `<p>` |
-| `heading` | `<h2>` – `<h6>` (based on `level` attribute) |
+| `heading` | `<h2>` – `<h6>` with an optional fragment `id` |
 | `bulletList` | `<ul>` |
 | `orderedList` | `<ol>` |
 | `listItem` | `<li>` |
@@ -86,6 +86,29 @@ Inline formatting is stored as marks on text nodes:
 | `link` | `<a href="...">` (supports `class` and `rel` attributes) |
 | `subscript` | `<sub>` |
 | `superscript` | `<sup>` |
+
+## Heading anchors
+
+Editors can assign an anchor to a heading and link to it with a same-page URL
+such as `#student-stories`. The built-in renderer outputs a valid anchor as a
+programmatically focusable heading:
+
+```html
+<h2 id="student-stories" tabindex="-1">Student Stories</h2>
+```
+
+The `RichText` component supplies a visible focus indicator and uses the
+`--wolly-anchor-offset` custom property for sticky-header clearance:
+
+```css
+:root {
+  --wolly-anchor-offset: 7rem;
+}
+```
+
+See [Heading Anchors](/concepts/heading-anchors/) for the editor workflow and
+accessibility guidance. Custom rich-text renderers must preserve valid heading
+IDs and provide equivalent focus and scroll-offset behavior.
 
 ## Link attributes
 

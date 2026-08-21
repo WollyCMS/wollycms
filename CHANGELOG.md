@@ -6,6 +6,23 @@ WollyCMS is pre-1.0. The API surface may change between releases.
 
 ## Unreleased
 
+### Added
+- Keyboard reordering of page blocks: focus a block's drag handle and press the up or
+  down arrow key to move it within its region. Moves are announced via an ARIA live
+  region, addressing a WCAG 2.1.1 gap where the handle was focusable but inert.
+
+### Fixed
+- Block drag-and-drop in the page editor no longer jitters. The insertion indicator kept
+  its own layout geometry in sync with its hover state, so activating it reflowed the
+  list, moved the hovered element out from under the pointer, and cancelled the hover —
+  a loop that made the page appear to jump. The indicator is now layout-neutral.
+- The block drop indicator no longer flickers or disappears between blocks. Drop
+  hit-testing moved from 4px gap strips onto the region itself, with the insertion point
+  derived from the pointer's position over the block cards, so every pixel of a region is
+  a valid drop target and the indicator tracks the pointer continuously.
+- Dragging a block now shows the block card as the drag image instead of the drag handle
+  glyph.
+
 ## 0.3.0 - 2026-07-31
 
 ### Added

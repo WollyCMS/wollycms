@@ -38,6 +38,35 @@ Links must have visible text content for screen readers to announce.
 
 **Severity:** Warning
 
+### 4. In-Page Heading Anchors
+
+Heading anchors and same-page fragment links are checked together.
+
+- Anchor IDs must start with a letter and contain only lowercase letters,
+  numbers, and hyphens
+- Anchor IDs must be unique within the CMS-managed page content
+- TipTap links and block URL fields beginning with `#` should match a heading
+  anchor in the same page
+- Anchored headings render with `tabindex="-1"` so fragment navigation can move
+  focus to the destination without adding headings to the normal Tab sequence
+- The Astro `RichText` component applies configurable scroll margin and a
+  visible focus indicator to anchored headings
+
+**Severity:** Warning
+
+The default anchor offset is `1rem`. Sites with sticky headers should set
+`--wolly-anchor-offset` to at least the header height so focused destinations
+are not obscured (WCAG 2.2 Success Criterion 2.4.11, Level AA).
+
+Smooth scrolling is not enabled by WollyCMS. Sites that add it should honor
+`prefers-reduced-motion`.
+
+A “Back to top” link can help on unusually long pages, but WCAG 2.2 does not
+require one for pages that use in-page links. It is a site/content design choice,
+not part of the core heading-anchor feature. See W3C techniques
+[G124](https://www.w3.org/WAI/WCAG22/Techniques/general/G124) and
+[G1](https://www.w3.org/WAI/WCAG22/Techniques/general/G1).
+
 ## Architecture
 
 ### Audit Utility — `packages/admin/src/lib/a11y.ts`
@@ -55,11 +84,13 @@ interface A11yIssue {
 }
 ```
 
-Three check functions compose into `auditPageAccessibility()`:
+Four check functions compose into `auditPageAccessibility()`:
 
 - `checkHeadingHierarchy(regions)` — walks TipTap JSON across all blocks
 - `checkImageAlt(regions, mediaCache)` — checks media fields + inline images
 - `checkEmptyLinks(regions)` — checks link nodes in rich text
+- `checkHeadingAnchors(regions)` — checks anchor syntax, uniqueness, and
+  same-page targets
 
 ### Accessibility Panel — `AccessibilityPanel.svelte`
 

@@ -9,6 +9,7 @@ on:
       - '**/*.md'
       - '**/*.mdx'
       - '.github/workflows/**'
+      - '.github/dependabot.yml'
   workflow_dispatch:
     inputs:
       environment:

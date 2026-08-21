@@ -30,7 +30,7 @@ WollyCMS fills the gap between simple headless CMS tools that lack page composit
 
 ### Editing Experience
 - **Visual Page Builder** — Drag-and-drop blocks between regions, inline editing, live preview with device toggle
-- **Rich Text Editor** — TipTap WYSIWYG with slash commands, table editing, source view, image sizing/wrapping/captions, paste cleanup
+- **Rich Text Editor** — TipTap WYSIWYG with slash commands, table editing, source view, accessible heading anchors, image sizing/wrapping/captions, and paste cleanup
 - **Media Library** — Upload, organize, and process images with Sharp (WebP variants, local or S3/R2 storage)
 - **Accessibility Audits** — Built-in WCAG AA content checks with issue highlighting in the editor
 - **SEO Editor Tools** — Meta preview, OG image preview, scoring, and auto-generated OG images (Satori + Sharp)

@@ -35,6 +35,10 @@
             <div class="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd></div>
           </div>
           <div class="shortcut-row">
+            <span class="shortcut-desc">Move block up / down (focus its drag handle)</span>
+            <div class="shortcut-keys"><kbd>&uarr;</kbd> / <kbd>&darr;</kbd></div>
+          </div>
+          <div class="shortcut-row">
             <span class="shortcut-desc">Close modal / collapse block</span>
             <kbd>Esc</kbd>
           </div>

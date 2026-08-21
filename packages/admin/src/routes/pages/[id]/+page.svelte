@@ -491,7 +491,7 @@
                     <input type="date" class="form-control" value={pageData.fields?.[field.name] || ''}
                       oninput={(e) => { if (!pageData.fields) pageData.fields = {}; pageData.fields[field.name] = (e.target as HTMLInputElement).value; }} />
                   {:else if field.type === 'url'}
-                    <input type="url" class="form-control" value={pageData.fields?.[field.name] || ''} placeholder="https://..."
+                    <input type="text" inputmode="url" autocomplete="url" class="form-control" value={pageData.fields?.[field.name] || ''} placeholder="https://..., /page, or #section"
                       oninput={(e) => { if (!pageData.fields) pageData.fields = {}; pageData.fields[field.name] = (e.target as HTMLInputElement).value; }} />
                   {:else}
                     <input class="form-control" value={pageData.fields?.[field.name] || ''}
