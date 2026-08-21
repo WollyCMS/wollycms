@@ -53,6 +53,9 @@
   let dragSourceRegion = $state<string | null>(null);
   let dropTargetRegion = $state<string | null>(null);
   let dropTargetIndex = $state<number | null>(null);
+  // Separate from dragPbId on purpose: the source card is only dimmed one frame later,
+  // so the browser's drag-image snapshot is taken at full opacity.
+  let dragVisualPbId = $state<number | null>(null);
 
   let filteredLibrary = $derived(
     libraryBlocks.filter((b) => {
@@ -237,45 +240,106 @@
   function onDragStart(e: DragEvent, pbId: number, region: string) {
     dragPbId = pbId;
     dragSourceRegion = region;
+    const card = (e.target as HTMLElement).closest('.block-card') as HTMLElement | null;
     if (e.dataTransfer) {
       e.dataTransfer.effectAllowed = 'move';
       e.dataTransfer.setData('text/plain', String(pbId));
+      // Drag the whole card, not the tiny handle glyph
+      if (card) {
+        const rect = card.getBoundingClientRect();
+        e.dataTransfer.setDragImage(card, e.clientX - rect.left, e.clientY - rect.top);
+      }
     }
-    // Style the dragged element
-    const el = (e.target as HTMLElement).closest('.block-card') as HTMLElement;
-    if (el) {
-      requestAnimationFrame(() => el.classList.add('is-dragging'));
-    }
+    // Dim the source card only after the drag image has been captured
+    requestAnimationFrame(() => {
+      if (dragPbId === pbId) dragVisualPbId = pbId;
+    });
   }
 
-  function onDragOverSlot(e: DragEvent, region: string, index: number) {
+  /**
+   * Insertion index for a pointer position, derived from which half of which card the
+   * pointer sits in. Every pixel of the region is a valid target this way, so the
+   * indicator never blanks out between blocks.
+   */
+  function dropIndexFromPointer(container: HTMLElement, clientY: number, count: number): number {
+    if (count === 0) return 0;
+    const cards = container.querySelectorAll<HTMLElement>(':scope > .block-card');
+    for (let i = 0; i < cards.length; i++) {
+      const rect = cards[i].getBoundingClientRect();
+      if (clientY < rect.top + rect.height / 2) return i;
+    }
+    return count;
+  }
+
+  function onDragOverRegion(e: DragEvent, region: string) {
+    if (dragPbId === null) return;
     e.preventDefault();
     if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+    const count = getRegionBlocks(region).length;
     dropTargetRegion = region;
-    dropTargetIndex = index;
+    dropTargetIndex = dropIndexFromPointer(e.currentTarget as HTMLElement, e.clientY, count);
   }
 
-  function onDragLeaveSlot(e: DragEvent) {
-    const related = e.relatedTarget as HTMLElement | null;
-    const current = e.currentTarget as HTMLElement;
-    if (!related || !current.contains(related)) {
-      dropTargetRegion = null;
-      dropTargetIndex = null;
-    }
+  /**
+   * Clear the indicator only when the pointer genuinely leaves this region, and only if
+   * this region owns the current indicator — otherwise leaving one region wipes the
+   * indicator another region just set. relatedTarget is unreliable mid-drag across
+   * browsers, so test the bounds instead.
+   */
+  function onDragLeaveRegion(e: DragEvent, region: string) {
+    if (dropTargetRegion !== region) return;
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const inside =
+      e.clientX >= rect.left && e.clientX <= rect.right &&
+      e.clientY >= rect.top && e.clientY <= rect.bottom;
+    if (inside) return;
+    dropTargetRegion = null;
+    dropTargetIndex = null;
+  }
+
+  async function onDropRegion(e: DragEvent, region: string) {
+    e.preventDefault();
+    // Land where the indicator was drawn, so the drop matches what the user saw.
+    const count = getRegionBlocks(region).length;
+    const index = dropTargetRegion === region && dropTargetIndex !== null
+      ? dropTargetIndex
+      : dropIndexFromPointer(e.currentTarget as HTMLElement, e.clientY, count);
+    await onDropSlot(e, region, index);
   }
 
   function onDragEnd() {
-    // Remove dragging class from all
-    document.querySelectorAll('.is-dragging').forEach(el => el.classList.remove('is-dragging'));
     dragPbId = null;
+    dragVisualPbId = null;
     dragSourceRegion = null;
     dropTargetRegion = null;
     dropTargetIndex = null;
   }
 
+  /**
+   * Move the block at sourceIndex to final array index insertAt within one region,
+   * then persist the new order. Shared by drag-drop and keyboard reordering.
+   */
+  async function commitRegionReorder(pbId: number, region: string, sourceIndex: number, insertAt: number) {
+    // Collapse expanded blocks — TipTap editors don't survive DOM node moves
+    expandedBlocks = new Set();
+    const reordered = [...getRegionBlocks(region)];
+    const [moved] = reordered.splice(sourceIndex, 1);
+    reordered.splice(insertAt, 0, moved);
+    pageData.regions[region] = reordered;
+    const order = reordered.map((b: any) => b.pb_id);
+    justDroppedPbId = pbId;
+    setTimeout(() => { justDroppedPbId = null; }, 1200);
+    try {
+      await api.put(`/pages/${pageId}/blocks-order`, { region, order });
+    } catch (err: any) {
+      error = err.message;
+      await reloadPreservingEdits();
+    }
+  }
+
   async function onDropSlot(e: DragEvent, targetRegion: string, targetIndex: number) {
     e.preventDefault();
-    if (!dragPbId || !dragSourceRegion) {
+    if (dragPbId === null || dragSourceRegion === null) {
       onDragEnd();
       return;
     }
@@ -289,24 +353,11 @@
     if (sourceIndex === -1) return;
 
     if (sourceRegion === targetRegion) {
-      // Same-region reorder
+      // Same-region reorder. targetIndex is an insert-before slot, so dropping either
+      // side of the block's own position is a no-op.
       if (sourceIndex === targetIndex || sourceIndex + 1 === targetIndex) return;
-      // Collapse expanded blocks — TipTap editors don't survive DOM node moves
-      expandedBlocks = new Set();
-      const reordered = [...sourceBlocks];
-      const [moved] = reordered.splice(sourceIndex, 1);
       const insertAt = targetIndex > sourceIndex ? targetIndex - 1 : targetIndex;
-      reordered.splice(insertAt, 0, moved);
-      pageData.regions[targetRegion] = reordered;
-      const order = reordered.map((b: any) => b.pb_id);
-      justDroppedPbId = pbId;
-      setTimeout(() => { justDroppedPbId = null; }, 1200);
-      try {
-        await api.put(`/pages/${pageId}/blocks-order`, { region: targetRegion, order });
-      } catch (err: any) {
-        error = err.message;
-        await reloadPreservingEdits();
-      }
+      await commitRegionReorder(pbId, targetRegion, sourceIndex, insertAt);
     } else {
       // Cross-region move — collapse editors before DOM changes
       expandedBlocks = new Set();
@@ -339,6 +390,36 @@
 
   function isDropTarget(region: string, index: number): boolean {
     return dropTargetRegion === region && dropTargetIndex === index;
+  }
+
+  // === Keyboard reordering ===
+  // The drag handle is focusable, so it must also work without a pointer (WCAG 2.1.1).
+
+  let reorderAnnouncement = $state('');
+
+  async function onHandleKeydown(e: KeyboardEvent, pbId: number, region: string, regionLabel: string) {
+    let delta = 0;
+    if (e.key === 'ArrowUp') delta = -1;
+    else if (e.key === 'ArrowDown') delta = 1;
+    else return;
+    e.preventDefault();
+
+    const blocks = getRegionBlocks(region);
+    const from = blocks.findIndex((b: any) => b.pb_id === pbId);
+    const to = from + delta;
+    if (from === -1 || to < 0 || to >= blocks.length) return;
+
+    const label = getBlockTitle(blocks[from]) || getBlockTypeName(blocks[from].block_type);
+    await commitRegionReorder(pbId, region, from, to);
+    reorderAnnouncement = `${label} moved to position ${to + 1} of ${blocks.length} in ${regionLabel}.`;
+
+    // The card moved in the DOM — put focus back on the handle the user was holding
+    requestAnimationFrame(() => {
+      const handle = document.querySelector<HTMLElement>(
+        `[data-block-pb-id="${pbId}"] .block-drag-handle`
+      );
+      handle?.focus();
+    });
   }
 
   // === Reload with dirty-edit preservation ===
@@ -533,9 +614,11 @@
 
         <div
           class="region-blocks"
-          ondragover={(e) => { if (rBlocks.length === 0) onDragOverSlot(e, region.name, 0); }}
-          ondragleave={onDragLeaveSlot}
-          ondrop={(e) => { if (rBlocks.length === 0) onDropSlot(e, region.name, 0); }}
+          ondragover={(e) => onDragOverRegion(e, region.name)}
+          ondragleave={(e) => onDragLeaveRegion(e, region.name)}
+          ondrop={(e) => onDropRegion(e, region.name)}
+          role="group"
+          aria-label="{region.label} blocks"
         >
           {#if rBlocks.length === 0}
             <div class="region-empty" class:drop-active={dropTargetRegion === region.name && dragPbId !== null}>
@@ -547,19 +630,18 @@
             </div>
           {:else}
             {#each rBlocks as block, i (block.pb_id)}
-              <!-- Drop zone before this block -->
+              <!-- Insertion indicator. Visual only — hit-testing lives on .region-blocks -->
               <div
                 class="drop-zone"
                 class:drop-active={isDropTarget(region.name, i)}
-                ondragover={(e) => onDragOverSlot(e, region.name, i)}
-                ondragleave={onDragLeaveSlot}
-                ondrop={(e) => onDropSlot(e, region.name, i)}
+                aria-hidden="true"
               ></div>
 
               <div
                 class="block-card"
                 class:is-expanded={expandedBlocks.has(block.pb_id)}
                 class:just-dropped={justDroppedPbId === block.pb_id}
+                class:is-dragging={dragVisualPbId === block.pb_id}
                 data-block-pb-id={block.pb_id}
                 ondragend={onDragEnd}
               >
@@ -569,9 +651,10 @@
                     class="block-drag-handle"
                     draggable="true"
                     ondragstart={(e) => onDragStart(e, block.pb_id, region.name)}
+                    onkeydown={(e) => onHandleKeydown(e, block.pb_id, region.name, region.label)}
                     role="button"
                     tabindex="0"
-                    aria-label="Drag to reorder"
+                    aria-label="Reorder block, position {i + 1} of {rBlocks.length} in {region.label}. Drag, or press the up and down arrow keys."
                   >&#x2807;</span>
                   <button class="block-card-toggle" onclick={() => toggleExpanded(block.pb_id)}>
                     <span class="picker-icon-inline">
@@ -659,18 +742,17 @@
                 {/if}
               </div>
             {/each}
-            <!-- Drop zone after last block -->
+            <!-- Insertion indicator after the last block. Visual only -->
             <div
               class="drop-zone drop-zone-end"
               class:drop-active={isDropTarget(region.name, rBlocks.length)}
-              ondragover={(e) => onDragOverSlot(e, region.name, rBlocks.length)}
-              ondragleave={onDragLeaveSlot}
-              ondrop={(e) => onDropSlot(e, region.name, rBlocks.length)}
+              aria-hidden="true"
             ></div>
           {/if}
         </div>
       </div>
     {/each}
+    <div class="sr-only" role="status" aria-live="polite">{reorderAnnouncement}</div>
   </div>
 {/if}
 
@@ -856,9 +938,10 @@
     text-align: center;
     color: var(--c-text-light, #94a3b8);
     font-size: 0.85rem;
+    /* border width is always reserved so drop-active only recolors it — no reflow */
     border: 2px dashed transparent;
     border-radius: var(--radius, 6px);
-    transition: all 0.2s;
+    transition: border-color 0.15s, background-color 0.15s, color 0.15s;
   }
 
   .region-empty.drop-active {
@@ -867,38 +950,70 @@
     color: var(--c-primary, #2563eb);
   }
 
-  /* Drop zones */
+  /* Drop-zone insertion indicator.
+     Geometry is CONSTANT across both states and the visible bar/dot are drawn by
+     absolutely positioned pseudo-elements, so activating the indicator can never
+     reflow the list. The old version grew its own margin by 8px when it went active,
+     which pushed the hovered element out from under the pointer, cancelled the hover,
+     and shrank it back — the loop behind the drag jitter. Only paint may change here;
+     never height, margin, padding, or border width.
+     These are visual only: hit-testing lives on .region-blocks. */
   .drop-zone {
-    height: 4px;
+    height: 10px;
     margin: 0 0.25rem;
-    border-radius: 2px;
-    transition: all 0.15s;
     position: relative;
+    pointer-events: none;
   }
 
-  .drop-zone.drop-active {
+  /* the bar */
+  .drop-zone::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
     height: 4px;
+    margin-top: -2px;
+    border-radius: 2px;
+    background: transparent;
+    transition: background-color 0.12s, box-shadow 0.12s;
+  }
+
+  .drop-zone.drop-active::before {
     background: var(--c-primary, #2563eb);
-    margin: 4px 0.25rem;
     box-shadow: 0 0 6px color-mix(in srgb, var(--c-primary, #2563eb) 30%, transparent);
   }
 
-  .drop-zone.drop-active::after {
+  /* the dot */
+  .drop-zone::after {
     content: '';
     position: absolute;
     left: 50%;
     top: 50%;
-    transform: translate(-50%, -50%);
     width: 10px;
     height: 10px;
+    margin: -5px 0 0 -5px;
     border-radius: 50%;
     background: var(--c-primary, #2563eb);
     border: 2px solid var(--c-surface);
     box-shadow: 0 0 0 1px var(--c-primary, #2563eb);
+    opacity: 0;
+    transition: opacity 0.12s;
+  }
+
+  .drop-zone.drop-active::after {
+    opacity: 1;
   }
 
   .drop-zone-end {
-    height: 8px;
+    height: 12px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .drop-zone::before,
+    .drop-zone::after {
+      transition: none;
+    }
   }
 
   /* Block cards */
@@ -919,7 +1034,7 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   }
 
-  :global(.block-card.is-dragging) {
+  .block-card.is-dragging {
     opacity: 0.35;
     border-style: dashed;
   }
@@ -931,6 +1046,18 @@
 
   .block-card.just-dropped {
     animation: flash-drop 1.2s ease-out;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
   }
 
   .block-position {
