@@ -8,89 +8,53 @@ updates:
       day: "monday"
     open-pull-requests-limit: 10
     groups:
-      minor-and-patch:
-        update-types:
-          - "minor"
-          - "patch"
       tiptap:
         patterns:
           - "@tiptap/*"
-      typescript:
-        patterns:
-          - "typescript"
-    labels:
-      - "dependencies"
-
-  # Server (Hono API)
-  - package-ecosystem: "npm"
-    directory: "/packages/server"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 10
-    groups:
-      minor-and-patch:
         update-types:
           - "minor"
           - "patch"
-      typescript:
+      astro:
         patterns:
-          - "typescript"
-    labels:
-      - "dependencies"
-
-  # Admin (SvelteKit)
-  - package-ecosystem: "npm"
-    directory: "/packages/admin"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 10
-    groups:
-      minor-and-patch:
+          - "astro"
+          - "@astrojs/*"
         update-types:
           - "minor"
           - "patch"
-      tiptap:
-        patterns:
-          - "@tiptap/*"
-      typescript:
-        patterns:
-          - "typescript"
       svelte:
         patterns:
-          - "@sveltejs/*"
           - "svelte"
-    labels:
-      - "dependencies"
-
-  # Astro integration package
-  - package-ecosystem: "npm"
-    directory: "/packages/astro"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 10
-    groups:
+          - "@sveltejs/*"
+        update-types:
+          - "minor"
+          - "patch"
       minor-and-patch:
         update-types:
           - "minor"
           - "patch"
-    labels:
-      - "dependencies"
-
-  # create-wolly CLI
-  - package-ecosystem: "npm"
-    directory: "/packages/create-wolly"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 10
-    groups:
-      minor-and-patch:
-        update-types:
-          - "minor"
-          - "patch"
+        exclude-patterns:
+          - "@tiptap/*"
+          - "astro"
+          - "@astrojs/*"
+          - "svelte"
+          - "@sveltejs/*"
+          - "satori"
+    ignore:
+      # Schedule major toolchain/runtime upgrades as dedicated, tested work.
+      - dependency-name: "vite"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@sveltejs/vite-plugin-svelte"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "lucide-svelte"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "zod"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "graphql"
+        update-types: ["version-update:semver-major"]
     labels:
       - "dependencies"
 

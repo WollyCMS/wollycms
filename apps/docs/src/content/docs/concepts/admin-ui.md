@@ -49,6 +49,7 @@ The admin displays your site name in the sidebar header. Configure it in **Syste
 | `Ctrl+K` | Open global search |
 | `Ctrl+S` | Save current page (in page editor) |
 | `Ctrl+Shift+P` | Toggle preview panel (in page editor) |
+| `↑` / `↓` | Move a block up/down within its region (with a block's drag handle focused) |
 | `?` | Show keyboard shortcuts overlay |
 | `Esc` | Close overlay/modal |
 
@@ -95,5 +96,13 @@ The page editor is the core editing experience:
 
 - Click the **+** button on a region to add a block (visual type picker with icons)
 - Hover a block card for quick actions (Edit, Duplicate, Move to Region, Remove)
-- Drag blocks to reorder within or across regions
+- Drag blocks to reorder within or across regions, using the handle (`⠇`) on the left of
+  each block card. A blue insertion bar shows where the block will land — it tracks the
+  pointer continuously across the whole region, and the list never shifts while you drag.
+- Reorder without a mouse: focus a block's drag handle (`Tab`) and press
+  <kbd>&uarr;</kbd> / <kbd>&darr;</kbd> to move the block up or down within its region.
+  Each move is announced to screen readers and saved immediately.
 - Use `/` in the rich text editor for slash commands (headings, lists, tables, images)
+
+Reordering a block collapses any expanded block cards first — rich text editors cannot
+survive being moved in the DOM. Unsaved field edits are preserved.

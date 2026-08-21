@@ -69,6 +69,13 @@ function alignStyle(node: TipTapNode): string {
   return ` style="text-align: ${escapeHtml(String(align))}"`;
 }
 
+/** Render a safe, programmatically focusable fragment target on a heading. */
+function headingAnchorAttributes(node: TipTapNode): string {
+  const id = node.attrs?.id;
+  if (typeof id !== 'string' || !/^[a-z][a-z0-9-]{0,79}$/.test(id)) return '';
+  return ` id="${escapeHtml(id)}" tabindex="-1"`;
+}
+
 /** Render a TipTap JSON node to HTML */
 function renderNode(node: TipTapNode): string {
   if (node.type === 'text') {
@@ -84,7 +91,7 @@ function renderNode(node: TipTapNode): string {
       return `<p${alignStyle(node)}>${children}</p>`;
     case 'heading': {
       const level = Math.min(Math.max(Number(node.attrs?.level ?? 2), 1), 6);
-      return `<h${level}${alignStyle(node)}>${children}</h${level}>`;
+      return `<h${level}${headingAnchorAttributes(node)}${alignStyle(node)}>${children}</h${level}>`;
     }
     case 'bulletList':
       return `<ul>${children}</ul>`;

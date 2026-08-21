@@ -11,3 +11,14 @@ const html = renderRichText(content);
 ---
 
 <div class:list={['rich-text', className]} set:html={html} />
+
+<style>
+  .rich-text :global([id]) {
+    scroll-margin-top: var(--wolly-anchor-offset, 1rem);
+  }
+
+  .rich-text :global([id]:focus-visible) {
+    outline: 3px solid var(--wolly-anchor-focus-color, currentColor);
+    outline-offset: 0.25rem;
+  }
+</style>

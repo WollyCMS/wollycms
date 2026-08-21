@@ -18,16 +18,66 @@ function hasTextContent(node: any): boolean {
   return false;
 }
 
+const HEADING_ANCHOR_PATTERN = /^[a-z][a-z0-9-]{0,79}$/;
+
+interface ExtractedHeading {
+  level: number;
+  empty: boolean;
+  anchorId: string | null;
+}
+
 /** Extract heading nodes from a TipTap JSON document */
-function extractHeadings(doc: any): { level: number; empty: boolean }[] {
-  const headings: { level: number; empty: boolean }[] = [];
+function extractHeadings(doc: any): ExtractedHeading[] {
+  const headings: ExtractedHeading[] = [];
   if (!doc?.content) return headings;
-  for (const node of doc.content) {
-    if (node.type === 'heading' && node.attrs?.level) {
-      headings.push({ level: node.attrs.level, empty: !hasTextContent(node) });
+  function walk(nodes: any[]) {
+    for (const node of nodes) {
+      if (node.type === 'heading' && node.attrs?.level) {
+        headings.push({
+          level: node.attrs.level,
+          empty: !hasTextContent(node),
+          anchorId: typeof node.attrs?.id === 'string' && node.attrs.id ? node.attrs.id : null,
+        });
+      }
+      if (node.content) walk(node.content);
     }
   }
+  walk(doc.content);
   return headings;
+}
+
+/** Extract same-page fragment links from TipTap link marks. */
+function extractFragmentLinks(doc: any): string[] {
+  const links = new Set<string>();
+  if (!doc?.content) return [];
+  function walk(nodes: any[]) {
+    for (const node of nodes) {
+      if (node.marks) {
+        for (const mark of node.marks) {
+          const href = mark.type === 'link' ? mark.attrs?.href : null;
+          if (typeof href === 'string' && href.startsWith('#')) links.add(href);
+        }
+      }
+      if (node.content) walk(node.content);
+    }
+  }
+  walk(doc.content);
+  return [...links];
+}
+
+/** Extract fragment links from block URL fields, including nested repeater fields. */
+function extractFragmentFieldLinks(value: unknown, fieldName: string): string[] {
+  if (typeof value === 'string') {
+    const isUrlField = fieldName === 'url' || fieldName === 'href' || fieldName.endsWith('_url');
+    return isUrlField && value.startsWith('#') ? [value] : [];
+  }
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => extractFragmentFieldLinks(item, fieldName));
+  }
+  if (value && typeof value === 'object') {
+    return Object.entries(value).flatMap(([name, item]) => extractFragmentFieldLinks(item, name));
+  }
+  return [];
 }
 
 /** Extract image nodes from TipTap JSON */
@@ -207,6 +257,82 @@ export function checkEmptyLinks(
   return issues;
 }
 
+/** Check heading anchor syntax, uniqueness, and same-page link targets. */
+export function checkHeadingAnchors(
+  regions: { name: string; label: string }[],
+  pageRegions: Record<string, any[]>,
+): A11yIssue[] {
+  const issues: A11yIssue[] = [];
+  const anchors = new Map<string, { region: string; pbId: number; field: string }[]>();
+  const fragmentLinks: { href: string; region: string; pbId: number; field: string }[] = [];
+
+  for (const region of regions) {
+    const blocks = pageRegions?.[region.name] || [];
+    for (const block of blocks) {
+      const fields = block.fields || {};
+      for (const [fieldName, value] of Object.entries(fields)) {
+        if (value && typeof value === 'object' && (value as any).type === 'doc') {
+          for (const heading of extractHeadings(value)) {
+            if (!heading.anchorId) continue;
+            if (!HEADING_ANCHOR_PATTERN.test(heading.anchorId)) {
+              issues.push({
+                type: 'warning',
+                code: 'anchor-invalid',
+                message: `Heading anchor "${heading.anchorId}" must start with a letter and use lowercase letters, numbers, or hyphens`,
+                region: region.name,
+                blockPbId: block.pb_id,
+                field: fieldName,
+              });
+              continue;
+            }
+            const occurrences = anchors.get(heading.anchorId) || [];
+            occurrences.push({ region: region.name, pbId: block.pb_id, field: fieldName });
+            anchors.set(heading.anchorId, occurrences);
+          }
+
+          for (const href of extractFragmentLinks(value)) {
+            fragmentLinks.push({ href, region: region.name, pbId: block.pb_id, field: fieldName });
+          }
+        } else {
+          for (const href of extractFragmentFieldLinks(value, fieldName)) {
+            fragmentLinks.push({ href, region: region.name, pbId: block.pb_id, field: fieldName });
+          }
+        }
+      }
+    }
+  }
+
+  for (const [anchorId, occurrences] of anchors) {
+    if (occurrences.length < 2) continue;
+    for (const occurrence of occurrences) {
+      issues.push({
+        type: 'warning',
+        code: 'anchor-duplicate',
+        message: `Heading anchor "#${anchorId}" is used more than once on this page`,
+        region: occurrence.region,
+        blockPbId: occurrence.pbId,
+        field: occurrence.field,
+      });
+    }
+  }
+
+  for (const link of fragmentLinks) {
+    const anchorId = link.href.slice(1);
+    if (!anchors.has(anchorId)) {
+      issues.push({
+        type: 'warning',
+        code: 'anchor-target-missing',
+        message: `In-page link "${link.href}" has no matching CMS heading anchor`,
+        region: link.region,
+        blockPbId: link.pbId,
+        field: link.field,
+      });
+    }
+  }
+
+  return issues;
+}
+
 /** Run all accessibility checks on a page */
 export function auditPageAccessibility(
   regions: { name: string; label: string }[],
@@ -217,5 +343,6 @@ export function auditPageAccessibility(
     ...checkHeadingHierarchy(regions, pageRegions),
     ...checkImageAlt(regions, pageRegions, mediaCache),
     ...checkEmptyLinks(regions, pageRegions),
+    ...checkHeadingAnchors(regions, pageRegions),
   ];
 }

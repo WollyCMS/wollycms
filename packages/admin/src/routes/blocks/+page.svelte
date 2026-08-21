@@ -188,7 +188,7 @@
                 rows="4"
               ></textarea>
             {:else if field.type === 'url'}
-              <input type="url" class="form-control" value={editBlock.fields[field.name] || ''} placeholder="https://..."
+              <input type="text" inputmode="url" autocomplete="url" class="form-control" value={editBlock.fields[field.name] || ''} placeholder="https://..., /page, or #section"
                 oninput={(e) => { editBlock.fields[field.name] = (e.target as HTMLInputElement).value; }} />
             {:else}
               <input class="form-control" value={editBlock.fields[field.name] || ''}

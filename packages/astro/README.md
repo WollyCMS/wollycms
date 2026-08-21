@@ -4,6 +4,10 @@ The official Astro integration for [WollyCMS](https://wollycms.com). It includes
 a typed content client, block rendering, rich-text rendering, responsive image
 support, menu helpers, SEO helpers, and tracking helpers.
 
+The rich-text renderer supports accessible, editor-managed heading anchors.
+Set the `--wolly-anchor-offset` CSS custom property when a sticky site header
+needs additional clearance for fragment targets.
+
 ## Compatibility
 
 | Package | Supported versions |

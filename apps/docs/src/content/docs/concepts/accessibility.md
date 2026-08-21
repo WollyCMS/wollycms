@@ -24,6 +24,16 @@ Two types of checks:
 
 Links in rich text content that have no visible text are flagged. This catches cases where a link wraps an empty span or whitespace-only content.
 
+### Heading anchors and in-page links
+
+The checker validates that heading anchor names use the supported syntax, are
+unique on the page, and match same-page links beginning with `#`. For example,
+the link `#student-stories` must have a heading whose anchor is
+`student-stories`.
+
+See [Heading Anchors](/concepts/heading-anchors/) for editor instructions,
+frontend requirements, and accessibility behavior.
+
 ## The accessibility panel
 
 The panel appears at the top of the page editor sidebar:

@@ -23,9 +23,13 @@
 
   const codeLabels: Record<string, string> = {
     'heading-skip': 'Heading hierarchy',
+    'heading-empty': 'Empty heading',
     'img-alt': 'Image alt text',
     'img-alt-inline': 'Inline image alt text',
     'link-empty': 'Empty link text',
+    'anchor-invalid': 'Invalid heading anchor',
+    'anchor-duplicate': 'Duplicate heading anchor',
+    'anchor-target-missing': 'Missing in-page target',
   };
 </script>
 

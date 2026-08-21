@@ -10,6 +10,7 @@ on:
       - '**/*.md'
       - '**/*.mdx'
       - '.github/workflows/**'
+      - '.github/dependabot.yml'
 
 jobs:
   test:

@@ -70,6 +70,11 @@ npm run test --workspace=packages/server       # Server tests only
 - All timestamps are ISO 8601 UTC
 - Slugs are auto-generated from titles, manually overridable, unique enforced
 - Shared blocks track references — cannot be deleted while in use
+- Drag-hover styles in the admin must be paint-only (color, background, box-shadow,
+  opacity). A hover state that changes height, margin, padding, or border width reflows
+  the list, moves the hovered element out from under the pointer, and cancels its own
+  hover — a jitter loop. Reserve the geometry in the resting state instead. See
+  `docs/CHANGELOG.md` (2026-08-19)
 
 ## Documentation
 
