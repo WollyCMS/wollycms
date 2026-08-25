@@ -87,6 +87,7 @@ jobs:
           NODE_ENV = "production"
           DATABASE_URL = "d1:DB"
           MEDIA_STORAGE = "r2"
+          MEDIA_CACHE_VERSION = "${{ vars.MEDIA_CACHE_VERSION }}"
           CORS_ORIGINS = "${{ vars.CORS_ORIGINS }}"
           SITE_URL = "${{ vars.SITE_URL }}"
           GOOGLE_CLIENT_ID = "${{ secrets.GOOGLE_CLIENT_ID }}"

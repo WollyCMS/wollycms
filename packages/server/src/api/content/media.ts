@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { eq } from 'drizzle-orm';
 import { getDb } from '../../db/index.js';
 import { media } from '../../db/schema/index.js';
+import { env } from '../../env.js';
 import { getStorage } from '../../media/storage.js';
 
 const VALID_VARIANTS = ['original', 'thumbnail', 'medium', 'large', 'info'] as const;
@@ -9,6 +10,18 @@ type Variant = (typeof VALID_VARIANTS)[number];
 
 /** One year in seconds for immutable cache headers. */
 const CACHE_MAX_AGE = 31536000;
+
+/**
+ * Append an opt-in cache version without changing the underlying media key.
+ * Relative URLs are intentional because Workers serves R2 media at /media/*.
+ */
+export function versionMediaUrl(url: string, version: string): string {
+  const normalizedVersion = version.trim();
+  if (!normalizedVersion) return url;
+
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}v=${encodeURIComponent(normalizedVersion)}`;
+}
 
 /**
  * Determine Content-Type for a variant file.
@@ -64,8 +77,14 @@ app.get('/:id/:variant', async (c) => {
 
   // For "info" variant, return full metadata as JSON with public URLs
   if (variant === 'info') {
+    const cacheVersion = env.MEDIA_CACHE_VERSION;
     const variantUrls = record.variants && typeof record.variants === 'object'
-      ? Object.fromEntries(Object.entries(record.variants as Record<string, string>).map(([k, v]) => [k, storage.getUrl(v)]))
+      ? Object.fromEntries(
+          Object.entries(record.variants as Record<string, string>).map(([key, value]) => [
+            key,
+            versionMediaUrl(storage.getUrl(value), cacheVersion),
+          ]),
+        )
       : {};
 
     return c.json({
@@ -79,7 +98,7 @@ app.get('/:id/:variant', async (c) => {
         height: record.height,
         altText: record.altText,
         title: record.title,
-        url: storage.getUrl(record.path),
+        url: versionMediaUrl(storage.getUrl(record.path), cacheVersion),
         variantUrls,
         variants: record.variants,
         metadata: record.metadata,
@@ -101,7 +120,11 @@ app.get('/:id/:variant', async (c) => {
 
   // For external storage (S3/R2), redirect to the public CDN URL
   if (storage.isExternal) {
-    const publicUrl = storage.getUrl(filePath);
+    const cacheVersion = env.MEDIA_CACHE_VERSION.trim();
+    const publicUrl = versionMediaUrl(storage.getUrl(filePath), cacheVersion);
+    if (cacheVersion) {
+      c.header('Cache-Control', 'no-store');
+    }
     return c.redirect(publicUrl, 302);
   }
 

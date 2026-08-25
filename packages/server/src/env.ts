@@ -19,6 +19,7 @@ interface EnvConfig {
   DATABASE_URL: string;
   MEDIA_STORAGE: string;
   MEDIA_DIR: string;
+  MEDIA_CACHE_VERSION: string;
   JWT_SECRET: string;
   CORS_ORIGINS: string;
   RATE_LIMIT_AUTH: number;
@@ -53,6 +54,7 @@ function readProcessEnv(): EnvConfig {
     DATABASE_URL: p.DATABASE_URL || 'sqlite:./data/wolly.db',
     MEDIA_STORAGE: p.MEDIA_STORAGE || 'local',
     MEDIA_DIR: p.MEDIA_DIR || './uploads',
+    MEDIA_CACHE_VERSION: p.MEDIA_CACHE_VERSION || '',
     JWT_SECRET: p.JWT_SECRET || 'dev-secret-change-me',
     CORS_ORIGINS: p.CORS_ORIGINS || '*',
     RATE_LIMIT_AUTH: parseInt(p.RATE_LIMIT_AUTH || '10', 10),
@@ -106,6 +108,7 @@ export function initEnvFromBindings(bindings: Record<string, unknown>): void {
     DATABASE_URL: b('DATABASE_URL', 'd1:'),
     MEDIA_STORAGE: b('MEDIA_STORAGE', 'r2'),
     MEDIA_DIR: b('MEDIA_DIR', './uploads'),
+    MEDIA_CACHE_VERSION: b('MEDIA_CACHE_VERSION'),
     JWT_SECRET: (() => {
       const secret = b('JWT_SECRET');
       if (!secret) throw new Error('JWT_SECRET binding is required');
