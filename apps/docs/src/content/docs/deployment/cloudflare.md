@@ -61,6 +61,8 @@ bucket_name = "wollycms-media"
 NODE_ENV = "production"
 DATABASE_URL = "d1:DB"
 MEDIA_STORAGE = "r2"
+# Optional: change this value to force browsers to request fresh media URLs.
+MEDIA_CACHE_VERSION = ""
 CORS_ORIGINS = "https://your-site.example.com"
 SITE_URL = "https://your-site.example.com"
 
@@ -115,6 +117,7 @@ Make sure the domain's DNS is managed by Cloudflare.
 | `JWT_SECRET` | Yes | Secret for signing JWT tokens (set as secret) |
 | `DATABASE_URL` | Yes | `d1:DB` for D1 binding |
 | `MEDIA_STORAGE` | Yes | `r2` for R2 storage |
+| `MEDIA_CACHE_VERSION` | No | Recovery key appended to media URLs; change it to bypass stale browser caches |
 | `CORS_ORIGINS` | Yes | Comma-separated allowed origins |
 | `SITE_URL` | Yes | Your frontend site URL (for sitemaps, OG images) |
 | `NODE_ENV` | No | `production` recommended |

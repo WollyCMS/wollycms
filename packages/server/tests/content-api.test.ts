@@ -1,4 +1,7 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { versionMediaUrl } from '../src/api/content/media.js';
+import { env } from '../src/env.js';
+import { initR2Storage, resetStorage } from '../src/media/storage.js';
 import { setupTestDatabase } from './setup.js';
 
 let app: typeof import('../src/app.js').default;
@@ -204,6 +207,20 @@ describe('GET /api/content/taxonomies/:slug/terms', () => {
 });
 
 describe('GET /api/content/media/:id/:variant', () => {
+  it('leaves media URLs unchanged when cache versioning is disabled', () => {
+    expect(versionMediaUrl('/media/example.webp', '')).toBe('/media/example.webp');
+    expect(versionMediaUrl('/media/example.webp', '   ')).toBe('/media/example.webp');
+  });
+
+  it('adds an encoded cache version without changing the media path', () => {
+    expect(versionMediaUrl('/media/example.webp', 'svcc 2026-08-25')).toBe(
+      '/media/example.webp?v=svcc%202026-08-25',
+    );
+    expect(versionMediaUrl('/media/example.webp?download=1', 'incident-1')).toBe(
+      '/media/example.webp?download=1&v=incident-1',
+    );
+  });
+
   it('returns media info for info variant', async () => {
     const res = await get('/api/content/media/1/info');
     expect(res.status).toBe(200);
@@ -241,6 +258,51 @@ describe('GET /api/content/media/:id/:variant', () => {
   it('returns 400 for invalid variant', async () => {
     const res = await get('/api/content/media/1/invalid');
     expect(res.status).toBe(400);
+  });
+});
+
+describe('R2 media cache recovery redirects', () => {
+  const originalCacheVersion = env.MEDIA_CACHE_VERSION;
+
+  beforeAll(() => {
+    initR2Storage({});
+  });
+
+  afterAll(() => {
+    env.MEDIA_CACHE_VERSION = originalCacheVersion;
+    resetStorage();
+  });
+
+  it('preserves existing redirect behavior when cache versioning is disabled', async () => {
+    env.MEDIA_CACHE_VERSION = '';
+
+    const res = await get('/api/content/media/1/original');
+
+    expect(res.status).toBe(302);
+    expect(res.headers.get('location')).toMatch(/^\/media\/[^?]+$/);
+    expect(res.headers.get('cache-control')).toBeNull();
+  });
+
+  it('uses a fresh cache key and disables redirect caching when enabled', async () => {
+    env.MEDIA_CACHE_VERSION = 'svcc-20260825-incident-1';
+
+    const res = await get('/api/content/media/1/original');
+
+    expect(res.status).toBe(302);
+    expect(res.headers.get('location')).toMatch(
+      /^\/media\/[^?]+\?v=svcc-20260825-incident-1$/,
+    );
+    expect(res.headers.get('cache-control')).toBe('no-store');
+  });
+
+  it('versions media URLs returned by the info endpoint', async () => {
+    env.MEDIA_CACHE_VERSION = 'svcc-20260825-incident-1';
+
+    const res = await get('/api/content/media/1/info');
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.data.url).toMatch(/\?v=svcc-20260825-incident-1$/);
   });
 });
 
