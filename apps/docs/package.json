@@ -12,11 +12,11 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^14.2.1",
-    "@astrojs/starlight": "^0.41.7",
-    "astro": "^7.1.6",
+    "@astrojs/cloudflare": "^14.2.5",
+    "@astrojs/starlight": "^0.41.9",
+    "astro": "^7.2.9",
     "sharp": "^0.35.3",
-    "vite": "^8.2.1",
+    "vite": "^8.2.2",
     "wrangler": "^4.123.0"
   },
   "devDependencies": {
