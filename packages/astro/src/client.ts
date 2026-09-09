@@ -39,12 +39,15 @@ export class WollyClient {
       if (params?.sort) searchParams.set('sort', params.sort);
       if (params?.limit) searchParams.set('limit', String(params.limit));
       if (params?.offset) searchParams.set('offset', String(params.offset));
+      if (params?.status) searchParams.set('status', params.status);
+      if (params?.locale) searchParams.set('locale', params.locale);
       const qs = searchParams.toString();
       return this.fetch(`/pages${qs ? `?${qs}` : ''}`);
     },
 
-    getBySlug: async (slug: string): Promise<Page> => {
-      const res = await this.fetch<ApiResponse<Page>>(`/pages/${slug}`);
+    getBySlug: async (slug: string, options?: { locale?: string }): Promise<Page> => {
+      const qs = options?.locale ? `?locale=${encodeURIComponent(options.locale)}` : '';
+      const res = await this.fetch<ApiResponse<Page>>(`/pages/${slug}${qs}`);
       return res.data;
     },
   };
@@ -81,10 +84,11 @@ export class WollyClient {
   };
 
   readonly search = {
-    query: async (q: string, options?: { type?: string; limit?: number }): Promise<{ data: Array<{ id: number; type: string; title: string; slug: string; description: string | null }>; meta: { total: number; query: string } }> => {
+    query: async (q: string, options?: { type?: string; limit?: number; locale?: string }): Promise<{ data: Array<{ id: number; type: string; title: string; slug: string; description: string | null }>; meta: { total: number; query: string } }> => {
       const params = new URLSearchParams({ q });
       if (options?.type) params.set('type', options.type);
       if (options?.limit) params.set('limit', String(options.limit));
+      if (options?.locale) params.set('locale', options.locale);
       return this.fetch(`/search?${params}`);
     },
   };
