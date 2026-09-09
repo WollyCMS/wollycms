@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { getDb } from '../../db/index.js';
 import { requireRole } from '../../auth/rbac.js';
 import {
@@ -119,8 +119,22 @@ app.post('/import', async (c) => {
   // 4. Media metadata (no dependencies besides users, which we skip)
   await importById(media, media.id, body.media, 'media');
 
-  // 5. Pages (depends on contentTypes)
-  await importBySlug(pages, pages.slug, body.pages, 'pages');
+  // 5. Pages (depends on contentTypes) — dedup on (slug, locale), not slug
+  // alone: slugs are only unique per locale (pages_slug_locale_unique), so
+  // slug-only dedup silently drops translations that share a slug.
+  if (body.pages?.length) {
+    for (const row of body.pages as Array<{ slug: string; locale?: string }>) {
+      const [existing] = await db
+        .select({ id: pages.id })
+        .from(pages)
+        .where(and(eq(pages.slug, row.slug), eq(pages.locale, row.locale ?? 'en')))
+        .limit(1);
+      if (!existing) {
+        await db.insert(pages).values(row as typeof pages.$inferInsert);
+      }
+    }
+    stats.pages = body.pages.length;
+  }
 
   // 6. Blocks (depends on blockTypes)
   await importById(blocks, blocks.id, body.blocks, 'blocks');

@@ -522,7 +522,7 @@
       </div>
     </div>
 
-    <PreviewPanel bind:this={previewPanel} slug={pageData.slug} visible={showPreview}
+    <PreviewPanel bind:this={previewPanel} slug={pageData.slug} locale={pageData.locale} visible={showPreview}
       onBlockSelect={(pbId, region) => { blockEditor?.scrollToBlock(pbId); }} />
   </div>
 {/if}
