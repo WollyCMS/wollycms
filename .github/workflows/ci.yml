@@ -37,6 +37,14 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Test Astro client and helpers
+        working-directory: packages/astro
+        run: npx vitest run
+
+      - name: Type-check Astro integration
+        working-directory: packages/astro
+        run: npx tsc --noEmit
+
       - name: Build server and admin
         run: npm run build
 
