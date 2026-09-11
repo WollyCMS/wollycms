@@ -228,10 +228,12 @@ GET /api/content/schemas
 
 ```
 GET /api/content/preview/pages/:slug
-  ?token=JWT                          — JWT auth via query param
+  ?locale=fr                          — Select a same-slug translation (optional)
+  &token=JWT                          — JWT auth via query param
   Authorization: Bearer JWT           — or via header
 
-  — Returns page data regardless of publish status (drafts included)
+  — Returns page data including locale regardless of publish status (drafts included)
+  — Omitting locale retains slug-only matching; preview frontends should forward it
   — Used by the Astro SSR preview route for live preview in admin editor
 ```
 

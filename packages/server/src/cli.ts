@@ -284,7 +284,7 @@ async function main() {
 
       const { readFileSync: readFile } = await import('fs');
       const { getDb } = await import('./db/index.js');
-      const { eq } = await import('drizzle-orm');
+      const { and, eq } = await import('drizzle-orm');
       const schema = await import('./db/schema/index.js');
 
       let data: Record<string, unknown>;
@@ -305,7 +305,7 @@ async function main() {
         name: string,
         table: any,
         rows: unknown[],
-        dedup: (row: Record<string, unknown>) => ReturnType<typeof eq>,
+        dedup: (row: Record<string, unknown>) => ReturnType<typeof eq> | ReturnType<typeof and>,
       ) => {
         let imported = 0;
         for (const row of rows as Record<string, unknown>[]) {
@@ -324,7 +324,8 @@ async function main() {
       if (d.blockTypes?.length) await importTable('blockTypes', schema.blockTypes, d.blockTypes, (r) => eq(schema.blockTypes.slug, r.slug as string));
       if (d.taxonomies?.length) await importTable('taxonomies', schema.taxonomies, d.taxonomies, (r) => eq(schema.taxonomies.slug, r.slug as string));
       if (d.terms?.length) await importTable('terms', schema.terms, d.terms, (r) => eq(schema.terms.slug, r.slug as string));
-      if (d.pages?.length) await importTable('pages', schema.pages, d.pages, (r) => eq(schema.pages.slug, r.slug as string));
+      // Pages dedup on (slug, locale): slugs are only unique per locale.
+      if (d.pages?.length) await importTable('pages', schema.pages, d.pages, (r) => and(eq(schema.pages.slug, r.slug as string), eq(schema.pages.locale, (r.locale as string | undefined) ?? 'en')));
       if (d.blocks?.length) await importTable('blocks', schema.blocks, d.blocks, (r) => eq(schema.blocks.id, r.id as number));
       if (d.pageBlocks?.length) await importTable('pageBlocks', schema.pageBlocks, d.pageBlocks, (r) => eq(schema.pageBlocks.id, r.id as number));
       if (d.menus?.length) await importTable('menus', schema.menus, d.menus, (r) => eq(schema.menus.slug, r.slug as string));

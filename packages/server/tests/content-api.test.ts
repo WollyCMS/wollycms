@@ -452,6 +452,56 @@ describe('GET /api/content/preview/pages/:slug', () => {
     });
     expect(res.status).toBe(404);
   });
+
+  describe('locale disambiguation', () => {
+    // Slugs are only unique per locale, so a slug can exist in several
+    // locales at once. Preview must be able to target a specific one.
+    beforeAll(async () => {
+      const res = await adminJson('/pages', 'POST', {
+        title: 'Accueil',
+        slug: 'home',
+        typeId: 1,
+        status: 'draft',
+        locale: 'fr',
+      });
+      expect(res.status).toBe(201);
+    });
+
+    function preview(path: string) {
+      return app.request(`/api/content/preview/pages/${path}`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+    }
+
+    it('includes the page locale in the response', async () => {
+      const res = await preview('home?locale=en');
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.data.locale).toBe('en');
+    });
+
+    it('filters by ?locale= for slugs shared across locales', async () => {
+      const res = await preview('home?locale=fr');
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.data.locale).toBe('fr');
+      expect(body.data.title).toBe('Accueil');
+      expect(body.data.status).toBe('draft');
+    });
+
+    it('keeps slug-only matching when locale is omitted (back-compat)', async () => {
+      const res = await preview('home');
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.data.slug).toBe('home');
+    });
+
+    it('returns 404 when the slug does not exist in the requested locale', async () => {
+      const res = await preview('home?locale=de');
+      expect(res.status).toBe(404);
+    });
+  });
 });
 
 // --- Content API Tracking Scripts ---
