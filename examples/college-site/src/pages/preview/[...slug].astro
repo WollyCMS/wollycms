@@ -7,7 +7,8 @@ import { wolly } from '../../lib/wolly';
 import * as blockComponents from '../../lib/blocks';
 
 const { slug } = Astro.params;
-const token = Astro.cookies.get('wolly_preview')?.value;
+const token = Astro.url.searchParams.get('token') || Astro.cookies.get('wolly_preview')?.value;
+const locale = Astro.url.searchParams.get('locale');
 
 if (!token || !slug) {
   return new Response('Preview authorization is required', { status: 401 });
@@ -15,7 +16,10 @@ if (!token || !slug) {
 
 const API_BASE = 'http://localhost:4321/api/content';
 
-const pageRes = await fetch(`${API_BASE}/preview/pages/${slug}`, {
+const previewUrl = new URL(`${API_BASE}/preview/pages/${slug.split('/').map(encodeURIComponent).join('%2F')}`);
+if (locale) previewUrl.searchParams.set('locale', locale);
+
+const pageRes = await fetch(previewUrl, {
   headers: { Authorization: `Bearer ${token}` },
 });
 if (!pageRes.ok) {
