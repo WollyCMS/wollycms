@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import packageJson from '../package.json' with { type: 'json' };
 import { versionMediaUrl } from '../src/api/content/media.js';
 import { env } from '../src/env.js';
 import { initR2Storage, resetStorage } from '../src/media/storage.js';
@@ -43,7 +44,7 @@ describe('Health Check', () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.status).toBe('ok');
-    expect(body.version).toBe('0.3.0');
+    expect(body.version).toBe(packageJson.version);
   });
 });
 
