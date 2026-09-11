@@ -209,6 +209,7 @@ All configuration is via environment variables. See [`.env.example`](.env.exampl
 | `CORS_ORIGINS` | `*` | Allowed origins (comma-separated). **Set in production** |
 | `MEDIA_STORAGE` | `local` | Storage backend: `local` or `s3` |
 | `MEDIA_DIR` | `./uploads` | Local media storage path |
+| `MEDIA_CACHE_VERSION` | — | Optional recovery key appended to public media URLs to bypass stale browser caches |
 | `S3_ENDPOINT` | — | S3/R2 endpoint for remote media storage |
 | `S3_BUCKET` | — | S3/R2 bucket name |
 | `SITE_URL` | `http://localhost:4322` | Frontend URL for webhooks/preview |
