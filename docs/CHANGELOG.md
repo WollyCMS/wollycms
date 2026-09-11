@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.3.1 — 2026-09-11
+
+Patch release for `@wollycms/server` and `@wollycms/astro`. `create-wolly`
+remains at 0.3.0.
+
+- Fix same-slug multilingual previews and preserve translations during API and
+  CLI imports by deduplicating pages on both slug and locale.
+- Forward locale in Astro page lists, page lookup, and search. Serialize the
+  existing page-list status option; the public API still returns published content.
+- Forward locale and accept admin preview tokens in the reference frontend, and
+  document the required locale forwarding for custom preview routes.
+- Run Astro integration tests and TypeScript checks in pull request CI.
+- Include fixes merged since 0.3.0: accessible rich-text heading anchors, stable
+  block drag-reordering, and optional media cache recovery configuration.
+
+Thanks to [Brent Cartier (@bcartier)](https://github.com/bcartier) for the
+multilingual fixes in [#121](https://github.com/WollyCMS/wollycms/pull/121) and
+[#122](https://github.com/WollyCMS/wollycms/pull/122).
+
 ## 2026-08-19
 
 ### Block drag-reorder jitter in the page editor

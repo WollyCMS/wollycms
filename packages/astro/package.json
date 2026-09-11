@@ -1,6 +1,6 @@
 {
   "name": "@wollycms/astro",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "type": "module",
   "description": "Astro.js integration for WollyCMS — components, helpers, and route generation",
   "author": "Chad Wollenberg",
