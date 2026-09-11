@@ -6,10 +6,12 @@
 
   let {
     slug,
+    locale,
     visible = false,
     onBlockSelect,
   }: {
     slug: string;
+    locale?: string;
     visible: boolean;
     onBlockSelect?: (pbId: string, region: string) => void;
   } = $props();
@@ -30,7 +32,10 @@
     // Token passed via query param for cross-origin iframe preview.
     // Safe because preview tokens are purpose-scoped (can't access admin routes)
     // and short-lived (10 minutes).
-    return `${siteUrl}/preview/${s}?token=${previewToken}`;
+    // Locale disambiguates slugs shared across locales (slugs are only unique
+    // per locale); frontends forward it to /api/content/preview/pages/:slug.
+    const localeParam = locale ? `&locale=${encodeURIComponent(locale)}` : '';
+    return `${siteUrl}/preview/${s}?token=${previewToken}${localeParam}`;
   }
 
   let previewUrl = $state('about:blank');

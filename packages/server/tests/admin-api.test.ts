@@ -681,6 +681,42 @@ describe('Admin Export/Import', () => {
     expect(body.data.imported).toBe(true);
     expect(body.data.stats.pages).toBeGreaterThan(0);
   });
+
+  it('POST /import preserves same-slug pages across locales', async () => {
+    // Slugs are only unique per (slug, locale) — an import containing a
+    // translation pair sharing a slug must keep both rows.
+    const now = new Date().toISOString();
+    const payload = {
+      version: 2,
+      pages: [
+        {
+          typeId: 1, title: 'Localized EN', slug: 'import-locale-test',
+          status: 'published', locale: 'en', fields: {},
+          createdAt: now, updatedAt: now, publishedAt: now,
+        },
+        {
+          typeId: 1, title: 'Localisé FR', slug: 'import-locale-test',
+          status: 'published', locale: 'fr', fields: {},
+          createdAt: now, updatedAt: now, publishedAt: now,
+        },
+      ],
+    };
+
+    const res = await json('/import', 'POST', payload);
+    expect(res.status).toBe(200);
+
+    const en = await app.request('/api/content/pages/import-locale-test?locale=en');
+    expect(en.status).toBe(200);
+    expect((await en.json()).data.title).toBe('Localized EN');
+
+    const fr = await app.request('/api/content/pages/import-locale-test?locale=fr');
+    expect(fr.status).toBe(200);
+    expect((await fr.json()).data.title).toBe('Localisé FR');
+
+    // Re-importing dedups on (slug, locale) — no unique-constraint failure
+    const again = await json('/import', 'POST', payload);
+    expect(again.status).toBe(200);
+  });
 });
 
 // --- RBAC ---
