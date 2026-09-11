@@ -54,3 +54,10 @@ const page = await wolly.pages.preview(slug, token);
 :::tip
 Configure your CMS's `SITE_URL` environment variable to point to your frontend. The preview button uses this URL to construct the preview link.
 :::
+
+## Multilingual previews
+
+The admin preview URL includes the edited page’s `locale`. Your frontend preview
+route must forward that parameter to `/api/content/preview/pages/:slug` along
+with preview authentication. This selects the correct translation when multiple
+languages share a slug. Omitting `locale` retains slug-only matching.

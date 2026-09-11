@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { eq, asc } from 'drizzle-orm';
+import { and, eq, asc } from 'drizzle-orm';
 import { verify } from 'hono/jwt';
 import { getCookie } from 'hono/cookie';
 import { createMiddleware } from 'hono/factory';
@@ -50,10 +50,19 @@ app.use('/*', previewAuth);
 /**
  * GET /pages/:slug - Get page with blocks regardless of status (for live preview).
  * Same response format as the public content API.
+ *
+ * Accepts an optional `locale` query param: slugs are only unique per locale
+ * (pages_slug_locale_unique), so without it a slug shared across locales
+ * resolves to an arbitrary translation. Omitting `locale` keeps the previous
+ * slug-only behavior for backward compatibility.
  */
 app.get('/pages/:slug{.+}', async (c) => {
   const db = getDb();
   const slug = c.req.param('slug');
+  const locale = c.req.query('locale');
+
+  const conditions = [eq(pages.slug, slug)];
+  if (locale) conditions.push(eq(pages.locale, locale));
 
   const pageRows = await db
     .select({
@@ -63,6 +72,7 @@ app.get('/pages/:slug{.+}', async (c) => {
       title: pages.title,
       slug: pages.slug,
       status: pages.status,
+      locale: pages.locale,
       fields: pages.fields,
       createdAt: pages.createdAt,
       updatedAt: pages.updatedAt,
@@ -70,7 +80,7 @@ app.get('/pages/:slug{.+}', async (c) => {
     })
     .from(pages)
     .innerJoin(contentTypes, eq(pages.typeId, contentTypes.id))
-    .where(eq(pages.slug, slug))
+    .where(and(...conditions))
     .limit(1);
 
   if (pageRows.length === 0) {
@@ -125,6 +135,7 @@ app.get('/pages/:slug{.+}', async (c) => {
       title: page.title,
       slug: page.slug,
       status: page.status,
+      locale: page.locale,
       fields: normalizeContentFields(page.fields, page.pageFieldsSchema),
       regions,
       meta: {

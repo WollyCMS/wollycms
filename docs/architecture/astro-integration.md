@@ -422,7 +422,9 @@ export default defineConfig({
 ## Preview Mode (Draft Content)
 
 For editors to preview unpublished changes. The preview route is SSR (not
-prerendered) and fetches from the authenticated preview API endpoint:
+prerendered) and fetches from the authenticated preview API endpoint. Forward the
+`locale` query parameter from the admin preview URL so same-slug translations
+resolve to the edited language. Without it, preview retains slug-only matching:
 
 ```astro
 ---
@@ -431,13 +433,18 @@ export const prerender = false;
 
 const { slug } = Astro.params;
 const token = Astro.url.searchParams.get('token');
+const locale = Astro.url.searchParams.get('locale');
 
 if (!token || !slug) {
   return new Response('Missing token or slug', { status: 400 });
 }
 
 const API_BASE = 'http://localhost:4321/api/content';
-const pageRes = await fetch(`${API_BASE}/preview/pages/${slug}?token=${token}`);
+const previewUrl = new URL(`${API_BASE}/preview/pages/${slug.split('/').map(encodeURIComponent).join('%2F')}`);
+if (locale) previewUrl.searchParams.set('locale', locale);
+const pageRes = await fetch(previewUrl, {
+  headers: { Authorization: `Bearer ${token}` },
+});
 if (!pageRes.ok) {
   return new Response(`Page not found: ${slug}`, { status: 404 });
 }
