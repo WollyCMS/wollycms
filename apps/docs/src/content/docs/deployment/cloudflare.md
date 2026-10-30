@@ -19,7 +19,7 @@ WollyCMS runs on Cloudflare Workers with D1 (SQLite) for the database and R2 for
 wrangler d1 create wollycms-db
 
 # Create the R2 bucket
-wrangler r2 create wollycms-media
+wrangler r2 bucket create wollycms-media
 ```
 
 Note the database ID from the D1 create command — you will need it for `wrangler.toml`.
