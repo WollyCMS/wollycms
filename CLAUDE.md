@@ -14,6 +14,7 @@ hierarchical menus, taxonomy management, and media handling.
 - **Admin UI**: SvelteKit (SPA mode)
 - **Rich Text**: TipTap (JSON storage format)
 - **Media**: Sharp for image processing
+- **Validation**: Zod 4 (4.6.7 in the 2026-10-30 lockfile)
 - **Testing**: Vitest
 - **Package Management**: npm workspaces (monorepo)
 
@@ -44,7 +45,10 @@ npm run db:seed           # Populate database with sample data (auto-detects dia
 ## Test Commands
 
 ```bash
-npm run test                                   # Run all tests
+npx --workspace=packages/admin svelte-kit sync  # Generate types before tests
+npm run test                                   # Server tests (also import admin helpers)
+npm run test --workspace=packages/admin         # Admin tests
+(cd packages/astro && npx vitest run && npx tsc --noEmit)
 npm run test --workspace=packages/server       # Server tests only
 ```
 
@@ -64,7 +68,14 @@ npm run test --workspace=packages/server       # Server tests only
 
 ## Important Patterns
 
-- Use Zod schemas for all API input validation
+- Use Zod 4 schemas for all API input validation. Records require explicit key
+  schemas (`z.record(z.string(), z.unknown())`). Create defaults must be removed
+  from partial update fields: Zod 4 applies defaults inside optional properties.
+  Preserve the regression cases in `packages/server/tests/validation-migration.test.ts`.
+- Use Node.js 22.23.4 or a newer supported Node 22 patch for the current Astro
+  example/docs toolchain. Lockfiles are authoritative for exact package versions.
+- Retain the public batch boundary: 64 KiB, 50 pages, 10 menus; 413 for oversized
+  bodies and 400 for invalid collections. Upload limits are separate.
 - Drizzle schema is the single source of truth for database structure
 - Block type schemas are JSON — define field types, validation, and UI hints
 - All timestamps are ISO 8601 UTC
@@ -88,3 +99,16 @@ Read these before making structural changes:
 - `docs/architecture/astro-integration.md` — Astro package design
 - `docs/architecture/accessibility-checks.md` — WCAG AA content checks
 - `docs/architecture/seo-editor-tools.md` — SEO previews and scoring
+
+## Release automation
+
+The repository variable `AUTOMATIC_RELEASES_ENABLED=false` pauses main-push CMS
+Worker deployments and Docker publication. `true` restores normal automation;
+changing the variable alone does not deploy or rerun skipped workflows. Manual
+selected-environment and staging workflows remain available during a hold.
+Verify the live setting before relying on it.
+
+CMS source/docs Markdown changes are excluded from the CMS/Docker push triggers.
+Changes under `apps/docs/` deploy the independent documentation Worker. Keep
+instance-specific deployment/account details outside the generic product docs.
+A Worker release, Docker publication, and npm publication are separate actions.

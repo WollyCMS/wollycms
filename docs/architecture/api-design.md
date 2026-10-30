@@ -250,6 +250,18 @@ GET /api/content/preview/pages/:slug
 
 ## Admin API (Authenticated)
 
+### Validation and partial updates
+
+Input validation uses Zod 4. Record fields use explicit string-key schemas.
+Create endpoints apply their documented defaults; partial update endpoints
+preserve omitted fields. Zod 4 applies defaults inside optional fields, so
+default-bearing create schemas need explicit default-free update fields.
+Passing an empty object or null explicitly still clears fields where permitted.
+Validation failures retain the existing HTTP 400 `errors` envelope.
+
+The API regression suite verifies this contract for pages, reusable blocks,
+content/block types, redirects, webhooks, and tracking scripts.
+
 Full CRUD for all entities. Requires valid session/JWT.
 
 ### Authentication

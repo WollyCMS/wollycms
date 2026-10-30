@@ -40,11 +40,21 @@ examples/college-site/ — Reference Astro site
 ### Running Tests
 
 ```bash
-npm run test                              # All tests
+npx --workspace=packages/admin svelte-kit sync  # Generate required SvelteKit types
+npm run test                              # Server tests
+npm run test --workspace=packages/admin    # Admin tests
+(cd packages/astro && npx vitest run && npx tsc --noEmit)
 npm run test --workspace=packages/server  # Server only
 ```
 
-Tests use Vitest with an in-memory SQLite database. The test database is created fresh for each run.
+Use Node.js 22.23.4 or a newer supported Node 22 patch for the current Astro
+toolchain. Tests use Vitest with a disposable, freshly seeded SQLite file under
+`packages/server/data/`; they do not use a production database.
+
+Validation uses Zod 4. Keep creation defaults out of partial update schemas so
+omitted fields preserve saved content and settings. Run the API compatibility
+cases in `packages/server/tests/validation-migration.test.ts` when changing
+validation dependencies. Use explicit key/value schemas for `z.record`.
 
 ### Database Changes
 
