@@ -224,6 +224,15 @@ GET /api/content/schemas
   — Used by @wollycms/astro to generate TypeScript types
 ```
 
+### Batch requests
+
+`POST /api/content/batch` accepts `{ pages?: string[], menus?: string[] }`.
+Requests are limited to 64 KiB of JSON, 50 page slugs, and 10 menu slugs.
+Oversized bodies return HTTP 413 with `PAYLOAD_TOO_LARGE`; invalid or excessive
+collections return HTTP 400 with `VALIDATION`. Collection lengths are checked
+before schema validation to bound validation work. Excess slugs are rejected
+rather than silently truncated. Empty requests remain valid.
+
 ### Preview (Authenticated)
 
 ```
