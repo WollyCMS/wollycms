@@ -6,6 +6,7 @@ import adminRouter from './api/admin/index.js';
 import { env, isProduction } from './env.js';
 import { cacheSize } from './cache.js';
 import { bodyLimit } from 'hono/body-limit';
+import { MAX_BATCH_BODY_BYTES } from './api/content/batch.js';
 import { HTTPException } from 'hono/http-exception';
 import { getStorage } from './media/storage.js';
 import packageJson from '../package.json' with { type: 'json' };
@@ -63,7 +64,13 @@ app.use('*', async (c, next) => {
   console.log(`<-- ${c.req.method} ${c.req.path}`);
   console.log(`--> ${c.req.method} ${c.req.path} ${c.res.status} ${Date.now() - start}ms`);
 });
-app.use('*', bodyLimit({ maxSize: 50 * 1024 * 1024 })); // 50MB max request body
+// Enforce the public JSON endpoint's smaller limit before the general upload
+// limiter buffers a request with no Content-Length (for example, chunked input).
+app.use('/api/content/batch', bodyLimit({
+  maxSize: MAX_BATCH_BODY_BYTES,
+  onError: (c) => c.json({ errors: [{ code: 'PAYLOAD_TOO_LARGE', message: 'Batch requests must not exceed 64 KiB' }] }, 413),
+}));
+app.use('*', bodyLimit({ maxSize: 50 * 1024 * 1024 })); // 50MB max upload body
 
 // Security headers
 app.use('*', async (c, next) => {

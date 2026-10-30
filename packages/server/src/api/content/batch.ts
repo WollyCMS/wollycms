@@ -11,9 +11,13 @@ import { normalizeContentFields } from '../../content-fields.js';
 
 const app = new Hono();
 
+export const MAX_BATCH_BODY_BYTES = 64 * 1024;
+const MAX_BATCH_PAGES = 50;
+const MAX_BATCH_MENUS = 10;
+
 const batchSchema = z.object({
-  pages: z.array(z.string()).optional(), // slugs
-  menus: z.array(z.string()).optional(), // slugs
+  pages: z.array(z.string()).max(MAX_BATCH_PAGES).optional(), // slugs
+  menus: z.array(z.string()).max(MAX_BATCH_MENUS).optional(), // slugs
 });
 
 /**
@@ -22,6 +26,13 @@ const batchSchema = z.object({
  */
 app.post('/', async (c) => {
   const body = await c.req.json().catch(() => null);
+  // Zod 3 can accumulate an issue for every invalid array element, even when
+  // the array has a max length. Reject oversized collections before parsing.
+  if (!body || typeof body !== 'object' || Array.isArray(body)
+    || (body.pages !== undefined && (!Array.isArray(body.pages) || body.pages.length > MAX_BATCH_PAGES))
+    || (body.menus !== undefined && (!Array.isArray(body.menus) || body.menus.length > MAX_BATCH_MENUS))) {
+    return c.json({ errors: [{ code: 'VALIDATION', message: 'Invalid batch request' }] }, 400);
+  }
   const parsed = batchSchema.safeParse(body);
   if (!parsed.success) {
     return c.json({ errors: [{ code: 'VALIDATION', message: 'Invalid batch request' }] }, 400);
@@ -33,7 +44,7 @@ app.post('/', async (c) => {
 
   // Fetch pages
   if (parsed.data.pages && parsed.data.pages.length > 0) {
-    const slugs = parsed.data.pages.slice(0, 50); // Max 50 pages per batch
+    const slugs = parsed.data.pages;
     const pageRows = await db
       .select({
         id: pages.id,
@@ -133,7 +144,7 @@ app.post('/', async (c) => {
 
   // Fetch menus
   if (parsed.data.menus && parsed.data.menus.length > 0) {
-    const slugList = parsed.data.menus.slice(0, 10);
+    const slugList = parsed.data.menus;
     const menusResult: Record<string, unknown> = {};
     const menuRows = await db.select().from(menus).where(inArray(menus.slug, slugList));
     const menuIds = menuRows.map((m: { id: number }) => m.id);

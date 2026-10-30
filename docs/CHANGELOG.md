@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased — security maintenance
+
+- Refresh Hono, Sharp, Svelte, TipTap/ProseMirror, and build dependencies within
+  their existing release families; align all TipTap packages and update the
+  example's Astro/Node adapter to patched versions.
+- Limit public batch requests to 64 KiB, 50 page slugs, and 10 menu slugs before
+  expensive schema validation. Excess collections now return 400 instead of
+  silent truncation; oversized bodies return 413. Upload limits are unchanged.
+- Bundle SvelteKit's cookie dependency into its generated server build so an
+  incompatible hoisted Astro cookie version cannot break admin prerendering.
+- Validate editor, API limits, Astro integration, Worker build, and admin CSP.
+  No schema migration or content conversion is required. The Zod 3 dependency
+  advisory remains pending a separately tested major-version migration; public
+  batch validation work is now bounded.
+
 ## 0.3.1 — 2026-09-11
 
 Patch release for `@wollycms/server` and `@wollycms/astro`. `create-wolly`
