@@ -23,6 +23,12 @@ const redirectSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
+// Omitted update fields must not receive create defaults in Zod 4.
+const redirectUpdateSchema = redirectSchema.partial().extend({
+  statusCode: redirectSchema.shape.statusCode.removeDefault().optional(),
+  isActive: redirectSchema.shape.isActive.removeDefault().optional(),
+});
+
 /** GET / - List all redirects */
 app.get('/', async (c) => {
   const db = getDb();
@@ -49,7 +55,7 @@ app.put('/:id', async (c) => {
   const db = getDb();
   const id = parseInt(c.req.param('id'), 10);
   const body = await c.req.json().catch(() => null);
-  const parsed = redirectSchema.partial().safeParse(body);
+  const parsed = redirectUpdateSchema.safeParse(body);
   if (!parsed.success) return c.json({ errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message })) }, 400);
 
   await db.update(redirects).set(parsed.data).where(eq(redirects.id, id));

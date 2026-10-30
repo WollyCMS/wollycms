@@ -19,6 +19,11 @@ const webhookSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
+// Omitted update fields must not receive create defaults in Zod 4.
+const webhookUpdateSchema = webhookSchema.partial().extend({
+  isActive: webhookSchema.shape.isActive.removeDefault().optional(),
+});
+
 /** GET / - List all webhooks */
 app.get('/', async (c) => {
   const db = getDb();
@@ -68,7 +73,7 @@ app.put('/:id', async (c) => {
   const db = getDb();
   const id = parseInt(c.req.param('id'), 10);
   const body = await c.req.json().catch(() => null);
-  const parsed = webhookSchema.partial().safeParse(body);
+  const parsed = webhookUpdateSchema.safeParse(body);
   if (!parsed.success) {
     return c.json({ errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message })) }, 400);
   }

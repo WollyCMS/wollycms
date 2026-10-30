@@ -63,7 +63,7 @@ const pageSchema = z.object({
   slugOverride: z.boolean().optional(),
   typeId: z.number().int().positive(),
   status: z.string().min(1).default('draft'),
-  fields: z.record(z.unknown()).default({}),
+  fields: z.record(z.string(), z.unknown()).default({}),
   scheduledAt: z.string().nullable().optional(),
   unpublishAt: z.string().nullable().optional(),
   metaTitle: z.string().nullable().optional(),
@@ -75,7 +75,10 @@ const pageSchema = z.object({
   translationGroupId: z.string().nullable().optional(),
 });
 
+// Omitted update fields must not receive create defaults in Zod 4.
 const pageUpdateSchema = pageSchema.partial().extend({
+  status: pageSchema.shape.status.removeDefault().optional(),
+  fields: pageSchema.shape.fields.removeDefault().optional(),
   revisionNote: z.string().optional(),
 });
 

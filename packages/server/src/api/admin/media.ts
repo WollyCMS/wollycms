@@ -285,7 +285,7 @@ app.put('/:id', async (c) => {
     altText: z.string().nullable().optional(),
     title: z.string().nullable().optional(),
     folder: z.string().nullable().optional(),
-    metadata: z.record(z.unknown()).nullable().optional(),
+    metadata: z.record(z.string(), z.unknown()).nullable().optional(),
   }).safeParse(body);
   if (!parsed.success) return c.json({ errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message })) }, 400);
 

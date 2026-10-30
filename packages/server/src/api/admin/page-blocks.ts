@@ -27,7 +27,7 @@ app.post('/:id/blocks', async (c) => {
     region: z.string().min(1),
     position: z.number().int().min(0).optional(),
     isShared: z.boolean().default(false),
-    fields: z.record(z.unknown()).optional(),
+    fields: z.record(z.string(), z.unknown()).optional(),
     title: z.string().optional(),
   });
   const parsed = schema.safeParse(body);
@@ -78,7 +78,7 @@ app.put('/:id/blocks/:pbId', async (c) => {
   const schema = z.object({
     region: z.string().optional(),
     position: z.number().int().min(0).optional(),
-    overrides: z.record(z.unknown()).optional(),
+    overrides: z.record(z.string(), z.unknown()).optional(),
   });
   const parsed = schema.safeParse(body);
   if (!parsed.success) return c.json({ errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message })) }, 400);

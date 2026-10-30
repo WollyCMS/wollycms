@@ -18,7 +18,7 @@ const fieldDefSchema: z.ZodType<any> = z.object({
   type: z.string().min(1),
   required: z.boolean().optional(),
   default: z.unknown().optional(),
-  settings: z.record(z.unknown()).optional(),
+  settings: z.record(z.string(), z.unknown()).optional(),
   fields: z.lazy(() => z.array(fieldDefSchema)).optional(),
   min: z.number().optional(),
   max: z.number().optional(),
@@ -31,7 +31,16 @@ const blockTypeSchema = z.object({
   fieldsSchema: z.array(fieldDefSchema).default([]),
   icon: z.string().nullable().default(null),
   category: z.string().nullable().default(null),
-  settings: z.record(z.unknown()).nullable().default(null),
+  settings: z.record(z.string(), z.unknown()).nullable().default(null),
+});
+
+// Omitted update fields must not receive create defaults in Zod 4.
+const blockTypeUpdateSchema = blockTypeSchema.partial().extend({
+  description: blockTypeSchema.shape.description.removeDefault().optional(),
+  fieldsSchema: blockTypeSchema.shape.fieldsSchema.removeDefault().optional(),
+  icon: blockTypeSchema.shape.icon.removeDefault().optional(),
+  category: blockTypeSchema.shape.category.removeDefault().optional(),
+  settings: blockTypeSchema.shape.settings.removeDefault().optional(),
 });
 
 /** GET / - List all block types */
@@ -69,7 +78,7 @@ app.put('/:id', async (c) => {
   const db = getDb();
   const id = parseInt(c.req.param('id'), 10);
   const body = await c.req.json().catch(() => null);
-  const parsed = blockTypeSchema.partial().safeParse(body);
+  const parsed = blockTypeUpdateSchema.safeParse(body);
   if (!parsed.success) return c.json({ errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message })) }, 400);
 
   await db.update(blockTypes).set(parsed.data).where(eq(blockTypes.id, id));

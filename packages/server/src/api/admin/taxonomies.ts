@@ -56,7 +56,7 @@ app.post('/', async (c) => {
     slug: z.string().min(1),
     description: z.string().nullable().default(null),
     hierarchical: z.boolean().default(false),
-    settings: z.record(z.unknown()).nullable().default(null),
+    settings: z.record(z.string(), z.unknown()).nullable().default(null),
   }).safeParse(body);
   if (!parsed.success) return c.json({ errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message })) }, 400);
 
@@ -78,7 +78,7 @@ app.put('/:id', async (c) => {
     slug: z.string().min(1).optional(),
     description: z.string().nullable().optional(),
     hierarchical: z.boolean().optional(),
-    settings: z.record(z.unknown()).nullable().optional(),
+    settings: z.record(z.string(), z.unknown()).nullable().optional(),
   }).safeParse(body);
   if (!parsed.success) return c.json({ errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message })) }, 400);
 
@@ -106,7 +106,7 @@ app.post('/:id/terms', async (c) => {
     slug: z.string().min(1),
     parentId: z.number().int().nullable().default(null),
     weight: z.number().int().default(0),
-    fields: z.record(z.unknown()).nullable().default(null),
+    fields: z.record(z.string(), z.unknown()).nullable().default(null),
   }).safeParse(body);
   if (!parsed.success) return c.json({ errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message })) }, 400);
 
@@ -129,7 +129,7 @@ app.put('/:id/terms/:termId', async (c) => {
     slug: z.string().min(1).optional(),
     parentId: z.number().int().nullable().optional(),
     weight: z.number().int().optional(),
-    fields: z.record(z.unknown()).nullable().optional(),
+    fields: z.record(z.string(), z.unknown()).nullable().optional(),
   }).safeParse(body);
   if (!parsed.success) return c.json({ errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message })) }, 400);
 
