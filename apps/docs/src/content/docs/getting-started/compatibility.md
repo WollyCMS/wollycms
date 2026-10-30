@@ -7,7 +7,7 @@ description: Supported Node.js, Astro, database, and deployment versions for Wol
 
 | Component | Supported or recommended version |
 |---|---|
-| Node.js | 22 LTS |
+| Node.js | 22 LTS; 22.23.4 or later for the current source/example/docs toolchain |
 | npm | 10 or later |
 | Astro | 5, 6, or 7 |
 | SQLite | Default for local and small self-hosted installations |
@@ -39,3 +39,21 @@ WollyCMS supports:
 
 The Astro frontend remains a separate application and can be hosted on any
 platform supported by Astro.
+
+## Source security maintenance (2026-10-30)
+
+The current source lockfile includes Hono 4.13.14, Sharp 0.35.5, Svelte 5.57.3,
+SvelteKit 2.70.2, TipTap 3.32.1, Zod 4.6.7, and Vitest 4.1.12. The example and
+documentation use Astro 7.4.4; documentation uses Cloudflare adapter 14.4.3.
+The Astro toolchain requires Node.js 22.23.4 or later. These versions describe
+this source snapshot; manifests and lockfiles remain authoritative.
+
+This maintenance does not introduce a database migration or content conversion.
+The server and integration manifests remain at 0.3.1; no new npm or Docker
+release was published for this source maintenance. Check the release notes and
+artifact tag before assuming an npm install or Docker pull includes it. Worker
+deployment and package/image publication are separate release actions.
+
+Extensions that import Zod directly must account for Zod 4: records take both
+key and value schemas, and defaults inside optional fields can affect partial
+updates. Core API regression tests cover preservation of omitted fields.
