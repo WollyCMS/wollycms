@@ -1,5 +1,5 @@
 # Stage 1: Install dependencies
-FROM node:22-slim AS deps
+FROM node:22.23.4-slim AS deps
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 make g++ \
@@ -26,7 +26,7 @@ COPY tsconfig.json ./
 RUN npm run build --workspace=packages/server
 
 # Stage 4: Production image
-FROM node:22-slim AS production
+FROM node:22.23.4-slim AS production
 RUN apt-get update && apt-get install -y --no-install-recommends \
     tini \
     && rm -rf /var/lib/apt/lists/*
