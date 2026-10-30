@@ -26,8 +26,8 @@ const batchSchema = z.object({
  */
 app.post('/', async (c) => {
   const body = await c.req.json().catch(() => null);
-  // Zod 3 can accumulate an issue for every invalid array element, even when
-  // the array has a max length. Reject oversized collections before parsing.
+  // Reject oversized collections before validation, independently of Zod
+  // parser behavior. Keep this boundary when upgrading the validator.
   if (!body || typeof body !== 'object' || Array.isArray(body)
     || (body.pages !== undefined && (!Array.isArray(body.pages) || body.pages.length > MAX_BATCH_PAGES))
     || (body.menus !== undefined && (!Array.isArray(body.menus) || body.menus.length > MAX_BATCH_MENUS))) {

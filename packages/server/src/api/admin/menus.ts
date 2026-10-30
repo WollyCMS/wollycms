@@ -115,7 +115,7 @@ app.post('/:id/items', async (c) => {
     position: z.number().int().default(0),
     depth: z.number().int().default(0),
     isExpanded: z.boolean().default(false),
-    attributes: z.record(z.unknown()).nullable().default(null),
+    attributes: z.record(z.string(), z.unknown()).nullable().default(null),
   });
   const parsed = schema.safeParse(body);
   if (!parsed.success) return c.json({ errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message })) }, 400);
@@ -139,7 +139,7 @@ app.put('/:id/items/:itemId', async (c) => {
     position: z.number().int().optional(),
     depth: z.number().int().optional(),
     isExpanded: z.boolean().optional(),
-    attributes: z.record(z.unknown()).nullable().optional(),
+    attributes: z.record(z.string(), z.unknown()).nullable().optional(),
   });
   const parsed = schema.safeParse(body);
   if (!parsed.success) return c.json({ errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message })) }, 400);

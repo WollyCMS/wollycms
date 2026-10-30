@@ -11,9 +11,13 @@
 - Bundle SvelteKit's cookie dependency into its generated server build so an
   incompatible hoisted Astro cookie version cannot break admin prerendering.
 - Validate editor, API limits, Astro integration, Worker build, and admin CSP.
-  No schema migration or content conversion is required. The Zod 3 dependency
-  advisory remains pending a separately tested major-version migration; public
-  batch validation work is now bounded.
+  No schema migration or content conversion is required.
+- Upgrade server validation to Zod 4.6.7 to address
+  [GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5).
+  Use explicit string-key record schemas and preserve omitted fields during
+  partial updates: changing a title must not reset content, publication status,
+  schema definitions, or existing settings. Creation defaults and the public
+  batch limits remain intact. Add API regression coverage for these contracts.
 
 ## 0.3.1 — 2026-09-11
 

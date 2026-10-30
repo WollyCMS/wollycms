@@ -19,6 +19,15 @@ const trackingScriptSchema = z.object({
   targetPages: z.array(z.string()).optional().default([]),
 });
 
+// Omitted update fields must not receive create defaults in Zod 4.
+const trackingScriptUpdateSchema = trackingScriptSchema.partial().extend({
+  position: trackingScriptSchema.shape.position.removeDefault().optional(),
+  priority: trackingScriptSchema.shape.priority.removeDefault().optional(),
+  isActive: trackingScriptSchema.shape.isActive.removeDefault().optional(),
+  scope: trackingScriptSchema.shape.scope.removeDefault().optional(),
+  targetPages: trackingScriptSchema.shape.targetPages.removeDefault().optional(),
+});
+
 function parseRow(row: typeof trackingScripts.$inferSelect) {
   return {
     ...row,
@@ -73,7 +82,7 @@ app.put('/:id', async (c) => {
   const db = getDb();
   const id = parseInt(c.req.param('id'), 10);
   const body = await c.req.json().catch(() => null);
-  const parsed = trackingScriptSchema.partial().safeParse(body);
+  const parsed = trackingScriptUpdateSchema.safeParse(body);
   if (!parsed.success) {
     return c.json({ errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message })) }, 400);
   }

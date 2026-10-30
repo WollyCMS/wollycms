@@ -61,7 +61,7 @@ const fieldDefSchema: z.ZodType<any> = z.object({
   type: z.string().min(1),
   required: z.boolean().optional(),
   default: z.unknown().optional(),
-  settings: z.record(z.unknown()).optional(),
+  settings: z.record(z.string(), z.unknown()).optional(),
   fields: z.lazy(() => z.array(fieldDefSchema)).optional(),
   min: z.number().optional(),
   max: z.number().optional(),
@@ -77,7 +77,7 @@ const defaultBlockSchema = z.object({
   region: z.string().min(1),
   blockTypeSlug: z.string().min(1),
   position: z.number().int().min(0),
-  fields: z.record(z.unknown()).optional(),
+  fields: z.record(z.string(), z.unknown()).optional(),
 });
 
 const contentTypeSchema = z.object({
@@ -87,7 +87,16 @@ const contentTypeSchema = z.object({
   fieldsSchema: z.array(fieldDefSchema).default([]),
   regions: z.array(regionSchema).default([]),
   defaultBlocks: z.array(defaultBlockSchema).nullable().default(null),
-  settings: z.record(z.unknown()).nullable().default(null),
+  settings: z.record(z.string(), z.unknown()).nullable().default(null),
+});
+
+// Omitted update fields must not receive create defaults in Zod 4.
+const contentTypeUpdateSchema = contentTypeSchema.partial().extend({
+  description: contentTypeSchema.shape.description.removeDefault().optional(),
+  fieldsSchema: contentTypeSchema.shape.fieldsSchema.removeDefault().optional(),
+  regions: contentTypeSchema.shape.regions.removeDefault().optional(),
+  defaultBlocks: contentTypeSchema.shape.defaultBlocks.removeDefault().optional(),
+  settings: contentTypeSchema.shape.settings.removeDefault().optional(),
 });
 
 /** GET / - List all content types */
@@ -125,7 +134,7 @@ app.put('/:id', async (c) => {
   const db = getDb();
   const id = parseInt(c.req.param('id'), 10);
   const body = await c.req.json().catch(() => null);
-  const parsed = contentTypeSchema.partial().safeParse(body);
+  const parsed = contentTypeUpdateSchema.safeParse(body);
   if (!parsed.success) return c.json({ errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message })) }, 400);
 
   // Capture the old slug prefix before the update so we can detect when it

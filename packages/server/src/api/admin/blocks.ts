@@ -23,8 +23,14 @@ app.use('*', async (c, next) => {
 const blockSchema = z.object({
   typeId: z.number().int().positive(),
   title: z.string().min(1),
-  fields: z.record(z.unknown()).default({}),
+  fields: z.record(z.string(), z.unknown()).default({}),
   isReusable: z.boolean().default(true),
+});
+
+// Omitted update fields must not receive create defaults in Zod 4.
+const blockUpdateSchema = blockSchema.partial().extend({
+  fields: blockSchema.shape.fields.removeDefault().optional(),
+  isReusable: blockSchema.shape.isReusable.removeDefault().optional(),
 });
 
 /** GET / - List blocks (reusable library) */
@@ -124,7 +130,7 @@ app.put('/:id', async (c) => {
   const db = getDb();
   const id = parseInt(c.req.param('id'), 10);
   const body = await c.req.json().catch(() => null);
-  const parsed = blockSchema.partial().safeParse(body);
+  const parsed = blockUpdateSchema.safeParse(body);
   if (!parsed.success) return c.json({ errors: parsed.error.issues.map((i) => ({ code: 'VALIDATION', message: i.message })) }, 400);
 
   const [existing] = await db.select({ id: blocks.id }).from(blocks).where(eq(blocks.id, id)).limit(1);
