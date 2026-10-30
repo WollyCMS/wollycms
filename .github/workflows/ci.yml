@@ -25,6 +25,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '22'
+          check-latest: true
           cache: npm
           cache-dependency-path: package-lock.json
 
@@ -36,6 +37,9 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+      - name: Test admin editor and accessibility helpers
+        run: npm run test --workspace=packages/admin
 
       - name: Test Astro client and helpers
         working-directory: packages/astro
@@ -69,6 +73,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '22'
+          check-latest: true
           cache: npm
           cache-dependency-path: apps/docs/package-lock.json
 

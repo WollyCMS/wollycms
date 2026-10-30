@@ -24,6 +24,9 @@ on:
 
 jobs:
   test:
+    # Setting the repository variable to false holds automatic production
+    # releases; explicitly selected manual deployments remain available.
+    if: github.event_name != 'push' || vars.AUTOMATIC_RELEASES_ENABLED != 'false'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,6 +36,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '22'
+          check-latest: true
 
       - name: Install dependencies
         run: npm ci
@@ -42,6 +46,9 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+      - name: Test admin editor and accessibility helpers
+        run: npm run test --workspace=packages/admin
 
       - name: Build admin UI
         run: npm run build --workspace=packages/admin
@@ -61,6 +68,9 @@ jobs:
             || format('["{0}"]', inputs.environment)
           ) }}
     environment: ${{ matrix.environment }}
+    concurrency:
+      group: cms-deploy-${{ matrix.environment }}
+      cancel-in-progress: false
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -69,6 +79,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '22'
+          check-latest: true
 
       - name: Install dependencies
         run: npm ci
