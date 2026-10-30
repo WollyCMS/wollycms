@@ -94,7 +94,21 @@ The `info` variant returns JSON metadata (dimensions, alt text, variant URLs) in
 
 ## Batch — `POST /batch`
 
-Fetch multiple pages and menus in one request. Body: `{ "pages": ["home", "about"], "menus": ["main-nav"] }`. Max 50 pages and 10 menus per batch.
+Fetch multiple pages and menus in one request. Body:
+
+```json
+{ "pages": ["home", "about"], "menus": ["main-nav"] }
+```
+
+The request body is limited to **64 KiB**. Each collection contains string
+slugs: at most **50 pages** and **10 menus**. Both collections are optional.
+
+- Oversized bodies return HTTP **413** with error code `PAYLOAD_TOO_LARGE`.
+- Excess collections, invalid elements, or malformed JSON return HTTP **400**
+  with error code `VALIDATION`. Excess requests are rejected, not truncated.
+
+These limits apply to the public batch endpoint. Media uploads retain their
+separate upload limit.
 
 ## Sitemap — `GET /sitemap`
 

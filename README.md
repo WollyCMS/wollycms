@@ -75,7 +75,7 @@ WollyCMS fills the gap between simple headless CMS tools that lack page composit
 
 ## Quick Start
 
-> **Requires Node.js 22 LTS.** WollyCMS uses `better-sqlite3` which needs native compilation. Node 22 LTS is tested and recommended. If you hit build errors on newer Node versions, use PostgreSQL instead (`DATABASE_URL=postgresql://...`).
+> **Use Node.js 22.23.4 or a newer supported Node 22 patch for this checkout.** WollyCMS uses `better-sqlite3` which needs native compilation. Node 22 LTS is tested and recommended. If you hit build errors on newer Node versions, use PostgreSQL instead (`DATABASE_URL=postgresql://...`).
 
 Create a new project with a single command:
 
@@ -139,7 +139,20 @@ export default defineConfig({
 See the [Astro integration docs](https://docs.wollycms.com/astro/setup/) for BlockRenderer, route generation, menu helpers, and image optimization.
 
 `@wollycms/astro` 0.3 supports Astro 5, 6, and 7. Node.js 22 LTS is the
-tested runtime for WollyCMS development and self-hosted deployments.
+tested runtime for WollyCMS development and self-hosted deployments. The current
+Astro 7.4.4 example/docs toolchain requires Node.js 22.23.4 or later.
+
+### Source maintenance baseline (2026-10-30)
+
+The current `main` lockfile resolves Hono 4.13.14, Sharp 0.35.5, Svelte 5.57.3,
+SvelteKit 2.70.2, TipTap 3.32.1, Zod 4.6.7, and Vitest 4.1.12. The reference
+Astro site and documentation use Astro 7.4.4. These are a dated source baseline;
+consult the manifests and lockfiles before future upgrades. See
+[the changelog](docs/CHANGELOG.md).
+
+The server and integration package manifests remain at 0.3.1. These source
+maintenance changes have not been published as a new npm version or Docker
+release. A successful Worker deployment does not update either distribution.
 
 ## Content API
 
@@ -156,7 +169,7 @@ tested runtime for WollyCMS development and self-hosted deployments.
 | `POST /api/content/batch` | Fetch multiple pages + menus in one request |
 | `GET /api/content/search?q=` | Full-text search of published pages |
 | `POST /api/content/graphql` | GraphQL queries for flexible data fetching |
-| `GET /api/content/preview/:slug` | Token-authenticated preview of unpublished content |
+| `GET /api/content/preview/pages/:slug` | Token-authenticated preview of unpublished content |
 | `GET /api/content/og/:slug` | Auto-generated OG image for a page |
 | `GET /api/content/tracking-scripts` | Active tracking/analytics scripts |
 | `GET /api/content/sitemap` | XML sitemap of published pages |
@@ -164,13 +177,17 @@ tested runtime for WollyCMS development and self-hosted deployments.
 | `GET /api/admin/search?q=` | Global search (pages, blocks, media, menus) |
 | `GET /api/health` | Health check (uptime, version) |
 
+Batch requests have a 64 KiB body limit and accept at most 50 page slugs and
+10 menu slugs. Oversized bodies return 413; excess collections or invalid
+values return 400. Upload limits are unchanged.
+
 ## Tech Stack
 
 | Component | Technology |
 |---|---|
 | API Server | Hono 4.x (TypeScript, ESM) |
 | Database | SQLite (dev) / PostgreSQL (prod) / D1 (Cloudflare) via Drizzle ORM |
-| Admin UI | SvelteKit 5 (SPA mode) |
+| Admin UI | Svelte 5 + SvelteKit 2 (SPA mode) |
 | Rich Text | TipTap (JSON storage) |
 | Media Processing | Sharp (WebP generation, OG images via Satori) |
 | Media Storage | Local filesystem, S3, or Cloudflare R2 |
