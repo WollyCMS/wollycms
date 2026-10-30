@@ -22,6 +22,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '22'
+          check-latest: true
 
       - name: Install dependencies
         run: npm ci
@@ -55,6 +56,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: '4.118.0'
+          wranglerVersion: '4.156.0'
           workingDirectory: apps/docs
           command: deploy
