@@ -85,6 +85,7 @@ export default defineConfig({
 						{ label: 'Menu Helpers', slug: 'astro/menus' },
 						{ label: 'Images', slug: 'astro/images' },
 						{ label: 'SEO', slug: 'astro/seo' },
+						{ label: 'Public AI Discovery', slug: 'astro/public-ai-discovery' },
 					],
 				},
 				{
