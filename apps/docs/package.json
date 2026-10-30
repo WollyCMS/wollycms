@@ -12,12 +12,12 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^14.2.1",
+    "@astrojs/cloudflare": "^14.4.3",
     "@astrojs/starlight": "^0.41.7",
-    "astro": "^7.1.6",
-    "sharp": "^0.35.3",
-    "vite": "^8.2.1",
-    "wrangler": "^4.123.0"
+    "astro": "^7.4.4",
+    "sharp": "^0.35.5",
+    "vite": "^8.3.5",
+    "wrangler": "^4.156.0"
   },
   "devDependencies": {
     "esbuild": "^0.28.2"
