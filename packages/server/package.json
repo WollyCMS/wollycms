@@ -52,13 +52,13 @@
     "build:worker": "node ../../scripts/build-worker.mjs"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1148.0",
-    "@hono/node-server": "^2.1.5",
+    "@aws-sdk/client-s3": "^3.1163.0",
+    "@hono/node-server": "^2.1.6",
     "better-sqlite3": "^11.7.0",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.4",
-    "graphql": "^16.14.2",
-    "hono": "^4.13.14",
+    "graphql": "^16.15.0",
+    "hono": "^4.13.16",
     "pg": "^8.23.1",
     "satori": "^0.25.0",
     "sharp": "^0.35.5",
