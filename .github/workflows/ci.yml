@@ -41,6 +41,12 @@ jobs:
       - name: Test admin editor and accessibility helpers
         run: npm run test --workspace=packages/admin
 
+      - name: Install Chromium for editor regression tests
+        run: npx playwright install --with-deps chromium
+
+      - name: Test HTML Source in the browser under admin CSP
+        run: npm run test:browser --workspace=packages/admin
+
       - name: Test Astro client and helpers
         working-directory: packages/astro
         run: npx vitest run

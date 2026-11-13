@@ -25,6 +25,8 @@ build/
 out/
 .astro/
 .svelte-kit/
+test-results/
+playwright-report/
 
 # Data
 data/

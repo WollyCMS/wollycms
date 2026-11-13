@@ -7,7 +7,7 @@
   import Underline from '@tiptap/extension-underline';
   import Subscript from '@tiptap/extension-subscript';
   import Superscript from '@tiptap/extension-superscript';
-  import TextAlign from '@tiptap/extension-text-align';
+  import { SourceTextAlign } from '$lib/editor/textAlign.js';
   import { focusTrap } from '$lib/focusTrap.js';
   import { Table, TableRow, TableCell, TableHeader } from '@tiptap/extension-table';
   import Placeholder from '@tiptap/extension-placeholder';
@@ -189,7 +189,7 @@
         Underline,
         Subscript,
         Superscript,
-        TextAlign.configure({ types: ['heading', 'paragraph'] }),
+        SourceTextAlign.configure({ types: ['heading', 'paragraph'] }),
         HeadingAnchor,
         Link.configure({ openOnClick: false, enableClickSelection: true }),
         CustomImage,
