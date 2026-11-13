@@ -106,3 +106,46 @@ The page editor is the core editing experience:
 
 Reordering a block collapses any expanded block cards first — rich text editors cannot
 survive being moved in the DOM. Unsaved field edits are preserved.
+
+### Rich text editing
+
+Rich text fields use the same editor in text blocks and accordion items. Use the
+toolbar for headings, lists, links, images, text alignment, and other formatting.
+
+#### Paragraphs and line breaks
+
+Press **Enter** to start a new paragraph. Press **Shift+Enter** to insert a line
+break within the current paragraph. Line breaks are useful for addresses,
+operating hours, and other short lines that should stay together. You can add
+them directly in the visual editor without opening HTML Source.
+
+#### Image size and alignment
+
+Click an image in the visual editor to show its image toolbar.
+
+| Size | Width |
+|---|---|
+| **Auto** | No explicit width; the site's styles determine the displayed size |
+| **S** | 25% of the available content width |
+| **M** | 50% of the available content width |
+| **L** | 75% of the available content width |
+| **Full** | 100% of the available content width |
+
+Choose **Left** or **Right** to wrap text around the image, **Center** to center
+it on its own line, or **Inline** to keep it in the normal content flow without
+left/right wrapping. Use **Alt** to edit the image's alternative text and
+**Caption** to add or change its visible caption.
+
+#### HTML Source
+
+1. Click the **\</\>** toolbar button, labeled **HTML Source**, to view the field's HTML.
+2. Edit the text or markup. When changing text, leave the surrounding image tags
+   and formatting attributes intact. Use the visual image toolbar to change
+   image size or alignment.
+3. Click **\</\>** again to return to the visual editor.
+4. Review the result and save the page. Switching editor views does not save
+   the page by itself.
+
+Image size and alignment, along with paragraph and heading alignment, are
+preserved when switching between HTML Source and the visual editor. This also
+applies to rich text inside accordion items.
