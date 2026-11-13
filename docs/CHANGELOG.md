@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased — HTML Source formatting
+
+- Preserve rich-text image size/alignment and paragraph/heading alignment when
+  editing HTML Source, including source-field blur in accordion items. Store
+  presentation attributes in HTML data attributes and read older style-only HTML
+  through detached CSS declarations under the existing strict admin CSP.
+- Keep the stored TipTap JSON format and public renderer unchanged; no content
+  migration is needed. Reject invalid image width/alignment data attributes.
+- Add real Chromium regression tests against the actual Svelte editors and admin
+  CSP, covering source edits, save/reload fixtures, image/table settings, legacy
+  HTML, links/captions, heading anchors, and text color. Run them in PR CI.
+
 ## Unreleased — security maintenance
 
 - Refresh Hono, Sharp, Svelte, TipTap/ProseMirror, and build dependencies within

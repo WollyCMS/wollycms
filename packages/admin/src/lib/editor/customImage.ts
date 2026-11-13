@@ -1,16 +1,24 @@
 import Image from '@tiptap/extension-image';
+import { imageAlignment, imageWidth, readInlineStyle } from './inlineStyle.js';
 
 /** Rich-text image node with presentation attributes used by the admin editor. */
 export const CustomImage = Image.extend({
   addAttributes() {
     return {
       ...this.parent?.(),
-      width: { default: null, parseHTML: (el: HTMLElement) => el.style.width || null },
+      width: {
+        default: null,
+        parseHTML: (el: HTMLElement) => imageWidth(el.getAttribute('data-width'))
+          || imageWidth(readInlineStyle(el).width),
+      },
       float: {
         default: 'none',
         parseHTML: (el: HTMLElement) => {
-          if (el.style.marginLeft === 'auto' && el.style.marginRight === 'auto') return 'center';
-          return el.style.float || el.getAttribute('data-float') || null;
+          const alignment = imageAlignment(el.getAttribute('data-float'));
+          if (alignment) return alignment;
+          const style = readInlineStyle(el);
+          if (style.marginLeft === 'auto' && style.marginRight === 'auto') return 'center';
+          return imageAlignment(style.cssFloat) || 'none';
         },
       },
       caption: { default: '', parseHTML: (el: HTMLElement) => el.getAttribute('data-caption') || null },
@@ -19,7 +27,9 @@ export const CustomImage = Image.extend({
     };
   },
   renderHTML({ node }) {
-    const { src, alt, title, width, float: imageFloat, caption, href, linkTarget } = node.attrs;
+    const { src, alt, title, caption, href, linkTarget } = node.attrs;
+    const width = imageWidth(node.attrs.width);
+    const imageFloat = imageAlignment(node.attrs.float) || 'none';
     const styles: string[] = [];
     if (width) styles.push(`width: ${width}`);
     if (imageFloat === 'center') {
@@ -33,6 +43,8 @@ export const CustomImage = Image.extend({
     if (alt) attributes.alt = alt;
     if (title) attributes.title = title;
     if (styles.length) attributes.style = styles.join('; ');
+    if (width) attributes['data-width'] = width;
+    attributes['data-float'] = imageFloat;
     if (caption) attributes['data-caption'] = caption;
     if (href) attributes['data-href'] = href;
     if (linkTarget) attributes['data-link-target'] = linkTarget;

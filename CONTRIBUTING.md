@@ -56,6 +56,22 @@ omitted fields preserve saved content and settings. Run the API compatibility
 cases in `packages/server/tests/validation-migration.test.ts` when changing
 validation dependencies. Use explicit key/value schemas for `z.record`.
 
+### Admin HTML Source browser tests
+
+The editor's HTML parsing depends on the browser's Content Security Policy;
+JSON-only and simulated DOM tests do not cover this behavior. Run the actual
+Svelte rich-text and accordion editors with the configured admin CSP:
+
+```bash
+npx playwright install chromium
+npm run test:browser --workspace=packages/admin
+```
+
+The fixture uses synthetic content and local storage to exercise save/reload.
+It does not connect to a CMS API or production database. Browser downloads are
+separate from `npm ci`; PR CI installs Chromium automatically. To use an existing
+compatible Chromium executable, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`.
+
 ### Database Changes
 
 1. Modify the Drizzle schema in `packages/server/src/db/schema/`
