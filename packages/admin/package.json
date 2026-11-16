@@ -34,7 +34,7 @@
     "lucide-svelte": "^0.577.0",
     "qrcode": "^1.5.4",
     "svelte": "^5.57.1",
-    "vite": "^6.4.4"
+    "vite": "^6.4.6"
   },
   "devDependencies": {
     "@playwright/test": "1.65.0",
