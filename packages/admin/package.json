@@ -33,7 +33,7 @@
     "@tiptap/suggestion": "^3.31.3",
     "lucide-svelte": "^0.577.0",
     "qrcode": "^1.5.4",
-    "svelte": "^5.57.1",
+    "svelte": "^5.58.0",
     "vite": "^6.4.4"
   },
   "devDependencies": {
